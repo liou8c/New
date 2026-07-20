@@ -1,0 +1,29 @@
+:: TimeSystemScript [script]
+// 移動或執行動作增加時間的函數（累積版）
+window.advanceTime = function (minutesPassed, type) {
+    // 1. 取得 SugarCube 中的時間物件
+    let d = State.variables.gameDate;
+    
+    // 2. 增加分鐘
+    d.setMinutes(d.getMinutes() + minutesPassed);
+    
+    // 3. 建立一個「零碎時間筆記本」（如果原本沒有，就設定為 0）
+    if (State.variables.energyBuffer === undefined) {
+        State.variables.energyBuffer = 0;
+    }
+    
+    // 判斷是不是特殊事件（例如睡覺）
+    if (type === "no_drain") {
+        // 如果是睡覺，我們「不要」把時間加進筆記本，也不扣體力！
+        return; 
+    }
+    
+    // 5. 一般走路、晃晃，才會放進筆記本計算扣體力
+    State.variables.energyBuffer += minutesPassed;
+    let energyLoss = Math.floor(State.variables.energyBuffer / 60);
+    
+    if (energyLoss > 0) {
+        State.variables.hp = Math.max(0, State.variables.hp - energyLoss);
+        State.variables.energyBuffer %= 60;
+    }
+};

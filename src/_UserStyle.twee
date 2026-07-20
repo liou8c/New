@@ -1,0 +1,54 @@
+/% 美化畫面的(CSS或HTML那些) %/
+
+:: StoryInterface [stylesheet]
+.scene-banner img {
+    width: 100%;    /* 讓圖片寬度填滿文字區域 */
+    height: auto;   /* 保持圖片比例，不要拉伸變形 */
+    display: block; /* 避免圖片下方出現多餘的空隙 */
+    margin-bottom: 1em; /* 與下方文字保持一點距離 */
+}
+
+:: GameStyles [stylesheet]
+
+.button-container {
+    display: flex;         
+    flex-wrap: wrap;       
+    gap: 15px;             
+    margin-top: 20px;
+}
+
+/* 預設按鈕外觀 */
+button {
+    background-color: transparent; 
+    color: #ffffff;            
+    border: 2px solid #8161ff; 
+    border-radius: 5px;        
+    padding: 10px 20px;        
+    font-size: 16px;           
+    cursor: pointer;           
+    transition: 0.3s;          
+    display: inline-block;     
+}
+button:hover {
+    background-color: #8161ff; 
+    border-color: #ffffff;     
+    box-shadow: 0 0 10px rgba(246, 157, 228, 0.5); 
+}
+
+/* 🟢 綠色按鈕外殼效果 */
+.green button {
+    border-color: #2ecc71 !important;
+}
+.green button:hover {
+    background-color: #2ecc71 !important;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5) !important;
+}
+
+/* 🔴 紅色按鈕外殼效果 */
+.red button {
+    border-color: #ff4d4d !important;
+}
+.red button:hover {
+    background-color: #ff4d4d !important;
+    box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
+}

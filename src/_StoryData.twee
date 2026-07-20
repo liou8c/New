@@ -1,0 +1,26 @@
+/% 我不知道這是什麼，也是設定? %/
+
+:: StoryTitle
+Untitled Story
+
+:: StoryData
+{
+  "ifid": "9A0B6D91-25DA-4854-A022-39074B223F86",
+  "format": "SugarCube",
+  "format-version": "2.37.3",
+  "start": "Start",
+  "zoom": 1
+}
+
+:: StoryInit
+<<set $gameDate to new Date(2026, 6, 25, 5, 30)>>
+<<set $money to 1000>>
+<<set $hp to 60>> /% 初始體力 %/
+<<set $hpMax to 140>> /% 體力上限 %/
+<<set $horny to 10>>
+<<set $luck to 50>>
+<<set $location to "start">>
+
+/* 聲望系統與 NPC 關係也可以放這 */
+<<set $reputation to 0>>
+<<set $npc_love to { alice: 0, bob: 0 }>>

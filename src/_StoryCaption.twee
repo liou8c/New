@@ -1,0 +1,20 @@
+/% 左邊固定顯示的資訊欄位 %/
+
+:: StoryCaption {"position":"500,225","size":"100,100"}
+<<nobr>>
+<<print ($gameDate.getMonth() + 1).toString().padStart(2, '0')>>/<<print $gameDate.getDate().toString().padStart(2, '0')>>
+<<print ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"][$gameDate.getDay()]>>
+<<print $gameDate.getHours().toString().padStart(2, '0')>>:<<print $gameDate.getMinutes().toString().padStart(2, '0')>>
+<</nobr>>
+
+<h3>主角狀態</h3>
+💰 金錢：$money 元
+❤️ 體力：$hp
+食物：
+心情：
+意識：
+
+
+<<if $horny gte 0>>
+🔥 慾望：<progress var="$horny" max="100"></progress> ($horny%)
+<</if>>

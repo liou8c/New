@@ -1,0 +1,14 @@
+:: GameWidgets [widget]
+/* 消耗時間並自動扣體力 */
+<<widget "passTime">><<nobr>>
+    <<run window.advanceTime($args[0], $args[1])>>
+<</nobr>><</widget>>
+
+/* 最安全的普通按鈕 */
+<<widget "go">><<nobr>>
+    <<button $args[0] $args[1]>>
+        <<if $args[2] gt 0>>
+            <<passTime $args[2]>>
+        <</if>>
+    <</button>>
+<</nobr>><</widget>>

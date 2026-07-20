@@ -1,0 +1,63 @@
+:: YourHome [home]
+你在客廳。
+
+@@.button-container;
+<<go "出門" "街道" 0>>
+<<go "回房間" "房間" 0>>
+@@
+
+:: 房間
+@@.button-container;
+<<go "回到客廳" "YourHome" 0>>
+<<go "睡覺" "睡覺" 0>>
+<<go "打發時間" "玩手機" 0>>
+@@
+
+:: 睡覺
+你睡了一覺，體力恢復了！
+<<passTime 480 "no_drain">>
+<<set $hp to Math.clamp($hp + 50, 0, $hpMax)>>
+<<go "醒來" "房間" 0>>
+
+:: 玩手機
+@@.button-container;
+<<go "轉蛋" "轉蛋" 1>>@@
+<<go "不玩了" "房間" 0>>
+@@
+
+:: 轉蛋 
+<<link "花3000鑽抽卡">>
+    /% 1. 產生 1 到 100 的隨機數 %/
+    <<set _roll to random(1, 100)>>
+    
+    /% 2. 計算幸運加成 (幸運值超過 50 的部分當作加分) %/
+    <<set _bonus to $luck - 50 * 0.5>>
+    
+    /% 3. 計算最終分數 %/
+    <<set _result to _roll + _bonus>>
+    
+    /% 4. 根據最終分數判斷獎勵 %/
+    <<if _result gte 95>>
+        /% 分數 95 以上 (SSR) %/
+        <<goto "SSR_Result">>
+    <<elseif _result gte 80>>
+        /% 分數 80 到 94 之間 (SR) %/
+        <<goto "SR_Result">>
+    <<else>>
+        /% 其他結果 (R) %/
+        <<goto "Common_Result">>
+    <</if>>
+<</link>>
+[[不抽了|玩手機]]
+
+:: SSR_Result
+恭喜你抽到了 SSR 卡片！🎉
+[[回到轉蛋|轉蛋]]   
+
+:: SR_Result
+你抽到了 SR 卡片！✨
+[[回到轉蛋|轉蛋]]
+
+:: Common_Result
+你抽到了普通卡片。😐
+[[回到轉蛋|轉蛋]]

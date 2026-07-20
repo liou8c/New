@@ -1,0 +1,20 @@
+:: PassageHeader
+/% 這是放圖的 %/
+<div class="scene-banner">
+<img @src="'images/' + $location + '_banner.jpg'">
+</div>
+
+:: PassageReady
+<<if tags().includes("home")>>
+    <<set $location to "home">> /% 如果標籤有 home，變數就自動變為 home %/
+<<elseif tags().includes("street")>>
+    <<set $location to "street">>
+<<elseif tags().includes("711")>>
+    <<set $location to "711">>
+    <<elseif tags().includes("park")>>
+    <<set $location to "park">>
+    <<elseif tags().includes("cafe")>>
+    <<set $location to "cafe">>
+    <<elseif tags().includes("cornerstore")>>
+    <<set $location to "cornerstore">>
+<</if>>
