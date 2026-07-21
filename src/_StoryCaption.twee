@@ -9,12 +9,7 @@
 
 <h3>主角狀態</h3>
 💰 金錢：$money 元
-❤️ 體力：$hp
-食物：
-心情：
-意識：
-
-
-<<if $horny gte 0>>
-🔥 慾望：<progress var="$horny" max="100"></progress> ($horny%)
-<</if>>
+❤️ 體力：$hp/$hpMax
+🍗 飢餓：$satiety/$satietyMax
+✨ 心情：$mood/$moodMax
+🔥 慾望：$horny/$hornyMax

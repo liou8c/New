@@ -104,7 +104,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 		<div id="init-lacking"><p>Browser lacks capabilities required to play.</p><p>Upgrade or switch to another browser.</p></div>
 		<div id="init-loading"><div>Loading&hellip;</div></div>
 	</div>
-	<!-- UUID://9A0B6D91-25DA-4854-A022-39074B223F86// --><tw-storydata name="Untitled Story" startnode="6" creator="Twine (Twee 3) Language" creator-version="1.1.5" ifid="9A0B6D91-25DA-4854-A022-39074B223F86" zoom="1" format="SugarCube" format-version="2.37.3" options="" hidden><style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">/* twine-user-stylesheet #1: "StoryInterface" */
+	<!-- UUID://9A0B6D91-25DA-4854-A022-39074B223F86// --><tw-storydata name="Untitled Story" startnode="12" creator="Twine (Twee 3) Language" creator-version="1.1.5" ifid="9A0B6D91-25DA-4854-A022-39074B223F86" zoom="1" format="SugarCube" format-version="2.37.3" options="" hidden><style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">/* twine-user-stylesheet #1: "StoryInterface" */
 .scene-banner img {
     width: 100%;    /* 讓圖片寬度填滿文字區域 */
     height: auto;   /* 保持圖片比例，不要拉伸變形 */
@@ -121,15 +121,15 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 
 /* 預設按鈕外觀 */
 button {
-    background-color: transparent; 
-    color: #ffffff;            
-    border: 2px solid #8161ff; 
-    border-radius: 5px;        
-    padding: 10px 20px;        
+    background-color: transparent;      /* 背景透明 */
+    color: #ffffff;                   /* 文字顏色 */
+    border: 1px solid #8161ff;        /* 邊框顏色 */
+    border-radius: 4px;                 /* 圓角邊框 */
+    padding: 10px 20px;                 /* 內邊距 */
     font-size: 16px;           
-    cursor: pointer;           
-    transition: 0.3s;          
-    display: inline-block;     
+    cursor: pointer;                    /* 滑鼠指標變成手型 */
+    transition: 0.3s;                   /* 平滑過渡效果 */
+    display: inline-block;              /* 讓按鈕在同一行顯示 */
 }
 button:hover {
     background-color: #8161ff; 
@@ -181,7 +181,52 @@ window.advanceTime = function (minutesPassed, type) {
         State.variables.hp = Math.max(0, State.variables.hp - energyLoss);
         State.variables.energyBuffer %= 60;
     }
-};</script><tw-passagedata pid="1" name="街道" tags="street" position="100,100" size="100,100">你在街上。
+};</script><tw-passagedata pid="1" name="RobberEvent" tags="no-jpg" position="100,100" size="100,100">暗處突然衝出一個持刀的搶匪！
+
+「把身上的錢通通交出來！」搶匪惡狠狠地盯著你。
+
+@@.button-container;
+&lt;&lt;if $money &gt;= 100&gt;&gt;
+	&lt;&lt;go &quot;💸 乖乖交出 100 元&quot; &quot;交錢&quot; 1&gt;&gt;
+&lt;&lt;/if&gt;&gt;
+&lt;&lt;go &quot;🏃 嘗試拔腿就跑&quot; &quot;逃跑&quot; 2&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="2" name="交錢" tags="no-jpg" position="225,100" size="100,100">&lt;&lt;set $money to $money - 100&gt;&gt;
+你交出了 100 元，搶匪滿意地離開了。
+
+&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="3" name="逃跑" tags="no-jpg" position="350,100" size="100,100">&lt;&lt;set $hp to $hp - 5&gt;&gt;
+
+&lt;&lt;if $hp &gt;= 50&gt;&gt;
+    /* 條件一：體力 50 以上，100% 成功逃跑 */
+    你咬緊牙關，邁開大腿全力往前奔跑！
+    憑藉著充沛的體力，你很快就把搶匪甩得遠遠的，順利脫身！
+
+    @@.button-container;
+    &lt;&lt;go &quot;🏘️返回街道&quot; &quot;街道&quot; 1&gt;&gt;
+    @@
+
+&lt;&lt;else&gt;&gt;
+    /* 條件二：體力低於 50，根據「幸運值」擲骰子判定 */
+    &lt;&lt;set _chance to random(1, 100)&gt;&gt;
+    
+    &lt;&lt;if _chance &lt;= $luck&gt;&gt;
+        /* 骰出的點數小於等於幸運值 -&gt; 逃跑成功 */
+        你的體力有些吃緊，但幸運的是，路邊剛好有一堆障礙物倒下擋住了搶匪的去路！
+        你成功趁亂甩掉了搶匪！
+
+        @@.button-container;
+        &lt;&lt;go &quot;🏘️返回街道&quot; &quot;街道&quot; 1&gt;&gt;
+        @@
+    &lt;&lt;else&gt;&gt;
+        /* 骰出的點數大於幸運值 -&gt; 逃跑失敗 */
+        &lt;&lt;set $money to 0&gt;&gt;
+        你氣喘吁吁，沒跑幾步就被搶匪從背後追上並撲倒在地！
+        搶匪狠狠踢了你一腳，把你身上的錢全搶走了！
+
+        @@.button-container;
+        &lt;&lt;go &quot;🏘️爬起來回街道&quot; &quot;街道&quot; 1&gt;&gt;
+        @@
+    &lt;&lt;/if&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="4" name="街道" tags="street" position="475,100" size="100,100">你在街上。
 
 @@.button-container;
 &lt;&lt;go &quot;🏠回家&quot; &quot;YourHome&quot; 5&gt;&gt;
@@ -189,36 +234,46 @@ window.advanceTime = function (minutesPassed, type) {
 &lt;&lt;go &quot;🌳公園&quot; &quot;公園&quot; 3&gt;&gt;
 &lt;&lt;go &quot;🏪雜貨店&quot; &quot;雜貨店&quot; 4&gt;&gt;
 &lt;&lt;go &quot;☕咖啡廳&quot; &quot;咖啡廳&quot; 3&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="2" name="便利商店" tags="711" position="225,100" size="100,100">你花錢買了拿鐵，感覺體力恢復了！
+&lt;&lt;go &quot;📚圖書館&quot; &quot;圖書館&quot; 3&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="5" name="便利商店" tags="711" position="600,100" size="100,100">你花錢買了拿鐵，感覺體力恢復了！
 &lt;&lt;set $hp to Math.clamp($hp + 20, 0, $hpMax)&gt;&gt;
 
-[[🏘️離開|街道]]</tw-passagedata><tw-passagedata pid="3" name="公園" tags="park" position="350,100" size="100,100">有很多人在這。
+&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="6" name="公園" tags="park" position="725,100" size="100,100">有很多人在這。
 
 @@.button-container;
 &lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot;&gt;&gt; 
 &lt;&lt;go &quot;🏠回家&quot; &quot;YourHome&quot; 8&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="4" name="雜貨店" tags="cornerstore" position="475,100" size="100,100">賣奇怪的東西。
+@@</tw-passagedata><tw-passagedata pid="7" name="雜貨店" tags="cornerstore" position="850,100" size="100,100">賣奇怪的東西。
 
-[[🏘️離開|街道]]</tw-passagedata><tw-passagedata pid="5" name="咖啡廳" tags="cafe" position="600,100" size="100,100">新開的咖啡廳。
+&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="8" name="咖啡廳" tags="cafe safe" position="975,100" size="100,100">新開的咖啡廳。
 
-[[🏘️離開|街道]]</tw-passagedata><tw-passagedata pid="6" name="Start" tags="" position="725,100" size="100,100">這是最開始
+@@.button-container;
+&lt;&lt;go &quot;詢問工作&quot; &quot;咖啡廳工作&quot; 5&gt;&gt;
+&lt;&lt;go &quot;排隊點餐&quot; &quot;咖啡廳點餐&quot; 5&gt;&gt;
+@@
 
-@@.red;&lt;&lt;go &quot;開始&quot; &quot;YourHome&quot; 0&gt;&gt;@@</tw-passagedata><tw-passagedata pid="7" name="YourHome" tags="home" position="850,100" size="100,100">你在客廳。
+&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="9" name="咖啡廳工作" tags="cafe safe" position="1100,100" size="100,100">&lt;&lt;go &quot;結束&quot; &quot;咖啡廳&quot; 1&gt;&gt;</tw-passagedata><tw-passagedata pid="10" name="咖啡廳點餐" tags="cafe safe" position="1225,100" size="100,100">&lt;&lt;go &quot;結束&quot; &quot;咖啡廳&quot; 1&gt;&gt;</tw-passagedata><tw-passagedata pid="11" name="圖書館" tags="library safe" position="100,225" size="100,100">@@.button-container;
+&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot;&gt;&gt;
+&lt;&lt;go &quot;🏠回家&quot; &quot;YourHome&quot; 5&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="12" name="Start" tags="start" position="225,225" size="100,100">這是最開始
+
+@@.red;&lt;&lt;go &quot;開始&quot; &quot;YourHome&quot; 0&gt;&gt;@@</tw-passagedata><tw-passagedata pid="13" name="YourHome" tags="home safe" position="350,225" size="100,100">你在客廳。
 
 @@.button-container;
 &lt;&lt;go &quot;出門&quot; &quot;街道&quot; 0&gt;&gt;
 &lt;&lt;go &quot;回房間&quot; &quot;房間&quot; 0&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="8" name="房間" tags="" position="975,100" size="100,100">@@.button-container;
+&lt;&lt;go &quot;浴室&quot; &quot;浴室&quot; 0&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="14" name="房間" tags="home safe" position="475,225" size="100,100">@@.button-container;
 &lt;&lt;go &quot;回到客廳&quot; &quot;YourHome&quot; 0&gt;&gt;
 &lt;&lt;go &quot;睡覺&quot; &quot;睡覺&quot; 0&gt;&gt;
 &lt;&lt;go &quot;打發時間&quot; &quot;玩手機&quot; 0&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="9" name="睡覺" tags="" position="1100,100" size="100,100">你睡了一覺，體力恢復了！
+@@</tw-passagedata><tw-passagedata pid="15" name="睡覺" tags="home safe" position="600,225" size="100,100">你睡了一覺，體力恢復了！
 &lt;&lt;passTime 480 &quot;no_drain&quot;&gt;&gt;
 &lt;&lt;set $hp to Math.clamp($hp + 50, 0, $hpMax)&gt;&gt;
-&lt;&lt;go &quot;醒來&quot; &quot;房間&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="10" name="玩手機" tags="" position="1225,100" size="100,100">@@.button-container;
+&lt;&lt;go &quot;醒來&quot; &quot;房間&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="16" name="玩手機" tags="home safe" position="725,225" size="100,100">@@.button-container;
 &lt;&lt;go &quot;轉蛋&quot; &quot;轉蛋&quot; 1&gt;&gt;@@
 &lt;&lt;go &quot;不玩了&quot; &quot;房間&quot; 0&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="11" name="轉蛋" tags="" position="100,225" size="100,100">&lt;&lt;link &quot;花3000鑽抽卡&quot;&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="17" name="轉蛋" tags="home safe" position="850,225" size="100,100">&lt;&lt;link &quot;花3000鑽抽卡&quot;&gt;&gt;
     /% 1. 產生 1 到 100 的隨機數 %/
     &lt;&lt;set _roll to random(1, 100)&gt;&gt;
     
@@ -240,25 +295,30 @@ window.advanceTime = function (minutesPassed, type) {
         &lt;&lt;goto &quot;Common_Result&quot;&gt;&gt;
     &lt;&lt;/if&gt;&gt;
 &lt;&lt;/link&gt;&gt;
-[[不抽了|玩手機]]</tw-passagedata><tw-passagedata pid="12" name="SSR_Result" tags="" position="225,225" size="100,100">恭喜你抽到了 SSR 卡片！🎉
-[[回到轉蛋|轉蛋]]</tw-passagedata><tw-passagedata pid="13" name="SR_Result" tags="" position="350,225" size="100,100">你抽到了 SR 卡片！✨
-[[回到轉蛋|轉蛋]]</tw-passagedata><tw-passagedata pid="14" name="Common_Result" tags="" position="475,225" size="100,100">你抽到了普通卡片。😐
-[[回到轉蛋|轉蛋]]</tw-passagedata><tw-passagedata pid="15" name="PassageHeader" tags="" position="600,225" size="100,100">/% 這是放圖的 %/
-&lt;div class=&quot;scene-banner&quot;&gt;
-&lt;img @src=&quot;&#39;images/&#39; + $location + &#39;_banner.jpg&#39;&quot;&gt;
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="16" name="PassageReady" tags="" position="725,225" size="100,100">&lt;&lt;if tags().includes(&quot;home&quot;)&gt;&gt;
+[[不抽了|玩手機]]</tw-passagedata><tw-passagedata pid="18" name="SSR_Result" tags="" position="975,225" size="100,100">恭喜你抽到了 SSR 卡片！🎉
+[[回到轉蛋|轉蛋]]</tw-passagedata><tw-passagedata pid="19" name="SR_Result" tags="" position="1100,225" size="100,100">你抽到了 SR 卡片！✨
+[[回到轉蛋|轉蛋]]</tw-passagedata><tw-passagedata pid="20" name="Common_Result" tags="" position="1225,225" size="100,100">你抽到了普通卡片。😐
+[[回到轉蛋|轉蛋]]</tw-passagedata><tw-passagedata pid="21" name="浴室" tags="home safe" position="100,350" size="100,100">&lt;&lt;go &quot;離開&quot; &quot;YourHome&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="22" name="PassageHeader" tags="" position="225,350" size="100,100">/% 這是放圖的 %/
+&lt;&lt;if not tags().includes(&quot;no-jpg&quot;)&gt;&gt;
+    &lt;div class=&quot;scene-banner&quot;&gt;
+        &lt;img @src=&quot;&#39;images/&#39; + $location + &#39;_banner.jpg&#39;&quot;&gt;
+    &lt;/div&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="23" name="PassageReady" tags="" position="350,350" size="100,100">/% 這裡是位置設定 %/
+&lt;&lt;if tags().includes(&quot;home&quot;)&gt;&gt;
     &lt;&lt;set $location to &quot;home&quot;&gt;&gt; /% 如果標籤有 home，變數就自動變為 home %/
 &lt;&lt;elseif tags().includes(&quot;street&quot;)&gt;&gt;
     &lt;&lt;set $location to &quot;street&quot;&gt;&gt;
 &lt;&lt;elseif tags().includes(&quot;711&quot;)&gt;&gt;
     &lt;&lt;set $location to &quot;711&quot;&gt;&gt;
-    &lt;&lt;elseif tags().includes(&quot;park&quot;)&gt;&gt;
+&lt;&lt;elseif tags().includes(&quot;park&quot;)&gt;&gt;
     &lt;&lt;set $location to &quot;park&quot;&gt;&gt;
-    &lt;&lt;elseif tags().includes(&quot;cafe&quot;)&gt;&gt;
+ &lt;&lt;elseif tags().includes(&quot;cafe&quot;)&gt;&gt;
     &lt;&lt;set $location to &quot;cafe&quot;&gt;&gt;
-    &lt;&lt;elseif tags().includes(&quot;cornerstore&quot;)&gt;&gt;
+ &lt;&lt;elseif tags().includes(&quot;cornerstore&quot;)&gt;&gt;
     &lt;&lt;set $location to &quot;cornerstore&quot;&gt;&gt;
-&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="17" name="StoryCaption" tags="" position="500,225" size="100,100">&lt;&lt;nobr&gt;&gt;
+&lt;&lt;elseif tags().includes(&quot;library&quot;)&gt;&gt;
+    &lt;&lt;set $location to &quot;library&quot;&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="24" name="StoryCaption" tags="" position="500,225" size="100,100">&lt;&lt;nobr&gt;&gt;
 &lt;&lt;print ($gameDate.getMonth() + 1).toString().padStart(2, &#39;0&#39;)&gt;&gt;/&lt;&lt;print $gameDate.getDate().toString().padStart(2, &#39;0&#39;)&gt;&gt;
 &lt;&lt;print [&quot;星期日&quot;, &quot;星期一&quot;, &quot;星期二&quot;, &quot;星期三&quot;, &quot;星期四&quot;, &quot;星期五&quot;, &quot;星期六&quot;][$gameDate.getDay()]&gt;&gt;
 &lt;&lt;print $gameDate.getHours().toString().padStart(2, &#39;0&#39;)&gt;&gt;:&lt;&lt;print $gameDate.getMinutes().toString().padStart(2, &#39;0&#39;)&gt;&gt;
@@ -266,27 +326,53 @@ window.advanceTime = function (minutesPassed, type) {
 
 &lt;h3&gt;主角狀態&lt;/h3&gt;
 💰 金錢：$money 元
-❤️ 體力：$hp
-食物：
-心情：
-意識：
-
-
-&lt;&lt;if $horny gte 0&gt;&gt;
-🔥 慾望：&lt;progress var=&quot;$horny&quot; max=&quot;100&quot;&gt;&lt;/progress&gt; ($horny%)
-&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="18" name="StoryInit" tags="" position="975,225" size="100,100">&lt;&lt;set $gameDate to new Date(2026, 6, 25, 5, 30)&gt;&gt;
-&lt;&lt;set $money to 1000&gt;&gt;
-&lt;&lt;set $hp to 60&gt;&gt; /% 初始體力 %/
-&lt;&lt;set $hpMax to 140&gt;&gt; /% 體力上限 %/
-&lt;&lt;set $horny to 10&gt;&gt;
-&lt;&lt;set $luck to 50&gt;&gt;
+❤️ 體力：$hp/$hpMax
+🍗 飢餓：$satiety/$satietyMax
+✨ 心情：$mood/$moodMax
+🔥 慾望：$horny/$hornyMax</tw-passagedata><tw-passagedata pid="25" name="StoryInit" tags="" position="600,350" size="100,100">&lt;&lt;set $gameDate to new Date(2026, 6, 25, 5, 30)&gt;&gt;
+&lt;&lt;set $money to 1000&gt;&gt;      /% 初始金錢 %/
+&lt;&lt;set $hp to 60&gt;&gt;           /% 初始體力 %/
+&lt;&lt;set $hpMax to 100&gt;&gt;       /% 體力上限 %/
+&lt;&lt;set $horny to 10&gt;&gt;        /% 初始性慾 %/
+&lt;&lt;set $hornyMax to 100&gt;&gt;    /% 性慾上限 %/
+&lt;&lt;set $luck to 50&gt;&gt;         /% 初始幸運 %/
+&lt;&lt;set $luckMax to 100&gt;&gt;     /% 幸運上限 %/
+&lt;&lt;set $mood to 50&gt;&gt;         /% 初始心情 %/
+&lt;&lt;set $moodMax to 100&gt;&gt;     /% 心情上限 %/
+&lt;&lt;set $satiety to 50&gt;&gt;      /% 初始飽食度 %/
+&lt;&lt;set $satietyMax to 100&gt;&gt;  /% 飽食度上限 %/
 &lt;&lt;set $location to &quot;start&quot;&gt;&gt;
 
 /* 聲望系統與 NPC 關係也可以放這 */
 &lt;&lt;set $reputation to 0&gt;&gt;
-&lt;&lt;set $npc_love to { alice: 0, bob: 0 }&gt;&gt;</tw-passagedata><tw-passagedata pid="19" name="GameWidgets" tags="widget" position="1100,225" size="100,100">/* 消耗時間並自動扣體力 */
-&lt;&lt;widget &quot;passTime&quot;&gt;&gt;&lt;&lt;nobr&gt;&gt;
-    &lt;&lt;run window.advanceTime($args[0], $args[1])&gt;&gt;
+&lt;&lt;set $npc_love to { alice: 0, bob: 0 }&gt;&gt;</tw-passagedata><tw-passagedata pid="26" name="GameWidgets" tags="widget" position="725,350" size="100,100">&lt;&lt;widget &quot;passTime&quot;&gt;&gt;&lt;&lt;nobr&gt;&gt;
+	/* 1. 時間與體力流逝 */
+	&lt;&lt;run window.advanceTime($args[0])&gt;&gt;
+
+	/* 2. 地點檢查：如果當前 Passage 標有 &quot;safe&quot; 標籤，直接結束，不進行抽籤 */
+	&lt;&lt;if tags().includes(&quot;safe&quot;)&gt;&gt;
+		/* 安全區域，不做任何隨機事件抽籤 */
+	&lt;&lt;else&gt;&gt;
+		/* 3. 計算時間基礎機率 */
+		&lt;&lt;set _hour to $gameDate.getHours()&gt;&gt;
+		&lt;&lt;if _hour &gt;= 22 or _hour &lt; 5&gt;&gt;
+			&lt;&lt;set _baseChance to 30&gt;&gt; /* 晚上：30% 基礎機率 */
+		&lt;&lt;else&gt;&gt;
+			&lt;&lt;set _baseChance to 5&gt;&gt;  /* 白天：5% 基礎機率 */
+		&lt;&lt;/if&gt;&gt;
+
+		/* 4. 計算幸運值修正 (預設 50 為基準) */
+		&lt;&lt;set _luckMod to ($luck - 50) * 0.4&gt;&gt;
+		&lt;&lt;set _finalChance to Math.max(1, _baseChance - _luckMod)&gt;&gt; /* 機率最低保底 1% */
+
+		/* 5. 擲骰子 (1~100) */
+		&lt;&lt;set _roll to random(1, 100)&gt;&gt;
+
+		/* 6. 判定是否觸發 */
+		&lt;&lt;if _roll &lt;= _finalChance&gt;&gt;
+			&lt;&lt;goto &quot;RobberEvent&quot;&gt;&gt;
+		&lt;&lt;/if&gt;&gt;
+	&lt;&lt;/if&gt;&gt;
 &lt;&lt;/nobr&gt;&gt;&lt;&lt;/widget&gt;&gt;
 
 /* 最安全的普通按鈕 */

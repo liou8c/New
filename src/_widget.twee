@@ -1,7 +1,33 @@
 :: GameWidgets [widget]
-/* 消耗時間並自動扣體力 */
+
 <<widget "passTime">><<nobr>>
-    <<run window.advanceTime($args[0], $args[1])>>
+	/* 1. 時間與體力流逝 */
+	<<run window.advanceTime($args[0])>>
+
+	/* 2. 地點檢查：如果當前 Passage 標有 "safe" 標籤，直接結束，不進行抽籤 */
+	<<if tags().includes("safe")>>
+		/* 安全區域，不做任何隨機事件抽籤 */
+	<<else>>
+		/* 3. 計算時間基礎機率 */
+		<<set _hour to $gameDate.getHours()>>
+		<<if _hour >= 22 or _hour < 5>>
+			<<set _baseChance to 30>> /* 晚上：30% 基礎機率 */
+		<<else>>
+			<<set _baseChance to 5>>  /* 白天：5% 基礎機率 */
+		<</if>>
+
+		/* 4. 計算幸運值修正 (預設 50 為基準) */
+		<<set _luckMod to ($luck - 50) * 0.4>>
+		<<set _finalChance to Math.max(1, _baseChance - _luckMod)>> /* 機率最低保底 1% */
+
+		/* 5. 擲骰子 (1~100) */
+		<<set _roll to random(1, 100)>>
+
+		/* 6. 判定是否觸發 */
+		<<if _roll <= _finalChance>>
+			<<goto "RobberEvent">>
+		<</if>>
+	<</if>>
 <</nobr>><</widget>>
 
 /* 最安全的普通按鈕 */

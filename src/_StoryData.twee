@@ -14,11 +14,17 @@ Untitled Story
 
 :: StoryInit
 <<set $gameDate to new Date(2026, 6, 25, 5, 30)>>
-<<set $money to 1000>>
-<<set $hp to 60>> /% 初始體力 %/
-<<set $hpMax to 140>> /% 體力上限 %/
-<<set $horny to 10>>
-<<set $luck to 50>>
+<<set $money to 1000>>      /% 初始金錢 %/
+<<set $hp to 60>>           /% 初始體力 %/
+<<set $hpMax to 100>>       /% 體力上限 %/
+<<set $horny to 10>>        /% 初始性慾 %/
+<<set $hornyMax to 100>>    /% 性慾上限 %/
+<<set $luck to 50>>         /% 初始幸運 %/
+<<set $luckMax to 100>>     /% 幸運上限 %/
+<<set $mood to 50>>         /% 初始心情 %/
+<<set $moodMax to 100>>     /% 心情上限 %/
+<<set $satiety to 50>>      /% 初始飽食度 %/
+<<set $satietyMax to 100>>  /% 飽食度上限 %/
 <<set $location to "start">>
 
 /* 聲望系統與 NPC 關係也可以放這 */

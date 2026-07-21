@@ -1,6 +1,7 @@
 /% 美化畫面的(CSS或HTML那些) %/
 
 :: StoryInterface [stylesheet]
+
 .scene-banner img {
     width: 100%;    /* 讓圖片寬度填滿文字區域 */
     height: auto;   /* 保持圖片比例，不要拉伸變形 */
@@ -19,15 +20,15 @@
 
 /* 預設按鈕外觀 */
 button {
-    background-color: transparent; 
-    color: #ffffff;            
-    border: 2px solid #8161ff; 
-    border-radius: 5px;        
-    padding: 10px 20px;        
+    background-color: transparent;      /* 背景透明 */
+    color: #ffffff;                   /* 文字顏色 */
+    border: 1px solid #8161ff;        /* 邊框顏色 */
+    border-radius: 4px;                 /* 圓角邊框 */
+    padding: 10px 20px;                 /* 內邊距 */
     font-size: 16px;           
-    cursor: pointer;           
-    transition: 0.3s;          
-    display: inline-block;     
+    cursor: pointer;                    /* 滑鼠指標變成手型 */
+    transition: 0.3s;                   /* 平滑過渡效果 */
+    display: inline-block;              /* 讓按鈕在同一行顯示 */
 }
 button:hover {
     background-color: #8161ff; 

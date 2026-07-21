@@ -1,4 +1,4 @@
-:: Start
+:: Start [start]
 這是最開始
 
 @@.red;<<go "開始" "YourHome" 0>>@@

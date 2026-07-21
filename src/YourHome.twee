@@ -1,31 +1,32 @@
-:: YourHome [home]
+:: YourHome [home safe]
 你在客廳。
 
 @@.button-container;
 <<go "出門" "街道" 0>>
 <<go "回房間" "房間" 0>>
+<<go "浴室" "浴室" 0>>
 @@
 
-:: 房間
+:: 房間 [home safe]
 @@.button-container;
 <<go "回到客廳" "YourHome" 0>>
 <<go "睡覺" "睡覺" 0>>
 <<go "打發時間" "玩手機" 0>>
 @@
 
-:: 睡覺
+:: 睡覺 [home safe]
 你睡了一覺，體力恢復了！
 <<passTime 480 "no_drain">>
 <<set $hp to Math.clamp($hp + 50, 0, $hpMax)>>
 <<go "醒來" "房間" 0>>
 
-:: 玩手機
+:: 玩手機 [home safe]
 @@.button-container;
 <<go "轉蛋" "轉蛋" 1>>@@
 <<go "不玩了" "房間" 0>>
 @@
 
-:: 轉蛋 
+:: 轉蛋 [home safe]
 <<link "花3000鑽抽卡">>
     /% 1. 產生 1 到 100 的隨機數 %/
     <<set _roll to random(1, 100)>>
@@ -61,3 +62,7 @@
 :: Common_Result
 你抽到了普通卡片。😐
 [[回到轉蛋|轉蛋]]
+
+:: 浴室 [home safe]
+
+<<go "離開" "YourHome" 0>>
