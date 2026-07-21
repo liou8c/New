@@ -1,0 +1,34 @@
+:: 背包 [no-jpg]
+/% 彈出式背包的外層。每次使用物品後，只重畫 inventory-content 這個區塊。 %/
+<div id="inventory-content">
+    <<include "背包內容">>
+</div>
+
+:: 背包內容 [no-jpg]
+<<if $inventoryMessage>>
+    <p>$inventoryMessage</p>
+<</if>>
+<<if setup.inventoryCount() is 0>>
+    背包目前是空的。
+<<else>>
+    <div class="inventory-grid">
+        /% 依 _GameDatabase.twee 的 items 自動顯示；新增物品後不用改背包介面。 %/
+        <<for _itemId, _item range setup.gameDatabase.items>>
+        <<if $inventory[_itemId] gt 0>>\
+            <div class="inventory-slot">\
+                <span class="item-icon tooltip-trigger" tabindex="0" @aria-label="setup.itemText(_itemId, 'name')">_item.icon</span>\
+                /% 名稱常駐顯示；滑鼠提示框只顯示說明。 %/\
+                <div class="item-tooltip"><<print setup.itemText(_itemId, "description")>></div>\
+                <div class="item-name"><<print setup.itemText(_itemId, "name")>></div>\
+                <div class="item-quantity">× $inventory[_itemId]</div>\
+                <<if _item.usable>><div class="item-use-button">\
+                    <<button "使用">>\
+                        <<run setup.useItem(_itemId)>>\
+                        <<replace "#inventory-content">><<include "背包內容">><</replace>>\
+                    <</button>>\
+                </div><</if>>\
+            </div>\
+        <</if>>\
+        <</for>>
+    </div>
+<</if>>

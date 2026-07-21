@@ -1,25 +1,45 @@
 :: PassageHeader
-/% 這是放圖的 %/
-<<if not tags().includes("no-jpg")>>
-    <div class="scene-banner">
-        <img @src="'images/' + $location + '_banner.jpg'">
-    </div>
-<</if>>
-
-:: PassageReady
-/% 這裡是位置設定 %/
+/%
+    重要：SugarCube 會把段落裡的換行當成畫面換行。
+    Header 內有許多判斷用的程式碼，必須用 nobr 包住，否則程式碼之間的空白行會變成 banner 上方的大量留白。
+%/
+<<nobr>>
+/%
+    每次進入新段落時，先依照段落標籤更新目前地點，再顯示對應的橫幅圖片。
+    要新增地點時：替段落加上標籤，並在下方加入一行對應名稱即可。
+    圖片檔名規則：images/「地點名稱」_banner.jpg，例如 home_banner.jpg。
+    暫時沒有專屬圖片的地點，會使用 street_banner.jpg，避免出現破圖圖示。
+%/
 <<if tags().includes("home")>>
-    <<set $location to "home">> /% 如果標籤有 home，變數就自動變為 home %/
+    <<set $location to "home">>
+    <<set $bannerLocation to "home">>
 <<elseif tags().includes("street")>>
     <<set $location to "street">>
+    <<set $bannerLocation to "street">>
 <<elseif tags().includes("711")>>
     <<set $location to "711">>
+    <<set $bannerLocation to "711">>
 <<elseif tags().includes("park")>>
     <<set $location to "park">>
- <<elseif tags().includes("cafe")>>
+    <<set $bannerLocation to "street">>
+<<elseif tags().includes("cafe")>>
     <<set $location to "cafe">>
- <<elseif tags().includes("cornerstore")>>
+    <<set $bannerLocation to "street">>
+<<elseif tags().includes("cornerstore")>>
     <<set $location to "cornerstore">>
+    <<set $bannerLocation to "cornerstore">>
 <<elseif tags().includes("library")>>
     <<set $location to "library">>
+    <<set $bannerLocation to "street">>
+<<elseif tags().includes("gym")>>
+    <<set $location to "gym">>
+    <<set $bannerLocation to "street">>
 <</if>>
+
+/% 標記 no-jpg 的段落（例如事件或彈窗）不顯示圖片。 %/
+<<if not tags().includes("no-jpg")>>
+    <div class="scene-banner">
+        <img @src="'images/' + $bannerLocation + '_banner.jpg'">
+    </div>
+<</if>>
+<</nobr>>

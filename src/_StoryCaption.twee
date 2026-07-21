@@ -8,8 +8,9 @@
 <</nobr>>
 
 <h3>主角狀態</h3>
-💰 金錢：$money 元
-❤️ 體力：$hp/$hpMax
-🍗 飢餓：$satiety/$satietyMax
-✨ 心情：$mood/$moodMax
-🔥 慾望：$horny/$hornyMax
+💰 金錢：<<print Math.round($money)>> 元
+❤️ 體力：<<print Math.round($hp)>>/<<print Math.round($hpMax)>>
+🍗 飢餓：<<print Math.round($satiety)>>/<<print Math.round($satietyMax)>>
+✨ 心情：<<print Math.round($mood)>>/<<print Math.round($moodMax)>>
+🚿 衛生：<<print Math.round($hygiene)>>/<<print Math.round($hygieneMax)>>
+🔥 慾望：<<print Math.round($horny)>>/<<print Math.round($hornyMax)>>

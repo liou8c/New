@@ -1,4 +1,2 @@
 sugarcube-2:
-  macros:
-    go:
-      name: go
+  macros: {}

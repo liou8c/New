@@ -6,16 +6,41 @@
     width: 100%;    /* 讓圖片寬度填滿文字區域 */
     height: auto;   /* 保持圖片比例，不要拉伸變形 */
     display: block; /* 避免圖片下方出現多餘的空隙 */
-    margin-bottom: 1em; /* 與下方文字保持一點距離 */
+    margin-bottom: 2.5em; /* 與下方文字保持一點距離 */
 }
 
 :: GameStyles [stylesheet]
 
+/* 1. 縮減 SugarCube 預設 passage 的上方留白 */
+#passages {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+/* 2. 確保主要故事容器也是頂格 */
+#story {
+    margin-top: 1em; /* 原設通常較大，可調小至 0 ~ 1em */
+    padding-top: 0;
+}
+
+/* 3. 如果你的圖片有包在特定 div 或文章段落中，消除第一個元素的上方 margin */
+.passage > :first-child {
+    margin-top: 0 !important;
+}
+
 .button-container {
-    display: flex;         
-    flex-wrap: wrap;       
-    gap: 15px;             
-    margin-top: 20px;
+    display: flex;         /* 啟用 Flexbox 彈性盒版面配置，讓子元素（按鈕）能夠靈活地排成一列 */
+    flex-wrap: wrap;       /* 當按鈕太多、超過容器寬度時，自動換行到下一行；如果設定為 nowrap 則會擠在同一行 */
+    gap: 30px 12px;             /* 設定按鈕與按鈕之間的間隔距離（無論橫向或縱向相鄰都會保持 15px 的間隙） */
+    margin-top: 20px;      /* 設定這個按鈕容器與上方其他元素的距離為 20px，避免貼得太近 */
+    margin-left: 0;
+    padding-left: 0;
+    justify-content: flex-start;
+}
+
+/* 技能彈出視窗樣式 */
+#ui-dialog-body.skill-dialog {
+    padding: 15px 20px;
 }
 
 /* 預設按鈕外觀 */
@@ -52,4 +77,270 @@ button:hover {
 .red button:hover {
     background-color: #ff4d4d !important;
     box-shadow: 0 0 10px rgba(255, 77, 77, 0.5) !important;
+}
+
+/* 購買選單：固定三欄商品卡片。 */
+#shop-cart.shopping-grid {
+    /*
+        固定購物區寬度，確保三張商品卡都有足夠空間顯示中文說明。
+    */
+    display: flex !important;
+    flex-direction: column;
+    width: 700px;
+    min-width: 700px;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+/* 每一列固定容納三張卡片，讓商品依照左、中、右的順序排列。 */
+#shop-cart .shopping-row {
+    display: flex;
+    gap: 8px;
+    width: 700px;
+}
+
+/* 每張卡片約 228px 寬、270px 高，形成接近方形的三欄版面。 */
+#shop-cart .shopping-item {
+    flex: 0 0 228px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 1fr 50px;
+    grid-template-rows: 44px 1fr;
+    column-gap: 6px;
+    align-items: flex-start;
+    padding: 8px;
+    min-height: 270px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    min-width: 0;
+}
+
+/* 圖示與數量在卡片最上方；文字區域置中，長度不同也能維持一致的節奏。 */
+#shop-cart .item-icon {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+    align-self: center;
+    width: 32px;
+    height: 32px;
+    flex: 0 0 32px;
+    font-size: 28px;
+    line-height: 32px;
+    text-align: center;
+}
+
+#shop-cart .item-info {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    align-self: start;
+    padding-top: 10px;
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: normal;
+    line-height: 1.45;
+    text-align: center;
+}
+
+/* 名稱、說明與價格使用一致的上下距離；價格與說明額外分開，閱讀更清楚。 */
+#shop-cart .item-info strong {
+    display: block;
+    margin-bottom: 8px;
+}
+
+#shop-cart .item-info > div:last-child {
+    margin-top: 24px;
+}
+
+#shop-cart .shopping-item label {
+    grid-column: 2;
+    grid-row: 1;
+    width: 50px;
+    font-size: 0.85em;
+}
+
+#shop-cart .shopping-item input[type="number"] {
+    width: 50px;
+    box-sizing: border-box;
+}
+
+/* 購物清單下方的即時金額與餘額提醒。 */
+#shop-summary {
+    width: 700px;
+    margin: 12px 0;
+    min-height: 1.5em;
+}
+
+#shop-insufficient {
+    margin-left: 12px;
+}
+
+/* 有風險或值得注意的商品說明使用紅字，提醒玩家。 */
+.warning-text {
+    color: #ff6b6b;
+    font-weight: bold;
+}
+
+/* 背包：較寬的彈窗搭配自動換行的格狀物品欄 */
+#ui-dialog-body.inventory-dialog {
+    width: min(86vw, 720px);
+    padding-top: 50px; /* 向上留出足夠空間給第一排物品的 Tooltip 懸浮框 */
+    overflow: visible !important; /* 確保懸浮框不會被視窗邊緣裁切 */
+}
+
+/* 社交頁：顯示玩家已認識 NPC 的資料卡。 */
+#ui-dialog-body.social-dialog {
+    width: min(86vw, 720px);
+}
+
+.social-empty {
+    color: #cccccc;
+}
+
+.social-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.social-card {
+    display: flex;
+    gap: 16px;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    background: rgba(20, 20, 30, 0.72);
+}
+
+.social-portrait {
+    width: 96px;
+    height: 96px;
+    flex: 0 0 96px;
+    border: 2px solid #9a805f;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #222222;
+}
+
+.social-name {
+    margin: 0 0 6px;
+}
+
+.social-details {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 5px 12px;
+    margin: 0;
+}
+
+.social-details dt {
+    color: #bcbcbc;
+}
+
+.social-details dd {
+    margin: 0;
+}
+
+@media screen and (max-width: 500px) {
+    .social-card {
+        align-items: center;
+        flex-direction: column;
+    }
+}
+
+.inventory-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px; /* 微調間距讓視覺更舒服 */
+    overflow: visible; /* 防止 Tooltip 被 grid 截斷 */
+}
+
+.inventory-slot {
+    position: relative;
+    flex: 0 0 95px; /* 微幅增加寬度至 95px，給文字更多空間 */
+    width: 95px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 125px; /* 改為 min-height，避免內容多時溢出邊框 */
+    padding: 8px 6px; /* 增加內部內邊距 */
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+/* 圖示大小與下邊距調整 */
+.item-icon {
+    font-size: 1.8em; /* 稍微縮小一點點點，換取更多垂直空間 */
+    line-height: 1;
+    cursor: help;
+    margin-bottom: 6px; /* 讓 ICON 與名稱拉開距離 */
+}
+
+.item-quantity {
+    font-size: 0.8em;
+    margin-top: 2px;
+    color: #ccc;
+}
+
+/* 名稱排版控制 */
+.item-name {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    font-size: 0.8em; /* 稍微調小字級，降低長文字換行機率 */
+    line-height: 1.2;
+    text-align: center;
+    margin-bottom: 4px; /* 與下方的按鈕拉開緩衝 */
+}
+
+/* 將按鈕推到卡片的最底部，並加上留白 */
+.item-use-button {
+    margin-top: auto;
+    width: 100%;
+    text-align: center;
+    padding-top: 4px; /* 與上方名稱/數量拉開微小間隔 */
+}
+
+.item-use-button button {
+    width: 100%;
+    padding: 3px 0;
+    font-size: 0.8em;
+    margin: 0;
+}
+
+/* Tooltip 提示框設定 */
+.item-tooltip {
+    position: absolute;
+    z-index: 999; /* 提高 z-index 確保蓋在最上層 */
+    bottom: calc(100% + 8px);
+    left: 50%;
+    width: 180px; /* 固定適合的提示框寬度 */
+    padding: 8px;
+    border: 1px solid #8161ff;
+    border-radius: 4px;
+    background: #1d1d2a;
+    color: #ffffff;
+    font-size: 0.8em;
+    line-height: 1.4;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-50%);
+    transition: opacity 0.15s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5); /* 增加陰影提升辨識度 */
+}
+
+.tooltip-trigger:hover + .item-tooltip,
+.tooltip-trigger:focus + .item-tooltip {
+    opacity: 1;
+}
+
+.warning-tooltip {
+    border-color: #ff6b6b;
+    color: #ff9b9b;
+}
+
+@media screen and (max-width: 600px) {
+    #ui-dialog-body.inventory-dialog {
+        width: auto;
+    }
 }

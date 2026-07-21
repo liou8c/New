@@ -1,29 +1,90 @@
 :: TimeSystemScript [script]
-// 移動或執行動作增加時間的函數（累積版）
+
 window.advanceTime = function (minutesPassed, type) {
-    // 1. 取得 SugarCube 中的時間物件
+    // ----------------------------------------------------
+    // 【第一步：推進遊戲時間】
+    // ----------------------------------------------------
+    // 1. 取得 SugarCube 中的時間物件 $gameDate
     let d = State.variables.gameDate;
     
-    // 2. 增加分鐘
+    // 2. 把傳進來的分鐘數加進遊戲時間裡
     d.setMinutes(d.getMinutes() + minutesPassed);
+
+    // 每週房租：第一次付款日為遊戲開始後 7 天，之後每 7 天扣除 600 元。
+    // 金錢可暫時為負數，代表玩家尚未補足的房租。
+    if (State.variables.rentDueDate === undefined) {
+        State.variables.rentDueDate = new Date(d.getTime() + (7 * 24 * 60 * 60 * 1000));
+    }
+    while (d >= State.variables.rentDueDate) {
+        State.variables.money -= 600;
+        State.variables.rentDueDate = new Date(State.variables.rentDueDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+    }
     
-    // 3. 建立一個「零碎時間筆記本」（如果原本沒有，就設定為 0）
+    
+    // ----------------------------------------------------
+    // 【第二步：檢查零碎時間筆記本】
+    // ----------------------------------------------------
+    // 如果遊戲剛開始，還沒有「體力筆記本」，就幫玩家建立一個，設為 0
     if (State.variables.energyBuffer === undefined) {
         State.variables.energyBuffer = 0;
     }
     
-    // 判斷是不是特殊事件（例如睡覺）
+    // 如果遊戲剛開始，還沒有「清潔度筆記本」，也幫玩家建立一個，設為 0
+    if (State.variables.hygieneBuffer === undefined) {
+        State.variables.hygieneBuffer = 0;
+    }
+    
+    
+    // ----------------------------------------------------
+    // 【第三步：判斷是否為特殊事件】
+    // ----------------------------------------------------
+    // 如果傳進來的類型是 "no_drain"（例如：睡覺或洗澡）
+    // 我們就直接結束這個函數，不把時間存入筆記本，也不會自然扣除體力與清潔度！
     if (type === "no_drain") {
-        // 如果是睡覺，我們「不要」把時間加進筆記本，也不扣體力！
         return; 
     }
     
-    // 5. 一般走路、晃晃，才會放進筆記本計算扣體力
+    
+    // ----------------------------------------------------
+    // 【第四步：計算體力（$hp）自然流逝】
+    // ----------------------------------------------------
+    // 1. 把這次走動/行動的時間，加進「體力筆記本」
     State.variables.energyBuffer += minutesPassed;
+    
+    // 2. 算算看滿 60 分鐘了沒？（例如：記了 125 分鐘，算出來就是扣 2 點）
     let energyLoss = Math.floor(State.variables.energyBuffer / 60);
     
+    // 3. 如果滿 60 分鐘（扣點大於 0），就開始扣體力
     if (energyLoss > 0) {
+        // 扣除體力，並用 Math.max 確保體力最低就是 0，不會變負數
         State.variables.hp = Math.max(0, State.variables.hp - energyLoss);
+        
+        // 扣完後，把剩下的零頭留在筆記本裡（例如 125 除以 60 餘 5，筆記本留下 5）
         State.variables.energyBuffer %= 60;
+    }
+
+    // "no_hygiene" 仍會累積與消耗體力，但不會影響衛生。
+    // 閱讀等室內靜態活動可使用這個模式。
+    if (type === "no_hygiene") {
+        return;
+    }
+    
+    
+    // ----------------------------------------------------
+    // 【第五步：計算清潔度（$hygiene）自然流逝】
+    // ----------------------------------------------------
+    // 1. 把這次走動/行動的時間，也加進「清潔度筆記本」
+    State.variables.hygieneBuffer += minutesPassed;
+    
+    // 2. 同樣算算看滿 60 分鐘了沒？
+    let hygieneLoss = Math.floor(State.variables.hygieneBuffer / 60);
+    
+    // 3. 如果滿 60 分鐘，就開始扣清潔度
+    if (hygieneLoss > 0) {
+        // 扣除清潔度，一樣用 Math.max 確保最小不低於 0
+        State.variables.hygiene = Math.max(0, State.variables.hygiene - hygieneLoss);
+        
+        // 扣完後，把剩下的零點幾小時留在筆記本裡
+        State.variables.hygieneBuffer %= 60;
     }
 };

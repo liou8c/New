@@ -13,7 +13,11 @@ Untitled Story
 }
 
 :: StoryInit
-<<set $gameDate to new Date(2026, 6, 25, 5, 30)>>
+<<set $location to "start">>
+/% 用於橫幅圖片的地點名稱；沒有專屬圖片的地點會暫時使用街道圖片。 %/
+<<set $bannerLocation to "start">>
+<<set $gameDate to new Date(2026, 4, 25, 7, 30)>>
+<<set $rentDueDate to new Date($gameDate.getTime() + (7 * 24 * 60 * 60 * 1000))>>
 <<set $money to 1000>>      /% 初始金錢 %/
 <<set $hp to 60>>           /% 初始體力 %/
 <<set $hpMax to 100>>       /% 體力上限 %/
@@ -25,8 +29,42 @@ Untitled Story
 <<set $moodMax to 100>>     /% 心情上限 %/
 <<set $satiety to 50>>      /% 初始飽食度 %/
 <<set $satietyMax to 100>>  /% 飽食度上限 %/
-<<set $location to "start">>
+<<set $hygiene to 50>>      /% 初始衛生 %/
+<<set $hygieneMax to 100>>  /% 衛生上限 %/
+<<set $gymMember to false>> /% 是否為健身房會員 %/
+<<set $gymExpiry to null>>  /% 健身房會員到期日（若不是會員則為 null） %/
 
-/* 聲望系統與 NPC 關係也可以放這 */
+/%
+    用來累積不足一小時的行動時間。
+    累積滿 60 分鐘時，時間系統才會扣除 1 點體力與衛生，避免零碎時間遺失。
+%/
+<<set $energyBuffer to 0>>
+<<set $hygieneBuffer to 0>>
+
+/%
+    技能資料表。
+    每個技能都有 level（等級）與 exp（經驗值）。日後要新增技能時，照著同樣格式增加一行即可。
+%/
+<<set $skills to {
+    fitness:   { level: 1, exp: 0 },
+    charm:     { level: 1, exp: 0 },
+    awareness: { level: 1, exp: 0 },
+    knowledge: { level: 1, exp: 0 },
+    dexterity: { level: 1, exp: 0 },
+    tech:      { level: 1, exp: 0 },
+    creative:  { level: 1, exp: 0 },
+    cooking:   { level: 1, exp: 0 },
+    oral:      { level: 1, exp: 0 },
+    manual:    { level: 1, exp: 0 },
+    vaginal:   { level: 1, exp: 0 },
+    anal:      { level: 1, exp: 0 }
+}>>
+
+/%
+    可編輯的物品、NPC、任務與事件定義都在 _GameDatabase.twee。
+    這裡只建立這一局遊戲的可變狀態（背包數量、關係值、任務進度等）。
+%/
+<<run setup.initializeGameDatabaseState()>>
+
+/* 世界聲望仍是玩家存檔資料。 */
 <<set $reputation to 0>>
-<<set $npc_love to { alice: 0, bob: 0 }>>

@@ -1,0 +1,30 @@
+:: StoryMenu
+/% 左側介面中的按鈕；點擊後會讀取對應段落並顯示成彈出視窗。 %/
+<<link "技能面板">>\
+    <<script>>
+        Dialog.create("玩家技能與經驗")
+            .wikiPassage("SkillSheet")
+            .open();
+<</script>>\
+<</link>>
+
+<br>
+
+<<link "背包">>\
+    <<script>>
+        /* inventory-dialog 這個 CSS 類別，專門讓背包視窗比一般視窗更寬。 */
+        Dialog.create("玩家背包", "inventory-dialog")
+            .wikiPassage("背包")
+            .open();
+    <</script>>\
+<</link>>
+
+<br>
+
+<<link "👥 社交">>\
+    <<script>>
+        Dialog.create("社交", "social-dialog")
+            .wikiPassage("社交")
+            .open();
+    <</script>>\
+<</link>>

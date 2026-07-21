@@ -1,8 +1,12 @@
 :: GameWidgets [widget]
 
+/%
+    推進時間並檢查路上事件。
+    用法：<<passTime 分鐘數 ["no_drain"]>>
+    第二個參數為 no_drain 時，時間仍會前進，但不會自然扣體力或衛生。
+%/
 <<widget "passTime">><<nobr>>
-	/* 1. 時間與體力流逝 */
-	<<run window.advanceTime($args[0])>>
+	<<run window.advanceTime($args[0], $args[1])>>
 
 	/* 2. 地點檢查：如果當前 Passage 標有 "safe" 標籤，直接結束，不進行抽籤 */
 	<<if tags().includes("safe")>>
@@ -30,11 +34,62 @@
 	<</if>>
 <</nobr>><</widget>>
 
-/* 最安全的普通按鈕 */
+/%
+    統一使用的移動按鈕。
+    用法：<<go "按鈕文字" "目的段落" [花費分鐘數]>>
+    有填寫分鐘數時，會先推進時間，再前往目的段落。
+%/
 <<widget "go">><<nobr>>
     <<button $args[0] $args[1]>>
         <<if $args[2] gt 0>>
             <<passTime $args[2]>>
         <</if>>
     <</button>>
+<</nobr>><</widget>>
+
+/%
+    通用技能經驗值工具。
+    用法：<<gainSkillExp "技能英文代號" 經驗值>>
+    例如：<<gainSkillExp "cooking" 10>>。
+    健身仍可使用舊寫法 <<gainFitnessExp 5>>，方便既有段落繼續運作。
+%/
+<<widget "gainSkillExp">><<nobr>>
+    <<set _skillId to $args[0]>>
+    <<set _gain to $args[1] || 5>>
+    <<set _skillName to ({
+        fitness: "健身", charm: "魅力", awareness: "意識", knowledge: "知識",
+        dexterity: "靈巧", tech: "科技", creative: "創作", cooking: "料理",
+        oral: "口部", manual: "手部", vaginal: "陰道", anal: "肛門"
+    })[_skillId] || _skillId>>
+    <<set $skills[_skillId].exp += _gain>>
+    
+    <div style="color: #4CAF50; margin: 4px 0 0 0;"><<print _skillName>>獲得提升！</div>
+
+    <<set _reqExp to $skills[_skillId].level * 100>>
+
+    <<for $skills[_skillId].exp >= _reqExp>>
+        <<set $skills[_skillId].exp -= _reqExp>>
+        <<set $skills[_skillId].level += 1>>
+        
+        <div style="color: #FFD700; font-weight: bold; margin: 4px 0 0 0;">
+            🎉 技能提升到了 Lv.<<print $skills[_skillId].level>>！
+        </div>
+
+        /% 目前只有健身升級會提高體力上限；其他技能的效果可在這裡繼續增加。 %/
+        <<if _skillId is "fitness">>
+            <<set $hpMax += 10>>
+            體力上限 +10！
+        <</if>>
+        <<set _reqExp to $skills[_skillId].level * 100>>
+    <</for>>
+<</nobr>><</widget>>
+
+/% 用於技能面板的一列技能資料，避免同一段 HTML 重複寫十二次。 %/
+<<widget "skillRow">><<nobr>>
+    <<set _skill to $skills[$args[1]]>>
+    <div class="skill-item">
+        <strong>$args[0]</strong>：Lv.<<print _skill.level>><br>
+        經驗值：<<print _skill.exp>> / <<print _skill.level * 100>>
+        <progress @value="_skill.exp" @max="_skill.level * 100"></progress>
+    </div>
 <</nobr>><</widget>>

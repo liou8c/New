@@ -1,0 +1,19 @@
+:: SkillSheet [no-jpg]
+/% 此段落由左側的「技能面板」按鈕放進彈出視窗中。 %/
+<div class="skill-container">
+    <h3>生活技能</h3>
+    <<skillRow "健身" "fitness">>
+    <<skillRow "魅力" "charm">>
+    <<skillRow "意識" "awareness">>
+    <<skillRow "知識" "knowledge">>
+    <<skillRow "靈巧" "dexterity">>
+    <<skillRow "科技" "tech">>
+    <<skillRow "創作" "creative">>
+    <<skillRow "料理" "cooking">>
+
+    <h3>性相關技能</h3>
+    <<skillRow "口部" "oral">>
+    <<skillRow "手部" "manual">>
+    <<skillRow "陰道" "vaginal">>
+    <<skillRow "肛門" "anal">>
+</div>

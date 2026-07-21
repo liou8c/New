@@ -1,0 +1,287 @@
+:: GameDatabase [script]
+/*
+    遊戲的「靜態資料庫」。規則程式放在其他檔案；可編輯內容集中在這裡。
+    ID（例如 tea、alice）一旦發行存檔後不要改名；顯示名稱則可隨時在 locales 裡修改。
+*/
+setup.gameDatabase = {
+    version: 1,
+    defaultLanguage: "zh-TW",
+
+    locales: {
+        "zh-TW": {
+            items: {
+                tea: {
+                    name: "紅茶",
+                    description: "溫熱的紅茶。飲用後心情 +5。",
+                    useMessage: "你喝下紅茶，心情 +5。"
+                },
+                weirdDrink: {
+                    name: "包裝奇怪的飲料",
+                    description: "怪怪的。這個產品給你不詳的預感。",
+                    useMessage: "你喝下了奇怪的飲料……目前似乎沒有立刻發生什麼事。"
+                },
+                ramen: {
+                    name: "泡麵",
+                    description: "簡單又方便的熱食。食用後飽食度 +30。",
+                    useMessage: "你吃了一碗泡麵，飽食度 +30。"
+                }
+            },
+            npcs: {
+                alice: { name: "Alice（暫定）", profile: "可戀愛 NPC 的資料範例。請在角色確定後改名與補完介紹。" },
+                bob: { name: "Bob（暫定）", profile: "非戀愛 NPC 的資料範例。請在角色確定後改名與補完介紹。" },
+                winley: { name: "溫莉", profile: "咖啡廳店長。" }
+            },
+            /* 劇情事件與任務目前直接寫在各個 .twee 場景內。 */
+        },
+        /* 英文檔先保留同一批 key；日後只需翻譯此區，不需碰遊戲邏輯。 */
+        en: {
+            items: {
+                tea: { name: "Black Tea", description: "Warm black tea. Restores 5 mood.", useMessage: "You drink the tea. Mood +5." },
+                weirdDrink: { name: "Strange Packaged Drink", description: "Something feels off about it.", useMessage: "You drink the strange beverage… Nothing happens right away." },
+                ramen: { name: "Instant Noodles", description: "A quick hot meal. Restores 30 satiety.", useMessage: "You eat the instant noodles. Satiety +30." }
+            },
+            npcs: {
+                alice: { name: "Alice (draft)", profile: "Template data for a romanceable NPC." },
+                bob: { name: "Bob (draft)", profile: "Template data for a non-romanceable NPC." },
+                winley: { name: "Winley", profile: "The cafe manager." }
+            },
+            /* Story events and quests currently live directly in individual .twee passages. */
+        }
+    },
+
+    items: {
+        tea: {
+            icon: "🍵", category: "drink", tags: ["consumable", "food", "drink", "shop_711", "mood_restore"],
+            price: 25, stackable: true, usable: true,
+            effects: [{ type: "stat", stat: "mood", amount: 5 }]
+        },
+        weirdDrink: {
+            icon: "🧃", category: "drink", tags: ["consumable", "drink", "shop_711", "mystery", "risky"],
+            price: 80, stackable: true, usable: true, effects: []
+        },
+        ramen: {
+            icon: "🍜", category: "food", tags: ["consumable", "food", "shop_711", "satiety_restore"],
+            price: 45, stackable: true, usable: true,
+            effects: [{ type: "stat", stat: "satiety", amount: 30 }]
+        }
+    },
+
+    /*
+        角色定義與「存檔中的關係數值」分開。tags 可用於事件條件，
+        例如 { type: "npcHasTag", npcId: "alice", tag: "loyal" }。
+    */
+    npcs: {
+        alice: {
+            color: "#E88BA7",
+            tags: ["named_npc", "romanceable", "loyal", "relationship_sensitive", "draft"],
+            gender: null, birthday: null, likes: ["tea", "kindness"], dislikes: [],
+            relationship: { affectionStart: 0, romanceEnabled: true, romanceStart: 0, breakupAtRomance: 40 },
+            notes: "範例：具忠誠標籤的可戀愛角色，目睹玩家與其他對象曖昧時可扣浪漫。"
+        },
+        bob: {
+            color: "#6FAFE8",
+            tags: ["named_npc", "non_romanceable", "draft"],
+            gender: null, birthday: null, likes: [], dislikes: [],
+            relationship: { affectionStart: 0, romanceEnabled: false },
+            notes: "範例：不可戀愛角色；只有好感度，沒有 romance 數值。"
+        },
+        /*
+            角色代表色統一在這裡修改。
+            劇情使用 @@.npc-角色ID; ... @@；例如 @@.npc-winley;溫莉的台詞@@。
+        */
+        winley: {
+            color: "#9a805f",
+            gender: "女",
+            social: {
+                portrait: "images/ico_npc_winley.png",
+                occupation: "咖啡廳店長"
+            },
+            tags: ["named_npc", "cafe_manager"],
+            birthday: "07/21", likes: [], dislikes: [],
+            relationship: { affectionStart: 0, romanceEnabled: false },
+            notes: "咖啡廳店長。"
+        }
+    },
+
+    locations: {
+        home: { passage: "YourHome", tags: ["home", "safe", "private"] },
+        street: { passage: "街道", tags: ["street", "outdoor", "danger"] },
+        shop_711: { passage: "便利商店", tags: ["shop", "convenience_store", "safe"] },
+        park: { passage: "公園", tags: ["park", "outdoor"] },
+        cornerstore: { passage: "雜貨店", tags: ["shop", "mystery"] },
+        cafe: { passage: "咖啡廳", tags: ["cafe", "safe", "social"] },
+        library: { passage: "圖書館", tags: ["library", "safe", "knowledge"] },
+        gym: { passage: "健身房", tags: ["gym", "safe", "fitness"] }
+    },
+    shops: { shop_711: { itemIds: ["tea", "weirdDrink", "ramen"], tags: ["shop", "convenience_store"] } }
+};
+
+setup.t = function (path, fallback) {
+    const database = setup.gameDatabase;
+    const language = State.variables.language || database.defaultLanguage;
+    let value = database.locales[language] || database.locales[database.defaultLanguage];
+    for (const key of path.split(".")) {
+        value = value && value[key];
+    }
+    return value === undefined ? (fallback || path) : value;
+};
+
+setup.itemText = function (itemId, field) {
+    return setup.t("items." + itemId + "." + field);
+};
+
+/* NPC 的顯示文字與代表色。新增角色時，在 locales.npcs 和 npcs 內補上同一個 ID。 */
+setup.npcText = function (npcId, field) {
+    return setup.t("npcs." + npcId + "." + field);
+};
+
+setup.npcColor = function (npcId) {
+    const npc = setup.gameDatabase.npcs[npcId];
+    return (npc && npc.color) || "#ffffff";
+};
+
+/*
+    依 NPC 資料庫產生對應的 CSS 類別，例如 .npc-winley。
+    不需要在 Stylesheet 重複填色碼，修改上方 npcs 的 color 就會一併更新所有台詞。
+*/
+setup.installNpcColorClasses = function () {
+    const styleId = "npc-color-classes";
+    let style = document.getElementById(styleId);
+    if (!style) {
+        style = document.createElement("style");
+        style.id = styleId;
+        document.head.appendChild(style);
+    }
+    style.textContent = Object.entries(setup.gameDatabase.npcs)
+        .filter(function (entry) { return entry[1].tags.includes("named_npc"); })
+        .map(function (entry) {
+            return ".npc-" + entry[0] + " { color: " + entry[1].color + "; font-weight: bold; }";
+        })
+        .join("\n");
+};
+
+setup.installNpcColorClasses();
+
+setup.getShopItems = function (shopId) {
+    return setup.gameDatabase.shops[shopId].itemIds.map(function (id) {
+        return Object.assign({ id: id }, setup.gameDatabase.items[id]);
+    });
+};
+
+setup.getCartTotal = function (shopId) {
+    const cart = State.variables.cart || {};
+    return setup.getShopItems(shopId).reduce(function (total, item) {
+        const quantity = Math.max(0, Math.floor(Number(cart[item.id]) || 0));
+        return total + quantity * item.price;
+    }, 0);
+};
+
+setup.initializeGameDatabaseState = function () {
+    const state = State.variables;
+    state.language = setup.gameDatabase.defaultLanguage;
+    state.inventory = {};
+    state.cart = {};
+    Object.keys(setup.gameDatabase.items).forEach(function (itemId) {
+        state.inventory[itemId] = 0;
+        state.cart[itemId] = 0;
+    });
+    state.inventoryMessage = "";
+    state.knownNpcs = [];
+    state.playerTags = [];
+    state.npcRelations = {};
+    Object.keys(setup.gameDatabase.npcs).forEach(function (npcId) {
+        const relation = setup.gameDatabase.npcs[npcId].relationship;
+        state.npcRelations[npcId] = { affection: relation.affectionStart || 0 };
+        if (relation.romanceEnabled) {
+            state.npcRelations[npcId].romance = relation.romanceStart || 0;
+        }
+    });
+    state.flags = {};
+};
+
+/* 已認識 NPC 是存檔狀態；同一角色不會重複加入。 */
+setup.meetNpc = function (npcId) {
+    const npc = setup.gameDatabase.npcs[npcId];
+    const knownNpcs = State.variables.knownNpcs || (State.variables.knownNpcs = []);
+    if (!npc || !npc.tags.includes("named_npc") || knownNpcs.includes(npcId)) { return false; }
+    knownNpcs.push(npcId);
+    return true;
+};
+
+/* 玩家身分標籤；可用於工作、組織或劇情資格判定。 */
+setup.playerHasTag = function (tag) {
+    return (State.variables.playerTags || []).includes(tag);
+};
+
+setup.addPlayerTag = function (tag) {
+    const tags = State.variables.playerTags || (State.variables.playerTags = []);
+    if (tags.includes(tag)) { return false; }
+    tags.push(tag);
+    return true;
+};
+
+setup.npcSocialInfo = function (npcId) {
+    const npc = setup.gameDatabase.npcs[npcId];
+    return (npc && npc.social) || {};
+};
+
+setup.inventoryCount = function () {
+    return Object.values(State.variables.inventory || {}).reduce(function (total, quantity) {
+        return total + Math.max(0, Number(quantity) || 0);
+    }, 0);
+};
+
+setup.useItem = function (itemId) {
+    const item = setup.gameDatabase.items[itemId];
+    const state = State.variables;
+    if (!item || !state.inventory[itemId]) { return false; }
+    state.inventory[itemId] -= 1;
+    item.effects.forEach(function (effect) {
+        if (effect.type === "stat") {
+            const max = state[effect.stat + "Max"];
+            state[effect.stat] = Math.clamp(state[effect.stat] + effect.amount, 0, max);
+        }
+    });
+    state.inventoryMessage = setup.itemText(itemId, "useMessage");
+    return true;
+};
+
+setup.checkout = function (shopId) {
+    const state = State.variables;
+    const total = setup.getCartTotal(shopId);
+    if (total <= 0 || state.money < total) { return false; }
+    setup.getShopItems(shopId).forEach(function (item) {
+        const quantity = Math.max(0, Math.floor(Number(state.cart[item.id]) || 0));
+        state.inventory[item.id] += quantity;
+        state.cart[item.id] = 0;
+    });
+    state.money -= total;
+    return true;
+};
+
+/* 通用條件檢查器：供未來任務、對話與事件資料直接使用。 */
+setup.conditionMet = function (condition) {
+    const state = State.variables;
+    if (condition.type === "npcHasTag") {
+        return setup.gameDatabase.npcs[condition.npcId].tags.includes(condition.tag);
+    }
+    if (condition.type === "npcLacksTag") {
+        return !setup.gameDatabase.npcs[condition.npcId].tags.includes(condition.tag);
+    }
+    if (condition.type === "hasItem") {
+        return (state.inventory[condition.itemId] || 0) >= (condition.quantity || 1);
+    }
+    if (condition.type === "itemHasTag") {
+        return setup.gameDatabase.items[condition.itemId].tags.includes(condition.tag);
+    }
+    if (condition.type === "relationshipAtLeast") {
+        return state.npcRelations[condition.npcId][condition.stat] >= condition.value;
+    }
+    if (condition.type === "flag") {
+        return state.flags[condition.flag] === (condition.value === undefined ? true : condition.value);
+    }
+    if (condition.type === "locationNotTagged") {
+        return !tags().includes(condition.tag);
+    }
+    return false;
+};

@@ -1,0 +1,38 @@
+:: ShopInputProtection [script]
+/*
+    商品欄位由資料庫產生，data-item-id 指向購物車中的物品 ID。
+*/
+jQuery(document).on(":passageend.shopQuantity", function () {
+    jQuery("#shop-cart .shop-quantity").attr({ min: 0, step: 1 });
+    updateShopSummary();
+});
+
+/*
+    第二層保護：即使玩家直接用鍵盤輸入負數，也立刻改回 0 並同步到 $cart。
+*/
+jQuery(document).on("input change", "#shop-cart .shop-quantity", function () {
+    let quantity = Math.floor(Number(this.value));
+
+    if (!Number.isFinite(quantity) || quantity < 0) {
+        this.value = 0;
+        quantity = 0;
+    }
+    this.value = quantity;
+    State.variables.cart[this.dataset.itemId] = quantity;
+    updateShopSummary();
+});
+
+/*
+    即時計算購物車金額。價格讀自資料庫，因此日後調整商品價格時，這裡不必重寫。
+*/
+function updateShopSummary() {
+    if (!State.variables.cart || !jQuery("#shop-total").length) {
+        return;
+    }
+    const total = setup.getCartTotal("shop_711");
+
+    jQuery("#shop-total").text(total);
+    jQuery("#shop-insufficient").text(
+        total > State.variables.money ? "金錢不足。" : ""
+    );
+}

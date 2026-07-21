@@ -1,0 +1,29 @@
+:: 社交 [nobr]
+<<if not $knownNpcs or $knownNpcs.length is 0>>
+    <p class="social-empty">你還沒有認識任何 NPC。</p>
+<<else>>
+    <div class="social-list">
+        <<for _npcId range $knownNpcs>>
+            <<set _npc to setup.gameDatabase.npcs[_npcId]>>
+            <<set _social to setup.npcSocialInfo(_npcId)>>
+            <article class="social-card">
+                <img class="social-portrait" @src="_social.portrait" @alt="setup.npcText(_npcId, 'name') + '的大頭貼'">
+                <div>
+                    <h3 class="social-name"><<print setup.npcText(_npcId, "name")>></h3>
+                    <dl class="social-details">
+                        <dt>職業身分</dt><dd><<print _social.occupation || "未知">></dd>
+                        <dt>性別</dt><dd><<print _npc.gender || "未知">></dd>
+                        <dt>生日</dt><dd><<print _npc.birthday || "未知">></dd>
+                        <dt>好感度</dt><dd><<print $npcRelations[_npcId].affection>></dd>
+                        <<if _npc.relationship.romanceEnabled>>
+                            <dt>浪漫度</dt><dd><<print $npcRelations[_npcId].romance>></dd>
+                        <</if>>
+                        <dt>介紹</dt><dd><<print setup.npcText(_npcId, "profile")>></dd>
+                        <dt>喜好</dt><dd><<print _npc.likes.length ? _npc.likes.join("、") : "尚未得知">></dd>
+                        <dt>討厭</dt><dd><<print _npc.dislikes.length ? _npc.dislikes.join("、") : "尚未得知">></dd>
+                    </dl>
+                </div>
+            </article>
+        <</for>>
+    </div>
+<</if>>

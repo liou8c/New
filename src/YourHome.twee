@@ -2,28 +2,81 @@
 你在客廳。
 
 @@.button-container;
-<<go "出門" "街道" 0>>
-<<go "回房間" "房間" 0>>
-<<go "浴室" "浴室" 0>>
+<<go "🚪出門" "街道" 0>>
+<<go "📺電視" "電視" 0>>
+<<go "🛏️臥室" "臥室" 0>>
+<<go "🚿浴室" "浴室" 0>>
 @@
 
-:: 房間 [home safe]
+:: 電視 [home safe]
+你想看多久的電視？(請輸入時間，單位為分鐘，輸入負數會自動清零。)
+
+<<numberbox "$watchMins" 30>>
+
 @@.button-container;
-<<go "回到客廳" "YourHome" 0>>
-<<go "睡覺" "睡覺" 0>>
-<<go "打發時間" "玩手機" 0>>
+<<go "📺看電視" "電視結果">>
+<<go "🛋️不看了" "YourHome" 0>>
+@@
+
+:: 電視結果 [home safe]
+<<silent>>
+    /% 1. 確保 $watchMins 是正整數（若輸入負數自動清零） %/
+    <<set $watchMins to Math.max(0, Number($watchMins) || 0)>>
+
+    /% 2. 幸運檢定 %/
+    <<set _roll to random(1, 100)>>
+
+    /% 3. 判定看到爛片還是好片 %/
+    <<if _roll gt $luck>>
+        /% 看到爛片：心情減少 %/
+        <<set _moodChange to -Math.trunc($watchMins / 10)>>
+        <<set _eventDesc to either(
+            "這部片簡直是災難……你看完後覺得生命被浪費了。",
+            "劇情極度荒謬，你甚至開始懷疑編劇的大腦結構。",
+            "非常無聊的節目，你看得昏昏欲睡。"
+        )>>
+    <<else>>
+        /% 看到好片：心情增加 %/
+        <<set _moodChange to Math.trunc($watchMins / 10)>>
+        <<set _eventDesc to either(
+            "這部影集太精彩了！你看得津津有味。",
+            "劇情高潮迭起，讓你完全沉浸在故事裡面！",
+            "這是一部難得一見的神作，看完讓人意猶未盡。"
+        )>>
+    <</if>>
+
+    /% 4. 推進時間 %/
+    <<passTime $watchMins>>
+
+    /% 5. 更新心情（確保介於 0~100 之間） %/
+    <<set $mood to Math.clamp($mood + _moodChange, 0, 100)>>
+<</silent>>\
+
+你坐在沙發上看了 $watchMins 分鐘的電視。
+
+_eventDesc
+(心情變化：<<print _moodChange > 0 ? "+" : "">><<= _moodChange>>)
+
+<<go "結束" "YourHome" 0>>
+
+:: 臥室 [home safe]
+@@.button-container;
+<<go "🛋️客廳" "YourHome" 0>>
+<<go "🛏️睡覺" "睡覺" 0>>
+<<go "📱手遊" "玩手機" 0>>
 @@
 
 :: 睡覺 [home safe]
 你睡了一覺，體力恢復了！
 <<passTime 480 "no_drain">>
 <<set $hp to Math.clamp($hp + 50, 0, $hpMax)>>
-<<go "醒來" "房間" 0>>
+<<go "醒來" "臥室" 0>>
 
 :: 玩手機 [home safe]
+
 @@.button-container;
 <<go "轉蛋" "轉蛋" 1>>@@
-<<go "不玩了" "房間" 0>>
+<<go "不玩了" "臥室" 0>>
 @@
 
 :: 轉蛋 [home safe]
@@ -64,5 +117,9 @@
 [[回到轉蛋|轉蛋]]
 
 :: 浴室 [home safe]
+你進浴室洗了一個舒舒服服的熱水澡，全身香噴噴的。
 
-<<go "離開" "YourHome" 0>>
+<<run window.advanceTime(20, "no_drain")>> /* 過了 20 分鐘，但不會自然扣體力和清潔度 */
+<<set $hygiene to 100>>                   /* 將清潔度直接補滿至 100 */
+
+<<go "🚪離開" "YourHome" 0>>
