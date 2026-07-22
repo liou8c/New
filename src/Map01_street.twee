@@ -1,36 +1,46 @@
-/% 玩家家外的那條街道，有便利商店、公園、雜貨店、咖啡廳 %/
+/% 玩家家外的那條街道，有便利商店、公園、雜貨店、咖啡廳、健身房、圖書館 %/
 
 :: 街道 [street]
 你在街上。
 
 @@.button-container;
+<<if not setup.playerHasTag("homeless")>>
 <<go "🏠回家" "YourHome" 5>>
+<</if>>
 <<go "🏪便利商店" "便利商店" 2>>
 <<go "🏪雜貨店" "雜貨店" 3>>
 <<go "🌳公園" "公園" 3>>
 <<go "☕咖啡廳" "咖啡廳入口" 3>>
 <<go "💪健身房" "健身房入口" 4>>
 <<go "📚圖書館" "圖書館入口" 5>>
+<<go "🏙️市區" "市區" 20>>
 @@
 
 :: 便利商店 [711]
+<<if $gameDate.getHours() gte setup.balance.convenienceRobbery.startHour and $gameDate.getHours() lt setup.balance.convenienceRobbery.endHour and $convenienceRobberyCooldownUntil and $gameDate lt $convenienceRobberyCooldownUntil>>
+    <div class="warning-text store-robbery-warning">店員仍處於警戒中，今晚不能再嘗試搶劫。</div>
+<</if>>
 24小時營業。
 「歡迎光臨。」店員有氣無力地說，字都黏在一起。
 
-@@.button-container;
+/% store-actions 不讓其他 flex 項目拉高按鈕；便利商店按鈕會和一般按鈕保持同高。 %/
+@@.button-container.store-actions;
 <<go "🛒購物" "711購物" 0>>
-<<go "🏘️離開" "街道">>
+<<if $gameDate.getHours() gte setup.balance.convenienceRobbery.startHour and $gameDate.getHours() lt setup.balance.convenienceRobbery.endHour>>
+    <<if not $convenienceRobberyCooldownUntil or $gameDate gte $convenienceRobberyCooldownUntil>>
+        <<go "🔪 搶劫便利商店" "便利商店搶劫確認" 0>>
+    <</if>>
+<</if>>
+<<go "🏘️街道" "街道">>
 @@
 
-:: 711購物 [711]
+:: 711購物 [711 safe]
 /%
     購買選單讀取 _GameDatabase.twee 的 shops.shop_711.itemIds。
     新增商品後，只要把 ID 加進該清單即可出現在這裡。
 %/
-<h3>7-11 購物</h3>
-目前金額：<strong>$money 元</strong>
-
-<div id="shop-cart" class="shopping-grid">
+<<nobr>>
+<div id="shop-cart" class="shopping-grid" data-shop-id="shop_711">
     /% 每個 shopping-row 是一整列；每列最多放三項商品。 %/
     <div class="shopping-row">
         <<for _item range setup.getShopItems("shop_711")>>
@@ -46,17 +56,16 @@
         <</for>>
     </div>
 </div>
-
-/% 此區塊由 ShopInputProtection.twee 即時更新，不需要玩家先按結帳。 %/
 <div id="shop-summary">
     預計金額：<strong><span id="shop-total">0</span> 元</strong>
     <span id="shop-insufficient" class="warning-text"></span>
 </div>
-
+<br>
 @@.button-container;
 <<go "結帳" "711結帳" 0>>
 <<go "返回" "便利商店" 0>>
 @@
+<</nobr>>
 
 :: 711結帳 [711]
 <<silently>>
@@ -78,35 +87,158 @@
 <</if>>
 
 @@.button-container;
-<<go "繼續購物" "711購物" 0>>
-<<go "返回便利商店" "便利商店" 0>>
+<<go "🛒繼續購物" "711購物" 0>>
+<<go "返回" "便利商店" 0>>
 @@
 
 :: 公園 [park]
 有很多人在這。
+/% 事件挑選與實際對話請見 NPC_Winley.twee，日後新增劇情不需要修改這個地點。 %/
+<<set _winleyLeftParkToday to $flags["winley_park_left_on"] is $gameDate.toDateString()>>
+<<if setup.playerHasTag("cafe_employee") and $gameDate.getHours() gte 8 and $gameDate.getHours() lt 9 and not _winleyLeftParkToday>>
+    <<link "溫莉">><<goto "NPC_Winley_公園入口">><</link>>坐在公園的長椅上，正在記錄些什麼。
+<</if>>[[公園跑步|公園跑步]]
+[[坐在樹下休息|公園休息]]
 
 @@.button-container;
-<<go "🏘️離開" "街道">> 
-<<go "🏠回家" "YourHome" 8>>
+<<go "🏘️街道" "街道">>
+<<go "📚圖書館" "圖書館入口" 2>>
+<<go "💪健身房" "健身房入口" 2>>
+<<go "☕咖啡廳" "咖啡廳入口" 1>>
+<<if setup.playerHasTag("homeless")>>
+    <<go "🛏️在公園睡覺" "睡公園" 0>>
+<<else>>
+    <<go "🏠回家" "YourHome" 8>>
+<</if>>
+@@
+
+:: 公園跑步 [park]
+<<silently>>
+/%
+    公園跑步是免費但效率低的訓練：少量健身經驗，並額外練習靈巧。
+    passTime 不使用 no_drain，因此仍會正常累積體力與衛生的自然消耗。
+%/
+<<passTime setup.balance.parkRun.minutes>>
+/% 運動固定額外消耗 3 點飢餓值。 %/
+<<set $satiety to Math.max(0, $satiety - setup.balance.parkRun.satietyCost)>>
+<<set $hygiene to Math.max(0, $hygiene - setup.balance.parkRun.hygieneCost)>>
+<</silently>>
+你在公園跑步 <<print setup.balance.parkRun.minutes>> 分鐘，流了一身汗。
+<<gainSkillExp "fitness" setup.balance.parkRun.fitnessExp>>
+<<gainSkillExp "dexterity" setup.balance.parkRun.dexterityExp>>
+
+@@.button-container;
+<<go "🏃繼續跑步" "公園跑步" 0>>
+<<go "🌳公園" "公園" 0>>
+<<go "🏘️街道" "街道" 0>>
+<<go "📚圖書館" "圖書館入口" 2>>
+<<go "💪健身房" "健身房入口" 2>>
+<<go "☕咖啡廳" "咖啡廳入口" 1>>
+<<go "🏠回家" "YourHome" 3>>
+@@
+
+:: 公園休息 [park]
+<<silently>>
+/%
+    短暫休息仍會推進時間，因此會照常累積飢餓、體力與衛生的自然變化。
+    恢復量集中在 setup.balance.parkRest，方便日後平衡。
+%/
+<<passTime setup.balance.parkRest.minutes>>
+<<set $hp to Math.min($hpMax, $hp + setup.balance.parkRest.hpRestore)>>
+<<set $mood to Math.min($moodMax, $mood + setup.balance.parkRest.moodRestore)>>
+<</silently>>
+
+你在樹下坐了 <<print setup.balance.parkRest.minutes>> 分鐘，讓自己稍微放鬆一下。
+（體力 +<<print setup.balance.parkRest.hpRestore>>；心情 +<<print setup.balance.parkRest.moodRestore>>）
+
+
+@@.button-container;
+<<go "繼續休息" "公園休息" 0>>
+<<go "🌳公園" "公園" 0>>
+<<go "🏘️街道" "街道" 0>>
+<<go "📚圖書館" "圖書館入口" 2>>
+<<go "💪健身房" "健身房入口" 2>>
+<<go "☕咖啡廳" "咖啡廳入口" 1>>
+<<go "🏠回家" "YourHome" 3>>
 @@
 
 :: 雜貨店 [cornerstore]
-賣奇怪的東西。
+奇怪的奶奶賣奇怪的東西。
 
+@@.button-container;
+<<go "🛒購物" "雜貨店購物" 0>>
 <<go "🏘️離開" "街道">>
+@@
+
+:: 雜貨店購物 [cornerstore safe]
+<<nobr>>
+<br>
+<div id="shop-cart" class="shopping-grid" data-shop-id="cornerstore">
+    <div class="shopping-row">
+        <<for _item range setup.getShopItems("cornerstore")>>
+        <div class="shopping-item" @data-item-id="_item.id">
+            <span class="item-icon" @aria-label="setup.itemText(_item.id, 'name')">_item.icon</span>
+            <div class="item-info">
+                <strong><<print setup.itemText(_item.id, "name")>></strong>
+                <div><<print setup.itemText(_item.id, "description")>></div>
+                <div>價格：_item.price 元</div>
+            </div>
+            <label>數量<br><input class="shop-quantity" type="number" min="0" step="1" @data-item-id="_item.id" @value="$cart[_item.id]"></label>
+        </div>
+        <</for>>
+    </div>
+</div>
+<div id="shop-summary">
+    預計金額：<strong><span id="shop-total">0</span> 元</strong>
+    <span id="shop-insufficient" class="warning-text"></span>
+</div>
+<br>
+@@.button-container;
+<<go "結帳" "雜貨店結帳" 0>>
+<<go "返回" "雜貨店" 0>>
+@@
+<</nobr>>
+
+:: 雜貨店結帳 [cornerstore]
+<<silently>>
+    <<set _total to setup.getCartTotal("cornerstore")>>
+<</silently>>
+
+<h3>結帳</h3>
+<<if _total is 0>>
+    你還沒有選擇商品。
+<<elseif $money lt _total>>
+    金額不足。本次合計 <strong>_total 元</strong>，你只有 <strong>$money 元</strong>。
+<<else>>
+    <<run setup.checkout("cornerstore")>>
+    購買成功！本次花費 <strong>_total 元</strong>，剩餘 <strong>$money 元</strong>。
+    物品已放入背包。
+<</if>>
+
+@@.button-container;
+<<go "繼續購物" "雜貨店購物" 0>>
+<<go "返回雜貨店" "雜貨店" 0>>
+@@
 
 :: 咖啡廳 [cafe safe]
 新開的咖啡廳。
 
 @@.button-container;
-<<if setup.playerHasTag("cafe_employee")>><<go "在咖啡廳工作" "在咖啡廳工作">><<else>><<go "詢問工作" "咖啡廳工作" 5>><</if>>
+<<if setup.playerHasTag("cafe_employee")>><<venueGo "在咖啡廳工作" "cafe" "work" "在咖啡廳工作">><<else>><<go "詢問工作" "咖啡廳工作" 5>><</if>>
 <<go "排隊點餐" "咖啡廳點餐" 5>>
 @@
 
 <<go "🏘️離開" "街道">>
 
 :: 咖啡廳入口 [cafe safe]
-<<if $gameDate.getHours() gte 11 and $gameDate.getHours() lt 21>><<goto "咖啡廳">><<else>><<goto "咖啡廳打烊">><</if>>
+<<if not setup.canUseVenue("cafe", "entry")>>
+    <<run setup.setVenueHygieneDenied("cafe", "entry")>>
+    <<goto "場所衛生不足">>
+<<elseif $gameDate.getHours() gte 11 and $gameDate.getHours() lt 21>>
+    <<goto "咖啡廳">>
+<<else>>
+    <<goto "咖啡廳打烊">>
+<</if>>
 
 :: 咖啡廳打烊 [cafe safe]
 咖啡廳目前已打烊。
@@ -119,7 +251,7 @@
 「我看見外面貼了徵人海報，這裡還有缺人嗎？」你試探地問。
 櫃台的工讀生沒有回答，反而豎起食指比了等待的手勢後，轉身走向後方員工休息室。
 沒多久，工讀生帶了另一人走出休息室。跟在工讀生後方的女子看起來與你年紀相近，更像一名大學生而非店長。她頂著一頭紮成高馬尾的淺棕色大波浪捲髮，身穿略顯鬆垮的墨綠色圍裙，臉上掛著圓框眼鏡。
-@@.npc-winley;「來應徵的嗎？有缺喔。」@@她抬手輕推鏡框，@@.npc-winley;「我們這裡排班很自由，你想什麼時後來都可以，時薪35元，能接受嗎？」@@
+@@.npc-winley;「來應徵的嗎？有缺喔。」@@她抬手輕推鏡框，@@.npc-winley;「我們這裡排班很自由，你想什麼時後來都可以，時薪<<print setup.balance.cafeWork.hourlyPay>>元，能接受嗎？」@@
 
 @@.button-container;
 <<go "想要這份工作" "接受咖啡廳工作" 1>>
@@ -140,18 +272,42 @@
 <</if>>
 
 :: 在咖啡廳工作 [cafe safe]
-<<if not setup.playerHasTag("cafe_employee")>><<goto "咖啡廳">><<else>><<silently>>
-<<passTime 60 "no_drain">>
-<<set $money to $money + 35>>
-<<set $hp to Math.max(0, $hp - 3)>>
-<<set $hygiene to Math.max(0, $hygiene - 1)>>
-<<set $mood to Math.max(0, $mood - 0.5)>>
-<</silently>>你完成了一小時的咖啡廳工作，獲得 35 元。
+/% 防呆：舊存檔／歷史紀錄直接跳到工作 passage 時，也不能繞過衛生規則。 %/
+<<if not setup.canUseVenue("cafe", "work")>>
+    <<run setup.setVenueHygieneDenied("cafe", "work")>>
+    <<goto "場所衛生不足">>
+<<elseif not setup.playerHasTag("cafe_employee")>>
+    <<goto "咖啡廳">>
+<<elseif $gameDate.getHours() gte 21>>
+    /% 防呆：舊歷史紀錄或直接跳轉到此段落時，也不能在打烊後工作。 %/
+    <<goto "咖啡廳打烊">>
+<<else>><<silently>>
+/%
+    每次工作最多一小時；若距離 21:00 不足一小時，只工作到打烊。
+    時薪與工作消耗集中在 setup.balance.cafeWork；未滿一小時的薪水無條件捨去為整數元。
+%/
+<<set _minutesUntilClose to (21 - $gameDate.getHours()) * 60 - $gameDate.getMinutes()>>
+<<set _workMinutes to Math.min(60, _minutesUntilClose)>>
+<<set _workPay to Math.floor(setup.balance.cafeWork.hourlyPay * _workMinutes / 60)>>
+<<passTime _workMinutes "no_drain">>
+<<set $money to $money + _workPay>>
+<<set $hp to Math.max(0, $hp - setup.balance.cafeWork.hpCost)>>
+<<set $hygiene to Math.max(0, $hygiene - setup.balance.cafeWork.hygieneCost)>>
+<<set $mood to Math.max(0, $mood - setup.balance.cafeWork.moodCost)>>
+<<set _cafeClosed to $gameDate.getHours() gte 21>>
+<</silently>>你完成了 <<print _workMinutes>> 分鐘的咖啡廳工作，獲得 <<print _workPay>> 元。
+
+<<if _cafeClosed>>
+    咖啡廳已經打烊，今天不能再繼續工作了。
+
+    <<go "返回街道" "街道" 0>>
+<<else>>
 
 @@.button-container;
 <<go "繼續工作" "在咖啡廳工作">>
 <<go "返回咖啡廳" "咖啡廳">>
 @@
+<</if>>
 <</if>>
 
 :: 考慮咖啡廳工作 [cafe safe]
@@ -161,8 +317,145 @@
 <<go "返回" "咖啡廳">>
 
 :: 咖啡廳點餐 [cafe safe]
+<<nobr>><<if $gameDate.getHours() lt 11 or $gameDate.getHours() gte 21>>    /% 防呆：即使玩家從舊歷史紀錄或其他事件直接跳來，打烊後也不能點餐。 %/
+    <<goto "咖啡廳打烊">>
+<</if>>
+<<if not $flags.cafeOrderIntroSeen>>
+@@.npc-raven;「想點什麼？」@@一聲拖著尾音的哈欠聲吸引了你的注意。
+<br>站在櫃台後的工讀生懶洋洋地看向你，等你回答。
+<br>她留著一頭及腰的漆黑長髮，唇上抹著黑色唇膏，雙耳上打滿了金屬耳環，這名工讀生與這間風格溫馨的咖啡廳格格不入。
+<<set $flags.cafeOrderIntroSeen to true>>
+<<else>><<silently>>
+/% 日後新增隨機點餐台詞，只要在這個清單多加一行即可。 %/
+<<set _cafeOrderGreetings to [
+    "店員什麼話都不說，只是用下巴點了點菜單。",
+    "「歡迎光臨！今天想要什麼餐點呢？」店員臉上掛著營業笑容。不是之前見到的那位啊……"
+]>>
+<<set _cafeOrderGreeting to _cafeOrderGreetings[random(0, _cafeOrderGreetings.length - 1)]>>
+<</silently>>
+_cafeOrderGreeting
+<</if>><br><</nobr>>
+[[黑咖啡 40元|黑咖啡]]
+[[拿鐵 50元|拿鐵]]
+[[三明治 60元|三明治]]
+[[可頌 50元|可頌]]
+[[貝果 60元|貝果]]
+[[歐姆蛋 70元|歐姆蛋]]
 
+@@.button-container;
+<<go "返回" "咖啡廳" 1>>
+<<go "回家" "YourHome" 5>>
+@@
+
+:: 黑咖啡 [cafe safe]
+<<set $cafeOrder to { name: "黑咖啡", price: 40, hpRestore: 10, satietyRestore: 0, minutes: 0 }>>
+<<goto "咖啡廳餐點結果">>
+
+:: 拿鐵 [cafe safe]
+<<set $cafeOrder to { name: "拿鐵", price: 50, hpRestore: 10, satietyRestore: 0, minutes: 0 }>>
+<<goto "咖啡廳餐點結果">>
+
+:: 三明治 [cafe safe]
+<<set $cafeOrder to { name: "三明治", price: 60, hpRestore: 0, satietyRestore: 20, minutes: 5 }>>
+<<goto "咖啡廳餐點結果">>
+
+:: 可頌 [cafe safe]
+<<set $cafeOrder to { name: "可頌", price: 50, hpRestore: 0, satietyRestore: 15, minutes: 5 }>>
+<<goto "咖啡廳餐點結果">>
+
+:: 貝果 [cafe safe]
+<<set $cafeOrder to { name: "貝果", price: 60, hpRestore: 0, satietyRestore: 20, minutes: 5 }>>
+<<goto "咖啡廳餐點結果">>
+
+:: 歐姆蛋 [cafe safe]
+<<set $cafeOrder to { name: "歐姆蛋", price: 70, hpRestore: 0, satietyRestore: 25, minutes: 5 }>>
+<<goto "咖啡廳餐點結果">>
+
+:: 咖啡廳餐點結果 [cafe safe]
+/% 防呆：不允許透過舊連結或直接跳轉，在咖啡廳打烊後結算餐點。 %/
+<<if $gameDate.getHours() lt 11 or $gameDate.getHours() gte 21>>
+    <<goto "咖啡廳打烊">>
+<</if>>
+<<if $money lt $cafeOrder.price>>
+    你的現金不足，無法購買 $cafeOrder.name。（需要 $cafeOrder.price 元，現有 $money 元）
+<<else>><<silently>>
+    <<set $money to Math.max(0, $money - $cafeOrder.price)>>
+    <<if $cafeOrder.minutes gt 0>><<passTime $cafeOrder.minutes>><</if>>
+    <<set $hp to Math.min($hpMax, $hp + $cafeOrder.hpRestore)>>
+    <<set $satiety to Math.min($satietyMax, $satiety + $cafeOrder.satietyRestore)>>
+    <<set _cafeMoodGain to random(1, 5)>>
+    <<set $mood to Math.min($moodMax, $mood + _cafeMoodGain)>>
+    <<if _cafeMoodGain lte 3>>
+        <<set _cafeMoodText to "餐點很好，你的心情也很好。">>
+    <<else>>
+        <<set _cafeMoodText to "咖啡廳環境優美，讓你心情恢復了不少。">>
+    <</if>>
+<</silently>>
+    你享用了 $cafeOrder.name。（花費 $cafeOrder.price 元）
+    <<if $cafeOrder.hpRestore gt 0>>體力 +$cafeOrder.hpRestore。<</if>>
+    <<if $cafeOrder.satietyRestore gt 0>>飽食度 +$cafeOrder.satietyRestore。<</if>>
+    <<if $cafeOrder.minutes gt 0>>你花了 $cafeOrder.minutes 分鐘慢慢享用。<</if>>
+
+    _cafeMoodText（心情 +_cafeMoodGain）
+<</if>>
+
+@@.button-container;
+<<go "繼續點餐" "咖啡廳點餐" 0>>
 <<go "結束" "咖啡廳" 1>>
+@@
+
+:: 便利商店搶劫確認 [711 safe]
+你趁深夜店內沒有其他客人，打量著櫃台與收銀機。這不是沒有代價的賺錢方式：不論成功或失敗，都會失去聲望。
+
+（成功可拿至少 <<print setup.balance.convenienceRobbery.guaranteedReward>> 元；失敗則體力 -<<print setup.balance.convenienceRobbery.failureHpDamage>>、心情 -<<print setup.balance.convenienceRobbery.failureMoodDamage>>、聲望 -<<print setup.balance.convenienceRobbery.reputationLoss>>）
+
+@@.button-container;
+<<go "🔪 動手搶劫" "便利商店搶劫結果" 0>>
+<<go "算了，離開" "便利商店" 0>>
+@@
+
+:: 便利商店搶劫結果 [711 safe]
+<<silently>>
+/%
+    成功率只看健身與幸運：健身讓人更有威嚇力，幸運決定臨場破綻。
+    所有數字都放在 setup.balance.convenienceRobbery，日後只需改那裡。
+%/
+<<set _storeRobbery to setup.balance.convenienceRobbery>>
+<<set _storeRobberyChance to _storeRobbery.baseChance + $skills.fitness.level * _storeRobbery.fitnessLevelWeight + (setup.getEffectiveLuck() / $luckMax) * _storeRobbery.luckWeight>>
+<<set _storeRobberyChance to Math.max(_storeRobbery.minimumChance, Math.min(_storeRobbery.maximumChance, _storeRobberyChance))>>
+<<set _storeRobberyRoll to random(1, 100)>>
+<<set $reputation to Math.max(-100, $reputation - _storeRobbery.reputationLoss)>>
+<<set $convenienceRobberyCooldownUntil to new Date($gameDate.getTime() + _storeRobbery.cooldownMinutes * 60 * 1000)>>
+<<run window.advanceTime(_storeRobbery.minutes, "no_drain")>>
+<</silently>>
+
+（成功率：<<print Math.round(_storeRobberyChance)>>%；擲骰：<<print _storeRobberyRoll>>；聲望 -<<print _storeRobbery.reputationLoss>>）
+
+<<if _storeRobberyRoll lte _storeRobberyChance>>
+    <<silently>>
+    <<set _storeRobberyReward to _storeRobbery.guaranteedReward>>
+    <<set _storeRobberyBonus to 0>>
+    /% 成功後再依幸運擲一次；幸運越高，越常拿到額外鈔票。 %/
+    <<set _storeRobberyBonusRoll to random(1, 100)>>
+    <<if _storeRobberyBonusRoll lte setup.getEffectiveLuck()>>
+        <<set _storeRobberyBonus to random(_storeRobbery.luckyBonusMinimum, _storeRobbery.luckyBonusMaximum)>>
+        <<set _storeRobberyReward += _storeRobberyBonus>>
+    <</if>>
+    <<set $money += _storeRobberyReward>>
+    <</silently>>
+
+    你用氣勢逼退了慌張的店員，抓起收銀機裡的鈔票後逃離現場。
+    <<if _storeRobberyBonus gt 0>>幸運的是，收銀機裡剛好有一筆還沒收好的現金。<</if>>
+    （獲得 <<print _storeRobberyReward>> 元）
+<<else>>
+    <<set $hp to Math.max(0, $hp - _storeRobbery.failureHpDamage)>>
+    <<set $mood to Math.max(0, $mood - _storeRobbery.failureMoodDamage)>>
+
+    店員沒有如你預期般害怕，反而立刻反擊。你被揍得狼狽不堪，只能空手逃離。
+    （體力 -<<print _storeRobbery.failureHpDamage>>、心情 -<<print _storeRobbery.failureMoodDamage>>）
+<</if>>
+
+<<go "🏘️離開便利商店" "街道" 0>>
 
 :: 圖書館 [library safe]
 社區內的小型圖書館。
@@ -187,71 +480,67 @@
 :: 閉館 [library safe]
 圖書館週日休館；週一至週六開放時間為早上 08:00 至晚上 07:00。
 
+@@.button-container;
 <<go "返回街道" "街道">>
+<<go "🏠回家" "YourHome" 5>>
+@@
 
 :: 健身書籍 [library safe]
-<<passTime 20 "no_hygiene">><<set $hp to Math.max(0, $hp - 1)>><<gainSkillExp "fitness" 0.2>>
-<<go "返回" "圖書館" 0>>
+<<libraryRead "fitness" 0.2>>
 
 :: 魅力書籍 [library safe]
-<<passTime 20 "no_hygiene">><<set $hp to Math.max(0, $hp - 1)>><<gainSkillExp "charm" 0.3>>
-<<go "返回" "圖書館" 0>>
+<<libraryRead "charm" 0.3>>
 
 :: 意識書籍 [library safe]
-<<passTime 20 "no_hygiene">><<set $hp to Math.max(0, $hp - 1)>><<gainSkillExp "awareness" 0.1>>
-<<go "返回" "圖書館" 0>>
+<<libraryRead "awareness" 0.1>>
 
 :: 知識書籍 [library safe]
-<<passTime 20 "no_hygiene">><<set $hp to Math.max(0, $hp - 1)>><<gainSkillExp "knowledge" 0.2>>
-<<go "返回" "圖書館" 0>>
+<<libraryRead "knowledge" 0.2>>
 
 :: 靈巧書籍 [library safe]
-<<passTime 20 "no_hygiene">><<set $hp to Math.max(0, $hp - 1)>><<gainSkillExp "dexterity" 0.2>>
-<<go "返回" "圖書館" 0>>
+<<libraryRead "dexterity" 0.2>>
 
 :: 科技書籍 [library safe]
-<<passTime 20 "no_hygiene">><<set $hp to Math.max(0, $hp - 1)>><<gainSkillExp "tech" 0.2>>
-<<go "返回" "圖書館" 0>>
+<<libraryRead "tech" 0.2>>
 
 :: 創作書籍 [library safe]
-<<passTime 20 "no_hygiene">><<set $hp to Math.max(0, $hp - 1)>><<gainSkillExp "creative" 0.1>>
-<<go "返回" "圖書館" 0>>
+<<libraryRead "creative" 0.1>>
 
 :: 料理書籍 [library safe]
-<<passTime 20 "no_hygiene">><<set $hp to Math.max(0, $hp - 1)>><<gainSkillExp "cooking" 0.3>>
-<<go "返回" "圖書館" 0>>
+<<libraryRead "cooking" 0.3>>
 
 :: 健身房 [gym safe]
-/% 1. 先檢查會員是否過期 %/
-<<nobr>>
+<<nobr>>        /% 先檢查會員是否過期 %/
 <<if $gymMember and $gameDate > $gymExpiry>>
     <<set $gymMember to false>>
 <</if>>
 健身房櫃檯服務人員親切地向你微笑。
-<<if $gymMember>>
-    💳 目前會員狀態：<span style="color: #4CAF50;">有效</span>（到期時間：<<print $gymExpiry.toLocaleDateString()>>）
-<<else>><br>
-    ⚠️ 目前會員狀態：<span style="color: #f44336;">未申辦或已過期</span>（需先申辦會員並繳交每週 200 元會費）
-<</if>>
 <br>
+你看見牆上的海報：@@color:#4CAF50;非會員單次健身 80 元。升級會員每週 300 元，享有無限次免費健身！@@
+<br>
+<<if $gymMember>>
+    <br>💳 目前會員狀態：<span style="color: #4CAF50;">有效</span>（到期時間：<<print $gymExpiry.toLocaleDateString()>>）
+<<else>>
+    <br>⚠️ 目前會員狀態：<span style="color: #f44336;">未申辦或已過期</span>（需先申辦會員並繳交每週 <<print setup.balance.gym.membershipFee>> 元會費）
+<</if>>
 <br>
 @@.button-container;
 <<if not $gymMember>>
     /% 非會員或過期時：顯示申請/續約按鈕 %/
-    <<if $money >= 200>>
-        <<go "💳 辦理 / 續期會員 (200元)" "申請會員" 5>>
+    <<if $money >= setup.balance.gym.membershipFee>>
+        <<go "💳 辦理 / 續期會員" "申請會員" 5>>
     <<else>>
-        <<button "💳 辦理 / 續期會員 (現金不足 200元)">><</button>>
+        <<button "💳 辦理 / 續期會員（現金不足）">><</button>>
     <</if>>
-    <<if $money >= 50>>
-        <<go "🏋️ 開始健身 (50元)" "健身" 20>>
+    <<if $money >= setup.balance.gym.visitFee>>
+        <<go "🏋️ 開始健身" "健身" 0>>
     <<else>>
-        <<button "🏋️ 開始健身 (現金不足 50元)">><</button>>
+        <<button "🏋️ 開始健身（現金不足）">><</button>>
     <</if>>
 <<else>>
     /% 有效會員可免費使用健身設施。 %/
-    <<go "🏋️ 開始健身" "健身" 20>>
-    <<go "淋浴間" "gym淋浴間" 0>>
+    <<go "🏋️ 開始健身" "健身" 0>>
+    <<go "🚿淋浴間" "gym淋浴間" 0>>
 <</if>>
 <<go "🏘️離開" "街道" 3>>
 @@
@@ -269,33 +558,54 @@
 
 :: 申請會員 [gym safe]
 <<nobr>>
-<<set $money to $money - 200>>
+<<set $money to Math.max(0, $money - setup.balance.gym.membershipFee)>>
 <<set $gymMember to true>>
-<<set $gymExpiry to new Date($gameDate.getTime() + (7 * 24 * 60 * 60 * 1000))>>     /% 計算 7 天後的到期時間 %/
-你順利辦理了健身房會員卡（會費 200 元），會員資格可使用至<<print $gymExpiry.toLocaleDateString()>>。
+<<set $gymExpiry to new Date($gameDate.getTime() + (setup.balance.gym.membershipDays * 24 * 60 * 60 * 1000))>>
+你順利辦理了健身房會員卡（會費 <<print setup.balance.gym.membershipFee>> 元），會員資格可使用至<<print $gymExpiry.toLocaleDateString()>>。
 <</nobr>>
 
 <<go "返回" "健身房" 0>>
 
 
 :: 健身 [gym safe]
-<<nobr>>
-<<if not $gymMember>><<set $money to $money - 50>><</if>>
-你進行了一輪充實的訓練，汗流浹背！
-<<gainSkillExp "fitness" 3>>
-<br>
-@@.button-container;
-<<go "繼續健身" "健身" 20>>
-<<go "返回大廳" "健身房" 1>>
-<<go "🏘️離開健身房" "街道" 3>>
-@@
-<</nobr>>
+<<if $gameDate.getHours() gte 23>>
+    <<goto "健身房打烊">>
+<<else>><<silently>>
+    /% 每輪時長與消耗集中在 setup.balance.gym；最後一輪只持續到 23:00 打烊。 %/
+    <<set _minutesUntilGymClose to (23 - $gameDate.getHours()) * 60 - $gameDate.getMinutes()>>
+    <<set _workoutMinutes to Math.min(setup.balance.gym.workoutMinutes, _minutesUntilGymClose)>>
+    <<set _fitnessExp to setup.balance.gym.fitnessExpPerWorkout * _workoutMinutes / setup.balance.gym.workoutMinutes>>
+    <<passTime _workoutMinutes>>
+    <<if not $gymMember>><<set $money to Math.max(0, $money - setup.balance.gym.visitFee)>><</if>>
+    <<set $hp to Math.max(0, $hp - setup.balance.gym.hpCost)>>
+    <<set $satiety to Math.max(0, $satiety - setup.balance.gym.satietyCost)>>
+    <<set $hygiene to Math.max(0, $hygiene - setup.balance.gym.hygieneCost)>>
+<</silently>>
+    你進行了 <<print _workoutMinutes>> 分鐘的充實訓練，汗流浹背！
+    <<gainSkillExp "fitness" _fitnessExp>>
+
+    <<if $gameDate.getHours() gte 23>>
+        健身房已經打烊，今天不能再繼續健身了。
+        <<go "返回街道" "街道" 0>>
+    <<else>>
+        @@.button-container;
+        <<go "🏋️繼續健身" "健身" 0>>
+        <<go "💪返回大廳" "健身房" 0>>
+        <<go "🚿淋浴間" "gym淋浴間" 0>>
+        <<go "🏘️離開健身房" "街道" 1>>
+        <<go "🏠直接回家" "YourHome" 8>>
+        @@
+    <</if>>
+<</if>>
 
 :: gym淋浴間 [gym safe]
 你走進淋浴間，享受著熱水沖刷的舒適感。
 
-<<run window.advanceTime(20, "no_drain")>> /* 過了 20 分鐘，但不會自然扣體力和清潔度 */
-<<set $hygiene to 100>>                   /* 將清潔度直接補滿至 100 */
+<<run window.advanceTime(setup.balance.gym.showerMinutes, "no_drain")>>
+<<set $hygiene to $hygieneMax>>
 
-<<go "返回大廳" "健身房" 1>>
-<<go "🏘️離開健身房" "街道" 3>>
+@@.button-container;
+<<go "💪返回大廳" "健身房" 1>>
+<<go "🏘️離開健身房" "街道" 1>>
+<<go "🏠直接回家" "YourHome" 8>>
+@@

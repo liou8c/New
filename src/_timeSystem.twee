@@ -1,6 +1,80 @@
 :: TimeSystemScript [script]
 
+/* 欠租不會讓金錢變成負數；房租不足時改為記錄欠款並開始寬限期。 */
+setup.startRentDebt = function (debtStartedAt) {
+    const state = State.variables;
+    const rent = setup.balance.rent;
+    if (state.rentDebt > 0 || state.housingStatus === "evicted") { return false; }
+
+    const availableMoney = Math.max(0, Number(state.money) || 0);
+    state.rentDebt = Math.max(0, rent.amount - availableMoney);
+    state.money = 0;
+    if (state.rentDebt <= 0) { return false; }
+
+    const startAt = debtStartedAt || state.gameDate;
+    state.rentGraceDeadline = new Date(startAt.getTime() + rent.graceDays * 24 * 60 * 60 * 1000);
+    state.rentNextAffectionPenaltyAt = new Date(startAt.getTime() + 24 * 60 * 60 * 1000);
+    state.rentEventPending = "玩家欠租";
+    return true;
+};
+
+setup.payRentDebt = function () {
+    const state = State.variables;
+    if (state.rentDebt <= 0 || state.housingStatus === "evicted") { return 0; }
+    const payment = Math.min(Math.max(0, Number(state.money) || 0), state.rentDebt);
+    state.money -= payment;
+    state.rentDebt -= payment;
+    if (state.rentDebt <= 0) {
+        state.rentDebt = 0;
+        state.rentGraceDeadline = null;
+        state.rentNextAffectionPenaltyAt = null;
+    }
+    return payment;
+};
+
+setup.processRentDebt = function () {
+    const state = State.variables;
+    const rent = setup.balance.rent;
+    if (state.rentDebt <= 0 || state.housingStatus === "evicted") { return; }
+
+    while (state.rentNextAffectionPenaltyAt && state.gameDate >= state.rentNextAffectionPenaltyAt) {
+        setup.changeNpcAffection("joel", -rent.dailyAffectionPenalty);
+        state.rentNextAffectionPenaltyAt = new Date(state.rentNextAffectionPenaltyAt.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    if (state.rentGraceDeadline && state.gameDate >= state.rentGraceDeadline) {
+        state.housingStatus = "evicted";
+        state.rentDebt = 0;
+        state.rentGraceDeadline = null;
+        state.rentNextAffectionPenaltyAt = null;
+        setup.changeNpcAffection("joel", -rent.evictionAffectionPenalty);
+        setup.addPlayerTag("homeless");
+        state.rentEventPending = "玩家被趕出去了";
+    }
+};
+
+/* 聲望過低的驅逐與欠租分開處理；每個存檔只會觸發一次。 */
+setup.processReputationEviction = function () {
+    const state = State.variables;
+    const rule = setup.balance.housing;
+    if (state.reputationEvictionTriggered || state.housingStatus === "evicted") { return; }
+    if ((Number(state.reputation) || 0) > rule.reputationEvictionAt) { return; }
+
+    state.reputationEvictionTriggered = true;
+    state.housingStatus = "evicted";
+    state.rentDebt = 0;
+    state.rentGraceDeadline = null;
+    state.rentNextAffectionPenaltyAt = null;
+    setup.addPlayerTag("homeless");
+
+    const joelAffection = state.npcRelations && state.npcRelations.joel ? state.npcRelations.joel.affection : 0;
+    state.rentEventPending = joelAffection >= rule.highJoelAffectionAt
+        ? "被喬爾趕出去_高好感"
+        : "被喬爾趕出去";
+};
+
 window.advanceTime = function (minutesPassed, type) {
+    const balance = setup.balance;
     // ----------------------------------------------------
     // 【第一步：推進遊戲時間】
     // ----------------------------------------------------
@@ -10,15 +84,25 @@ window.advanceTime = function (minutesPassed, type) {
     // 2. 把傳進來的分鐘數加進遊戲時間裡
     d.setMinutes(d.getMinutes() + minutesPassed);
 
-    // 每週房租：第一次付款日為遊戲開始後 7 天，之後每 7 天扣除 600 元。
-    // 金錢可暫時為負數，代表玩家尚未補足的房租。
+    // 每週房租：第一次付款日為遊戲開始後 7 天，之後每 7 天扣除設定中的房租金額。
+    // 金錢不會低於 0；不足的部分轉為欠租，並給玩家三天補齊。
     if (State.variables.rentDueDate === undefined) {
-        State.variables.rentDueDate = new Date(d.getTime() + (7 * 24 * 60 * 60 * 1000));
+        State.variables.rentDueDate = new Date(d.getTime() + (balance.rent.intervalDays * 24 * 60 * 60 * 1000));
     }
     while (d >= State.variables.rentDueDate) {
-        State.variables.money -= 600;
-        State.variables.rentDueDate = new Date(State.variables.rentDueDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+        if (State.variables.housingStatus !== "evicted" && State.variables.rentDebt <= 0) {
+            if (State.variables.money >= balance.rent.amount) {
+                State.variables.money -= balance.rent.amount;
+            } else {
+                setup.startRentDebt(State.variables.rentDueDate);
+            }
+        }
+        State.variables.rentDueDate = new Date(State.variables.rentDueDate.getTime() + (balance.rent.intervalDays * 24 * 60 * 60 * 1000));
     }
+    setup.processRentDebt();
+
+    // 不論這次時間推進是否會扣體力／衛生，都要檢查限時物品效果是否到期。
+    window.updateTimedEffects();
     
     
     // ----------------------------------------------------
@@ -33,14 +117,60 @@ window.advanceTime = function (minutesPassed, type) {
     if (State.variables.hygieneBuffer === undefined) {
         State.variables.hygieneBuffer = 0;
     }
+
+    // 飢餓值同樣以分鐘累積，讓零碎行動的時間不會遺失。
+    if (State.variables.satietyBuffer === undefined) {
+        State.variables.satietyBuffer = 0;
+    }
+
+    if (State.variables.hornyBuffer === undefined) {
+        State.variables.hornyBuffer = 0;
+    }
+
+    /*
+        無論是否為 no_drain，時間流逝都會讓玩家感到飢餓。
+        必須一小時一小時處理，而不能一次扣完：這樣才知道玩家是在第幾小時
+        進入「飽食 1～10」或「飽食 0」區間，並正確結算對應的體力損失。
+    */
+    State.variables.satietyBuffer += minutesPassed;
+    const satietyTicks = Math.floor(State.variables.satietyBuffer / balance.time.minutesPerTick);
+    for (let tick = 0; tick < satietyTicks; tick += 1) {
+        State.variables.satiety = Math.max(0, State.variables.satiety - balance.time.satietyLossPerTick);
+
+        let hungerHpLoss = 0;
+        if (State.variables.satiety <= 0) {
+            hungerHpLoss = balance.survival.starvationHpLossPerHour;
+
+            /* 睡覺時記錄「餓到歸零」的時數，交給睡眠 passage 把回體減半。 */
+            if (type === "sleep") {
+                State.temporary.starvationSleepMinutes = (State.temporary.starvationSleepMinutes || 0) + balance.time.minutesPerTick;
+            }
+        } else if (State.variables.satiety <= State.variables.satietyMax * balance.survival.criticalPercent / 100) {
+            hungerHpLoss = balance.survival.criticalHungerHpLossPerHour;
+        }
+
+        if (hungerHpLoss > 0) {
+            State.variables.hp = Math.max(0, State.variables.hp - hungerHpLoss);
+        }
+    }
+    State.variables.satietyBuffer %= balance.time.minutesPerTick;
+
+    // 慾望每累積一小時增加設定中的點數，並保留不足一小時的零碎時間。
+    State.variables.hornyBuffer += minutesPassed;
+    let hornyGain = Math.floor(State.variables.hornyBuffer / balance.time.minutesPerTick) * balance.time.hornyGainPerTick;
+    if (hornyGain > 0) {
+        State.variables.horny = Math.min(State.variables.hornyMax, State.variables.horny + hornyGain);
+        State.variables.hornyBuffer %= 60;
+    }
     
     
     // ----------------------------------------------------
     // 【第三步：判斷是否為特殊事件】
     // ----------------------------------------------------
-    // 如果傳進來的類型是 "no_drain"（例如：睡覺或洗澡）
-    // 我們就直接結束這個函數，不把時間存入筆記本，也不會自然扣除體力與清潔度！
-    if (type === "no_drain") {
+    // 如果傳進來的類型是 "no_drain" 或 "sleep"（例如：睡覺或洗澡）
+    // 我們就直接結束這個函數，不把時間存入體力與清潔度筆記本，也不會自然扣除它們！
+    // 飢餓值已在前面依實際流逝時間結算。
+    if (type === "no_drain" || type === "sleep") {
         return; 
     }
     
@@ -52,7 +182,7 @@ window.advanceTime = function (minutesPassed, type) {
     State.variables.energyBuffer += minutesPassed;
     
     // 2. 算算看滿 60 分鐘了沒？（例如：記了 125 分鐘，算出來就是扣 2 點）
-    let energyLoss = Math.floor(State.variables.energyBuffer / 60);
+    let energyLoss = Math.floor(State.variables.energyBuffer / balance.time.minutesPerTick) * balance.time.hpLossPerTick;
     
     // 3. 如果滿 60 分鐘（扣點大於 0），就開始扣體力
     if (energyLoss > 0) {
@@ -77,7 +207,7 @@ window.advanceTime = function (minutesPassed, type) {
     State.variables.hygieneBuffer += minutesPassed;
     
     // 2. 同樣算算看滿 60 分鐘了沒？
-    let hygieneLoss = Math.floor(State.variables.hygieneBuffer / 60);
+    let hygieneLoss = Math.floor(State.variables.hygieneBuffer / balance.time.minutesPerTick) * balance.time.hygieneLossPerTick;
     
     // 3. 如果滿 60 分鐘，就開始扣清潔度
     if (hygieneLoss > 0) {
@@ -87,4 +217,110 @@ window.advanceTime = function (minutesPassed, type) {
         // 扣完後，把剩下的零點幾小時留在筆記本裡
         State.variables.hygieneBuffer %= 60;
     }
+};
+
+/* 測試用設定選單共用功能；所有操作直接修改目前存檔的遊戲狀態。 */
+setup.cheats = {
+    refreshUi: function () {
+        if (typeof UIBar !== "undefined" && UIBar.update) {
+            UIBar.update();
+        }
+    },
+
+    addMoney: function (amount) {
+        const state = State.variables;
+        state.money = Math.max(0, (Number(state.money) || 0) + amount);
+        this.refreshUi();
+    },
+
+    advanceToHour: function (hour) {
+        const state = State.variables;
+        if (!state.gameDate) { return; }
+        const nowMinutes = state.gameDate.getHours() * 60 + state.gameDate.getMinutes();
+        const targetMinutes = hour * 60;
+        const minutes = targetMinutes >= nowMinutes ? targetMinutes - nowMinutes : (24 * 60) - nowMinutes + targetMinutes;
+        window.advanceTime(minutes);
+        this.refreshUi();
+    },
+
+    advanceOneDay: function () {
+        window.advanceTime(24 * 60);
+        this.refreshUi();
+    },
+
+    fillNeeds: function () {
+        const state = State.variables;
+        ["hp", "mood", "satiety", "hygiene", "horny"].forEach(function (stat) {
+            state[stat] = state[stat + "Max"];
+        });
+        this.refreshUi();
+    },
+
+    setValue: function (stat, value) {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed)) { return false; }
+        State.variables[stat] = parsed;
+        this.refreshUi();
+        return true;
+    },
+
+    increaseAllSkills: function () {
+        const state = State.variables;
+        const maximum = state.skillMaxLevel || setup.balance.skills.maxLevel;
+        Object.keys(state.skills || {}).forEach(function (skillId) {
+            const skill = state.skills[skillId];
+            if (!skill || skill.level >= maximum) { return; }
+            skill.level += 1;
+            skill.exp = 0;
+            if (skillId === "fitness") {
+                state.hpMax += setup.balance.skills.fitnessHpMaxGain;
+            }
+        });
+        this.refreshUi();
+    }
+};
+
+/* 欠租／驅逐事件在本次行動完成後插入，不中斷正在執行的時間結算。 */
+jQuery(document).on(":passageend.rentEvents", function () {
+    const state = State.variables;
+    setup.processReputationEviction();
+    const eventPassage = state.rentEventPending;
+    if (!eventPassage || State.passage === eventPassage) { return; }
+    state.rentEventPending = null;
+    Engine.play(eventPassage);
+});
+
+/*
+    到期的限時數值效果在此統一結算。
+    袋裝「二手幸運」分為 buff 與 debuff 兩個階段，各持續兩小時；
+    originalValue 是使用物品前的玩家數值，因此不會把暫時加成後的數字當作扣除基準。
+*/
+window.updateTimedEffects = function () {
+    const state = State.variables;
+    const effects = state.timedEffects;
+    if (!effects || !state.gameDate) { return; }
+
+    Object.keys(effects).forEach(function (effectId) {
+        const effect = effects[effectId];
+
+        /*
+            while 可處理一次跳過多個階段的情況，例如睡覺 8 小時。
+            負面效果的結束時間以「正面效果原本到期時刻」往後算，
+            不會因為一次跳過大量時間而被意外延長。
+        */
+        while (effects[effectId] && state.gameDate >= effect.expiresAt) {
+            const max = state[effect.stat + "Max"];
+            /* 舊存檔的效果可能沒有 phase，視為仍在正面階段。 */
+            if (!effect.phase || effect.phase === "buff") {
+                state[effect.stat] = Math.clamp(effect.originalValue + effect.expireAmount, 0, max);
+                effect.phase = "debuff";
+                effect.expiresAt = new Date(effect.expiresAt.getTime() + (effect.debuffDurationMinutes || 120) * 60 * 1000);
+                state.inventoryMessage = "袋裝「二手幸運」的正面效果結束：幸運 -30 持續 2 小時。";
+            } else {
+                state[effect.stat] = Math.clamp(effect.originalValue, 0, max);
+                delete effects[effectId];
+                state.inventoryMessage = "袋裝「二手幸運」的負面效果結束，幸運已恢復。";
+            }
+        }
+    });
 };

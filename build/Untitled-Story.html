@@ -104,7 +104,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 		<div id="init-lacking"><p>Browser lacks capabilities required to play.</p><p>Upgrade or switch to another browser.</p></div>
 		<div id="init-loading"><div>Loading&hellip;</div></div>
 	</div>
-	<!-- UUID://9A0B6D91-25DA-4854-A022-39074B223F86// --><tw-storydata name="Untitled Story" startnode="38" creator="Twine (Twee 3) Language" creator-version="1.1.5" ifid="9A0B6D91-25DA-4854-A022-39074B223F86" zoom="1" format="SugarCube" format-version="2.37.3" options="" hidden><style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">/* twine-user-stylesheet #1: "StoryInterface" */
+	<!-- UUID://9A0B6D91-25DA-4854-A022-39074B223F86// --><tw-storydata name="Untitled Story" startnode="76" creator="Twine (Twee 3) Language" creator-version="1.1.5" ifid="9A0B6D91-25DA-4854-A022-39074B223F86" zoom="1" format="SugarCube" format-version="2.37.3" options="" hidden><style role="stylesheet" id="twine-user-stylesheet" type="text/twine-css">/* twine-user-stylesheet #1: "StoryInterface" */
 .scene-banner img {
     width: 100%;    /* 讓圖片寬度填滿文字區域 */
     height: auto;   /* 保持圖片比例，不要拉伸變形 */
@@ -136,12 +136,159 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
     margin-top: 20px;      /* 設定這個按鈕容器與上方其他元素的距離為 20px，避免貼得太近 */
     margin-left: 0;
     padding-left: 0;
+    width: 100%;
+    box-sizing: border-box;
     justify-content: flex-start;
+    align-content: flex-start;
+}
+
+/* SugarCube 的按鈕預設外距會讓每一列看起來縮進；交由 gap 統一處理間距。 */
+.button-container > button {
+    margin: 0 !important;
+    font-size: 16px;
+}
+
+.button-container > a {
+    margin: 0 !important;
+    font-size: 16px;
+}
+
+/* Twee 會將容器內的換行輸出成 <br>；在 flex 中它會佔掉首列寬度。 */
+.button-container > br {
+    display: none;
+}
+
+/* 便利商店的搶劫按鈕與一般按鈕一樣依內容決定高度，不被其他 flex 項目拉長。 */
+.button-container.store-actions {
+    align-items: flex-start;
+}
+
+/* 搶劫冷卻提示放在店舖說明上方，不占用按鈕列的位置。 */
+.store-robbery-warning {
+    margin-bottom: 8px;
 }
 
 /* 技能彈出視窗樣式 */
 #ui-dialog-body.skill-dialog {
     padding: 15px 20px;
+}
+
+/*
+    SugarCube 會把 StoryMenu 的每個最外層連結自動包成 #menu-story 的 <li>。
+    所以前兩項（角色、技能）用左右兩欄，其餘項目仍各佔一列。
+*/
+#menu-story > li:nth-child(1),
+#menu-story > li:nth-child(2) {
+    display: inline-block;
+    width: calc(50% - 2px);
+    margin: 4px 0;
+    vertical-align: top;
+}
+
+#menu-story > li:nth-child(1) {
+    margin-right: 4px;
+}
+
+#menu-story > li a {
+    box-sizing: border-box;
+    display: block;
+    padding: 5px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #ffffff;
+    text-align: center;
+    text-decoration: none;
+}
+
+#menu-story > li a:hover {
+    background: rgba(129, 97, 255, 0.22);
+    border-color: #8161ff;
+}
+
+/* 左側主角狀態：數值以容易掃讀的進度條呈現。 */
+/* 時間下方保留給未來玩家頭像；需要更多或更少空間時只改這個數字。 */
+#story-caption .status-panel {
+    margin-top: 165px;
+}
+
+/* 使用指定格子位置，確保不會因為其他樣式而變回單欄排列。 */
+#story-caption .status-bars {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-areas:
+        "hp mood"
+        "satiety hygiene"
+        "horny horny";
+    gap: 4px 7px;
+    margin: 3px 0 2px;
+    line-height: 1;
+}
+
+#story-caption .status-bar {
+    min-width: 0;
+    margin: 0;
+}
+
+/* 前四項兩兩並列，慾望保留最後一整行。 */
+#story-caption .status-bar-hp { grid-area: hp; }
+#story-caption .status-bar-mood { grid-area: mood; }
+#story-caption .status-bar-satiety { grid-area: satiety; }
+#story-caption .status-bar-hygiene { grid-area: hygiene; }
+#story-caption .status-bar-horny { grid-area: horny; }
+
+/* 金錢與幸運獨立放在慾望條下方，預留清楚的視覺區隔。 */
+#story-caption .status-resources {
+    margin-top: 8px !important;
+    line-height: 1.35;
+}
+
+/* SugarCube 預設會在角色資訊與選單之間留 2em；這裡收緊成資訊面板。 */
+#ui-bar-body > #menu {
+    margin-top: 10px;
+}
+
+#menu ul {
+    margin-top: 6px;
+}
+
+.status-bar-label {
+    margin-bottom: 0;
+    font-weight: bold;
+    font-size: 0.95em;
+    line-height: 1;
+}
+
+.status-bar-track {
+    height: 7px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 999px;
+    background: #25252b;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.status-bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.25s ease;
+}
+
+.status-bar-normal .status-bar-fill { background: linear-gradient(90deg, #399e46, #83d86b); }
+.status-bar-warning .status-bar-fill { background: linear-gradient(90deg, #d9a421, #ffe06a); }
+.status-bar-critical .status-bar-fill { background: linear-gradient(90deg, #d33e47, #ff8188); }
+.status-bar-horny .status-bar-fill { background: linear-gradient(90deg, #9c58d5, #e28cff); }
+
+/* 標題上方的歷史紀錄按鈕縮小，不影響故事內的普通按鈕。 */
+#ui-bar-history {
+    gap: 5px;
+}
+
+#ui-bar-history button {
+    width: 34px;
+    min-width: 34px;
+    height: 30px;
+    padding: 0;
+    font-size: 0.9em;
 }
 
 /* 預設按鈕外觀 */
@@ -190,7 +337,8 @@ button:hover {
     width: 700px;
     min-width: 700px;
     gap: 8px;
-    margin-top: 8px;
+    /* 自動左右邊界讓固定三欄商品卡置中。 */
+    margin: 6px auto 0;
 }
 
 /* 每一列固定容納三張卡片，讓商品依照左、中、右的順序排列。 */
@@ -198,6 +346,7 @@ button:hover {
     display: flex;
     gap: 8px;
     width: 700px;
+    justify-content: center;
 }
 
 /* 每張卡片約 228px 寬、270px 高，形成接近方形的三欄版面。 */
@@ -267,8 +416,19 @@ button:hover {
 /* 購物清單下方的即時金額與餘額提醒。 */
 #shop-summary {
     width: 700px;
-    margin: 12px 0;
+    /* 收緊商品卡與預計金額之間的距離，並與商品區同樣置中。 */
+    margin: 8px auto 0;
     min-height: 1.5em;
+}
+
+/* 購物頁的結帳按鈕靠近金額區，避免出現過大的垂直留白。 */
+#shop-summary + .button-container {
+    margin-top: 10px;
+}
+
+/* 只在購物頁縮短橫幅與目前金額的距離，不影響其他場景的橫幅排版。 */
+body:has(#shop-cart) .scene-banner img {
+    margin-bottom: 1em;
 }
 
 #shop-insufficient {
@@ -291,6 +451,73 @@ button:hover {
 /* 社交頁：顯示玩家已認識 NPC 的資料卡。 */
 #ui-dialog-body.social-dialog {
     width: min(86vw, 720px);
+}
+
+#ui-dialog-body.settings-dialog {
+    width: min(86vw, 560px);
+}
+
+.settings-toggle {
+    display: block;
+    font-size: 1.05em;
+}
+
+.settings-toggle input {
+    margin-right: 8px;
+}
+
+.cheat-menu {
+    margin-top: 16px;
+    padding: 14px;
+    border: 1px solid rgba(255, 180, 70, 0.6);
+    border-radius: 6px;
+    background: rgba(70, 45, 20, 0.28);
+}
+
+.cheat-warning {
+    margin-top: 0;
+    color: #ffd37a;
+}
+
+.cheat-actions,
+.cheat-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-start;
+    align-content: flex-start;
+}
+
+.cheat-actions > button,
+.cheat-inputs > button {
+    margin: 0 !important;
+}
+
+.cheat-inputs {
+    margin-top: 14px;
+}
+
+.cheat-inputs label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cheat-inputs input {
+    width: 78px;
+}
+
+.cheat-actions button,
+.cheat-inputs button {
+    padding: 7px 10px;
+    font-size: 0.9em;
+}
+
+.cheat-feedback {
+    min-height: 1.4em;
+    margin-top: 12px;
+    color: #a9e6a2;
 }
 
 .social-empty {
@@ -444,7 +671,40 @@ button:hover {
     #ui-dialog-body.inventory-dialog {
         width: auto;
     }
-}</style><script role="script" id="twine-user-script" type="text/twine-javascript">/* twine-user-script #1: "ShopInputProtection" */
+}</style><script role="script" id="twine-user-script" type="text/twine-javascript">/* twine-user-script #1: "FaintSystem" */
+/*
+    體力歸零的統一檢查。
+    :passageend 會在每個 passage 的效果都執行完成後觸發，所以走路、工作、
+    閱讀、搶匪或飢餓等任何來源造成的體力歸零，都不需要各自複製一套昏倒判斷。
+*/
+jQuery(document).on("click.starvationPenalty", "#passages a.link-internal, #passages a.link-visited, #passages button", function () {
+    const state = State.variables;
+
+    // 背包、技能等彈窗不在 #passages 內；只有推進故事的選項才算一次行動。
+    // 每小時的飢餓傷害由 TimeSystem 處理；這裡只留下歸零時的即時警訊。
+    if (state.satiety <= 0) {
+        // 這個數字集中在 setup.balance.survival，方便調整飢餓的危險程度。
+        state.hp = Math.max(0, state.hp - setup.balance.survival.starvationHpCostPerAction);
+    }
+});
+
+jQuery(document).on(":passageend.faintSystem", function () {
+    const state = State.variables;
+
+    // 事件演出中不重複觸發；體力已恢復時也不需處理。
+    if (state.faintEventActive || state.hp > 0) {
+        return;
+    }
+
+    const currentPassage = Story.get(State.passage);
+    const atHome = currentPassage && currentPassage.tags.includes("home");
+
+    // 記住昏倒地點，供事件 passage 決定是否遺失金錢。
+    state.faintEventActive = true;
+    state.faintedAtHome = atHome;
+    Engine.play("昏倒事件");
+});
+/* twine-user-script #2: "ShopInputProtection" */
 /*
     商品欄位由資料庫產生，data-item-id 指向購物車中的物品 ID。
 */
@@ -475,18 +735,170 @@ function updateShopSummary() {
     if (!State.variables.cart || !jQuery("#shop-total").length) {
         return;
     }
-    const total = setup.getCartTotal("shop_711");
+    // 便利商店與雜貨店共用這個介面；商店 ID 由購物頁的 data-shop-id 指定。
+    const shopId = jQuery("#shop-cart").data("shopId");
+    if (!shopId) {
+        return;
+    }
+    const total = setup.getCartTotal(shopId);
 
     jQuery("#shop-total").text(total);
     jQuery("#shop-insufficient").text(
         total > State.variables.money ? "金錢不足。" : ""
     );
 }
-/* twine-user-script #2: "GameDatabase" */
+/* twine-user-script #3: "GameDatabase" */
 /*
     遊戲的「靜態資料庫」。規則程式放在其他檔案；可編輯內容集中在這裡。
     ID（例如 tea、alice）一旦發行存檔後不要改名；顯示名稱則可隨時在 locales 裡修改。
 */
+/*
+    ╔══════════════════════════════════════════════╗
+    ║                遊戲平衡設定區                 ║
+    ║  想調整難度時，優先只修改這一區的數字。         ║
+    ╚══════════════════════════════════════════════╝
+
+    這裡放「規則數字」：初始狀態、時間消耗、工作、事件機率等。
+    物品的售價與效果則留在下方 gameDatabase.items，因為它們屬於個別物品資料。
+*/
+setup.balance = {
+    /* 改動這一區時，也請同步更新「遊戲狀態與平衡規格.md」與計算機。 */
+    saveVersion: 8,
+    player: {
+        /* 開局金額只夠撐過最初幾天；第 7 天前需要開始工作。 */
+        startMoney: 500,
+        stats: {
+            hp: { start: 80, max: 100 },
+            horny: { start: 15, max: 100 },
+            luck: { start: 50, max: 100 },
+            mood: { start: 70, max: 100 },
+            satiety: { start: 80, max: 100 },
+            hygiene: { start: 75, max: 100 }
+        }
+    },
+    /* 800 / 7 約為每天 114 元，是前期最重要的經濟壓力。 */
+    rent: {
+        intervalDays: 7,
+        amount: 800,
+        graceDays: 3,
+        dailyAffectionPenalty: 5,
+        evictionAffectionPenalty: 35
+    },
+    housing: {
+        /* 全域聲望過低時，警察房東喬爾會主動解除租約。 */
+        reputationEvictionAt: -35,
+        highJoelAffectionAt: 30
+    },
+    time: {
+        minutesPerTick: 60,
+        satietyLossPerTick: 3,
+        hornyGainPerTick: 3,
+        hpLossPerTick: 1,
+        hygieneLossPerTick: 2
+    },
+    /* 睡 7 小時回 42 體力；每天工作 4 小時約剛好維持體力，健身需要額外安排。 */
+    sleep: { minutesPerStep: 30, hpGainPerStep: 3 },
+    skills: { maxLevel: 10, expBase: 100, fitnessHpMaxGain: 6 },
+    /* 4 小時工作 = 220；扣兩份泡麵 100 後，約剛好覆蓋每天房租準備金。 */
+    cafeWork: { hourlyPay: 55, hpCost: 7, hygieneCost: 5, moodCost: 2 },
+    gym: {
+        membershipFee: 300,
+        membershipDays: 7,
+        visitFee: 80,
+        workoutMinutes: 20,
+        fitnessExpPerWorkout: 10,
+        hpCost: 6,
+        satietyCost: 5,
+        hygieneCost: 8,
+        showerMinutes: 20
+    },
+    /* 公園跑步免費但效率低；目的是讓玩家用較少健身經驗換取靈巧的起步。 */
+    parkRun: { minutes: 25, fitnessExp: 1, dexterityExp: 2, satietyCost: 3, hygieneCost: 5 },
+    /* 公園休息是短暫恢復，不應比睡覺有效率；仍會正常流逝時間與累積自然消耗。 */
+    parkRest: { minutes: 15, hpRestore: 1, moodRestore: 2 },
+    /* 聲望只在角色資訊以文字顯示；新增階段時從低到高填入即可。 */
+    reputation: {
+        minimum: -100,
+        maximum: 100,
+        tiers: [
+            { maximum: -60, text: "你在這個世界裡惡名昭彰。" },
+            { maximum: -20, text: "你在這個世界裡風評不佳。" },
+            { maximum: 19, text: "沒有多少人認識你。" },
+            { maximum: 59, text: "你在這個世界小有名氣。" },
+            { maximum: 100, text: "你很受歡迎，大家都喜歡你。" }
+        ]
+    },
+    /*
+        深夜便利商店搶劫：有高風險的一次性現金選項，不能取代正常工作。
+        初始 Lv.1 健身、幸運 50 時成功率為 34%；最高不超過 85%。
+    */
+    convenienceRobbery: {
+        startHour: 0,
+        endHour: 5,
+        cooldownMinutes: 360,
+        baseChance: 15,
+        fitnessLevelWeight: 6,
+        luckWeight: 25,
+        minimumChance: 25,
+        maximumChance: 85,
+        minutes: 20,
+        guaranteedReward: 140,
+        luckyBonusMinimum: 60,
+        luckyBonusMaximum: 160,
+        failureHpDamage: 20,
+        failureMoodDamage: 15,
+        reputationLoss: 8
+    },
+    /*
+        心情不直接扣血，而是改變「有效幸運」。不修改 $luck 本身，
+        因此不會和限時幸運道具的原始數值互相覆蓋。
+    */
+    moodLuck: {
+        lowMoodMaximumPercent: 20,
+        highMoodMinimumPercent: 80,
+        lowMoodLuckModifier: -20,
+        highMoodLuckModifier: 10
+    },
+    /*
+        三段式飢餓壓力：低飽食先提醒，嚴重飢餓會隨時間失去體力。
+        歸零時保留少量「每次行動」扣血，讓玩家一按按鈕就知道自己餓壞了。
+    */
+    survival: {
+        warningPercent: 25,
+        criticalPercent: 10,
+        criticalHungerHpLossPerHour: 1,
+        starvationHpLossPerHour: 3,
+        starvationHpCostPerAction: 1,
+        starvationSleepRecoveryMultiplier: 0.5
+    },
+    robber: {
+        dayChance: 5,
+        nightChance: 30,
+        minimumChance: 1,
+        luckReductionPerPoint: 0.4,
+        cooldownMinutes: 120,
+        moodPenalty: 5,
+        paymentDemand: 100,
+        noMoneyAttackChance: 50,
+        noMoneyHpDamage: 10,
+        noMoneyMoodDamage: 10,
+        escapeHpCost: 5,
+        guaranteedEscapeHp: 50,
+        combat: {
+            baseChance: 10,
+            hpWeight: 20,
+            fitnessLevelWeight: 5,
+            dexterityLevelWeight: 5,
+            luckWeight: 20,
+            minimumChance: 15,
+            maximumChance: 90,
+            victoryMoodGain: 20,
+            victoryMoneyReward: 800,
+            defeatMoodPenalty: 35
+        }
+    }
+};
+
 setup.gameDatabase = {
     version: 1,
     defaultLanguage: "zh-TW",
@@ -496,8 +908,8 @@ setup.gameDatabase = {
             items: {
                 tea: {
                     name: "紅茶",
-                    description: "溫熱的紅茶。飲用後心情 +5。",
-                    useMessage: "你喝下紅茶，心情 +5。"
+                    description: "溫熱的紅茶。飲用後心情 +8。",
+                    useMessage: "你喝下紅茶，心情 +8。"
                 },
                 weirdDrink: {
                     name: "包裝奇怪的飲料",
@@ -506,23 +918,31 @@ setup.gameDatabase = {
                 },
                 ramen: {
                     name: "泡麵",
-                    description: "簡單又方便的熱食。食用後飽食度 +30。",
-                    useMessage: "你吃了一碗泡麵，飽食度 +30。"
+                    description: "簡單又方便的熱食。食用後飽食度 +40。",
+                    useMessage: "你吃了一碗泡麵，飽食度 +40。"
+                },
+                recycled_luck_pouch: {
+                    name: "袋裝「二手幸運」",
+                    description: "幸運 +30 持續 2 小時，接著以使用前幸運 -30 持續 2 小時。",
+                    useMessage: "你打開了袋裝「二手幸運」。幸運暫時 +30，效果持續 2 小時。"
                 }
             },
             npcs: {
                 alice: { name: "Alice（暫定）", profile: "可戀愛 NPC 的資料範例。請在角色確定後改名與補完介紹。" },
                 bob: { name: "Bob（暫定）", profile: "非戀愛 NPC 的資料範例。請在角色確定後改名與補完介紹。" },
-                winley: { name: "溫莉", profile: "咖啡廳店長。" }
+                winley: { name: "溫莉", profile: "咖啡廳店長。" },
+                raven: { name: "瑞文", profile: "咖啡廳工讀生。" },
+                joel: { name: "喬爾", profile: "房東、警察。" }
             },
             /* 劇情事件與任務目前直接寫在各個 .twee 場景內。 */
         },
         /* 英文檔先保留同一批 key；日後只需翻譯此區，不需碰遊戲邏輯。 */
         en: {
             items: {
-                tea: { name: "Black Tea", description: "Warm black tea. Restores 5 mood.", useMessage: "You drink the tea. Mood +5." },
+                tea: { name: "Black Tea", description: "Warm black tea. Restores 8 mood.", useMessage: "You drink the tea. Mood +8." },
                 weirdDrink: { name: "Strange Packaged Drink", description: "Something feels off about it.", useMessage: "You drink the strange beverage… Nothing happens right away." },
-                ramen: { name: "Instant Noodles", description: "A quick hot meal. Restores 30 satiety.", useMessage: "You eat the instant noodles. Satiety +30." }
+                ramen: { name: "Instant Noodles", description: "A quick hot meal. Restores 40 satiety.", useMessage: "You eat the instant noodles. Satiety +40." },
+                recycled_luck_pouch: { name: "Bagged \"Secondhand Luck\"", description: "Grants +30 luck for 2 hours, then applies -30 from your pre-use luck for 2 hours.", useMessage: "You open the bagged secondhand luck. Luck +30 for 2 hours." }
             },
             npcs: {
                 alice: { name: "Alice (draft)", profile: "Template data for a romanceable NPC." },
@@ -536,8 +956,8 @@ setup.gameDatabase = {
     items: {
         tea: {
             icon: "🍵", category: "drink", tags: ["consumable", "food", "drink", "shop_711", "mood_restore"],
-            price: 25, stackable: true, usable: true,
-            effects: [{ type: "stat", stat: "mood", amount: 5 }]
+            price: 20, stackable: true, usable: true,
+            effects: [{ type: "stat", stat: "mood", amount: 8 }]
         },
         weirdDrink: {
             icon: "🧃", category: "drink", tags: ["consumable", "drink", "shop_711", "mystery", "risky"],
@@ -545,8 +965,14 @@ setup.gameDatabase = {
         },
         ramen: {
             icon: "🍜", category: "food", tags: ["consumable", "food", "shop_711", "satiety_restore"],
-            price: 45, stackable: true, usable: true,
-            effects: [{ type: "stat", stat: "satiety", amount: 30 }]
+            price: 50, stackable: true, usable: true,
+            effects: [{ type: "stat", stat: "satiety", amount: 40 }]
+        },
+        recycled_luck_pouch: {
+            icon: "🧧", category: "consumable", tags: ["consumable", "buff", "debuff", "temporary", "shop_cornerstore"],
+            price: 100, stackable: true, usable: true,
+            /* 到期時以 originalValue + expireAmount 結算，不會以加成後的數值為基礎。 */
+            effects: [{ type: "timedStat", stat: "luck", amount: 30, durationMinutes: 120, expireAmount: -30, debuffDurationMinutes: 120, effectId: "recycled_luck_pouch" }]
         }
     },
 
@@ -584,6 +1010,30 @@ setup.gameDatabase = {
             birthday: "07/21", likes: [], dislikes: [],
             relationship: { affectionStart: 0, romanceEnabled: false },
             notes: "咖啡廳店長。"
+        },
+        joel: {
+            color: "#548ec1",
+            gender: "男",
+            social: {
+                portrait: "images/ico_npc_joel.png",
+                occupation: "房東、警察"
+            },
+            tags: ["named_npc", "landlord"],
+            birthday: "07/21", likes: [], dislikes: [],
+            relationship: { affectionStart: 0, romanceEnabled: false },
+            notes: "X"
+        },
+        raven: {
+            color: "#5e6887",
+            gender: "女",
+            social: {
+                portrait: "images/ico_npc_raven.png",
+                occupation: "咖啡廳工讀生"
+            },
+            tags: ["named_npc", "cafe_manager"],
+            birthday: "07/21", likes: [], dislikes: [],
+            relationship: { affectionStart: 0, romanceEnabled: false },
+            notes: "酷妹。"
         }
     },
 
@@ -597,7 +1047,273 @@ setup.gameDatabase = {
         library: { passage: "圖書館", tags: ["library", "safe", "knowledge"] },
         gym: { passage: "健身房", tags: ["gym", "safe", "fitness"] }
     },
-    shops: { shop_711: { itemIds: ["tea", "weirdDrink", "ramen"], tags: ["shop", "convenience_store"] } }
+    shops: {
+        /* 商品 ID 只列在對應店舖；袋裝「二手幸運」不會出現在便利商店。 */
+        shop_711: { itemIds: ["tea", "weirdDrink", "ramen"], tags: ["shop", "convenience_store"] },
+        cornerstore: { itemIds: ["recycled_luck_pouch"], tags: ["shop", "mystery"] }
+    },
+    /* 新開局的角色選項與大學科系。主修／副修都必須是 $skills 已存在的技能 ID。 */
+    characterGenders: {
+        male: { name: "男生" },
+        female: { name: "女生" },
+        nonbinary: { name: "非二元" }
+    },
+    majors: {
+        sports_science: { name: "體育與運動科學系", majorSkill: "fitness", minorSkill: "dexterity", description: "以身體訓練與運動表現為核心。" },
+        visual_arts: { name: "藝術與視覺系", majorSkill: "creative", minorSkill: "dexterity", description: "培養創作能力與精細的手部控制。" },
+        information_technology: { name: "資訊與科技系", majorSkill: "tech", minorSkill: "knowledge", description: "從科技實作與理論知識建立專業。" },
+        hospitality_management: { name: "餐飲管理系", majorSkill: "cooking", minorSkill: "charm", description: "學習料理、服務與管理場合的應對。" },
+        performing_arts: { name: "表演藝術系", majorSkill: "charm", minorSkill: "creative", description: "以舞台表現與創作練習為主。" },
+        humanities_history: { name: "人文與歷史系", majorSkill: "knowledge", minorSkill: "charm", description: "透過閱讀、考據與論述累積知識。" },
+        criminology_security: { name: "犯罪學與安全研究系", majorSkill: "knowledge", minorSkill: "dexterity", description: "研究犯罪、調查與安全實務。" }
+    },
+    /*
+        正式場所與工作的衛生規則。
+        新增場所時，只要新增一個 ID 與 entry／work 的規則，不需要複製判斷程式。
+        minimum 是「低於此值」才禁止；例如 20 代表衛生 20 仍可通過。
+    */
+    venueRules: {
+        cafe: {
+            name: "咖啡廳",
+            hygiene: {
+                entry: {
+                    minimum: 10,
+                    message: "你正要走進咖啡廳，卻注意到自己滿身汗味，你感覺自己很邋遢，不適合走進這裡。",
+                    returnPassage: "街道",
+                    returnLabel: "返回街道"
+                },
+                work: {
+                    minimum: 15,
+                    message: '@@.npc-winley;溫莉@@看了看你凌亂的儀容，委婉地說：@@.npc-winley;「今天先去洗個澡吧，整理好再來上班。」@@',
+                    returnPassage: "咖啡廳",
+                    returnLabel: "返回咖啡廳"
+                }
+            }
+        },
+        university: {
+            name: "大學",
+            /* 大學白天正常開放；非開放時間只能嘗試開鎖。 */
+            access: {
+                entryPassage: "大學",
+                returnPassage: "市區",
+                returnLabel: "返回市區",
+                openDays: [1, 2, 3, 4, 5],
+                openHour: 7,
+                closeHour: 19,
+                afterHoursMessage: "校門已經關上，側門的門鎖看起來或許能用工具打開。",
+                lockpick: {
+                    /* 初始靈巧 Lv.1、有效幸運 50 時成功率為 28%；最高 85%。 */
+                    baseChance: 20,
+                    difficulty: 15,
+                    dexterityLevelWeight: 10,
+                    luckWeight: 0.25,
+                    minimumChance: 5,
+                    maximumChance: 85,
+                    minutes: 15,
+                    attemptCooldownMinutes: 60,
+                    guardBaseChance: 35,
+                    guardDexterityReductionPerLevel: 4,
+                    guardLuckReduction: 0.15,
+                    guardMinimumChance: 10,
+                    guardMaximumChance: 75,
+                    caughtReputationLoss: 6,
+                    successMessage: "你避開校園巡邏的視線，撬開側門的門鎖，悄悄溜進校園。",
+                    failedMessage: "門鎖發出刺耳的金屬摩擦聲。你只好先收起工具，等風頭過去再說。",
+                    caughtMessage: "警衛循著聲音趕來，嚴厲地將你趕出校門，並警告今天不准再靠近。",
+                    lockoutMessage: "校門口的警衛顯然記得你。今天再靠近，只會讓事情變得更糟。",
+                    cooldownMessage: "側門附近還有人影巡邏。你得先讓剛才的聲響被夜色掩蓋。"
+                }
+            },
+            /*
+                每次上課單獨收費，而不是固定週期學費。
+                主修經驗約為副修的 2.4 倍；兩項技能滿級後不再允許付費上課。
+            */
+            education: {
+                classMinutes: 60,
+                tuitionPerClass: 30,
+                majorExp: 12,
+                minorExp: 5,
+                /* 入學滿幾天後才可在學生服務中心申請轉系。日後可在 canChangeMajor() 加入考試等條件。 */
+                majorChangeWaitDays: 7
+            }
+        }
+    }
+};
+
+/*
+    取得「這次判定要使用的幸運」。
+    $luck 是玩家本來的幸運（會存檔）；心情帶來的加減成只是即時效果，
+    所以心情跨過門檻時會立刻生效／解除，也不需要建立額外的限時效果資料。
+*/
+setup.getMoodLuckModifier = function () {
+    const state = State.variables;
+    const rule = setup.balance.moodLuck;
+    const moodPercent = state.moodMax > 0 ? (state.mood / state.moodMax) * 100 : 0;
+    if (moodPercent <= rule.lowMoodMaximumPercent) { return rule.lowMoodLuckModifier; }
+    if (moodPercent >= rule.highMoodMinimumPercent) { return rule.highMoodLuckModifier; }
+    return 0;
+};
+
+setup.getEffectiveLuck = function () {
+    const state = State.variables;
+    return Math.max(0, Math.min(state.luckMax, state.luck + setup.getMoodLuckModifier()));
+};
+
+setup.getMoodLuckStatus = function () {
+    const modifier = setup.getMoodLuckModifier();
+    if (modifier < 0) { return "心情低落：幸運 " + modifier; }
+    if (modifier > 0) { return "心情愉快：幸運 +" + modifier; }
+    return "";
+};
+
+/* 將數值聲望翻譯成角色資訊可直接顯示的文字。 */
+setup.getReputationDescription = function () {
+    const rule = setup.balance.reputation;
+    const reputation = Math.max(rule.minimum, Math.min(rule.maximum, Number(State.variables.reputation) || 0));
+    const tier = rule.tiers.find(function (item) { return reputation <= item.maximum; });
+    return tier ? tier.text : rule.tiers[rule.tiers.length - 1].text;
+};
+
+setup.getPlayerGenderName = function () {
+    const gender = setup.gameDatabase.characterGenders[State.variables.playerGender];
+    return gender ? gender.name : "未設定";
+};
+
+/* 角色建立與大學課程共用的顯示／資料工具。 */
+setup.skillNames = {
+    fitness: "健身", charm: "魅力", awareness: "意識", knowledge: "知識",
+    dexterity: "靈巧", tech: "科技", creative: "創作", cooking: "料理",
+    oral: "口部", manual: "手部", vaginal: "陰道", anal: "肛門"
+};
+
+setup.getSkillName = function (skillId) {
+    return setup.skillNames[skillId] || skillId;
+};
+
+setup.getMajor = function (majorId) {
+    return setup.gameDatabase.majors[majorId] || null;
+};
+
+setup.getMajorName = function () {
+    const major = setup.getMajor(State.variables.majorId);
+    return major ? major.name : "未選擇科系";
+};
+
+/* 轉系資格集中在這裡；日後新增考試、聲望或費用門檻時，只需擴充這個函式。 */
+setup.canChangeMajor = function () {
+    const state = State.variables;
+    return !!state.majorChangeAvailableAt && !!state.gameDate && state.gameDate >= state.majorChangeAvailableAt;
+};
+
+setup.getUniversityClassPlan = function () {
+    const state = State.variables;
+    const major = setup.getMajor(state.majorId);
+    const university = setup.gameDatabase.venueRules.university;
+    const education = university && university.education;
+    if (!major || !education || !state.skills) { return null; }
+
+    const maxLevel = state.skillMaxLevel || setup.balance.skills.maxLevel;
+    return {
+        majorName: major.name,
+        majorSkill: major.majorSkill,
+        minorSkill: major.minorSkill,
+        majorExp: state.skills[major.majorSkill].level < maxLevel ? education.majorExp : 0,
+        minorExp: state.skills[major.minorSkill].level < maxLevel ? education.minorExp : 0,
+        classMinutes: education.classMinutes,
+        tuition: education.tuitionPerClass
+    };
+};
+
+setup.getMinutesUntilVenueClose = function (venueId) {
+    const rule = setup.getVenueAccessRule(venueId);
+    const date = State.variables.gameDate;
+    if (!rule || !date || !setup.isVenueOpenNow(venueId)) { return 0; }
+    return Math.max(0, (rule.closeHour - date.getHours()) * 60 - date.getMinutes());
+};
+
+/*
+    正式場所／工作場所的共用衛生檢查。
+    venueId 是場所 ID（例如 cafe）；context 是 entry 或 work。
+    沒有設定規則的場所一律通過，方便逐步新增內容。
+*/
+setup.getVenueHygieneRule = function (venueId, context) {
+    const venue = setup.gameDatabase.venueRules[venueId];
+    return venue && venue.hygiene && venue.hygiene[context] ? venue.hygiene[context] : null;
+};
+
+setup.canUseVenue = function (venueId, context) {
+    const rule = setup.getVenueHygieneRule(venueId, context);
+    return !rule || State.variables.hygiene >= rule.minimum;
+};
+
+/* 記住本次被拒絕的場所，讓共用 passage 能讀取各場所不同的事件文字。 */
+setup.setVenueHygieneDenied = function (venueId, context) {
+    State.variables.venueAccessDenied = { venueId: venueId, context: context };
+};
+
+/* 以下是所有「開放時間／開鎖進入」場所共用的工具。 */
+setup.getVenueAccessRule = function (venueId) {
+    const venue = setup.gameDatabase.venueRules[venueId];
+    return venue && venue.access ? venue.access : null;
+};
+
+setup.getGameDateKey = function () {
+    const date = State.variables.gameDate;
+    return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
+};
+
+setup.isVenueOpenNow = function (venueId) {
+    const rule = setup.getVenueAccessRule(venueId);
+    const date = State.variables.gameDate;
+    if (!rule || !date) { return true; }
+    return rule.openDays.includes(date.getDay()) && date.getHours() >= rule.openHour && date.getHours() < rule.closeHour;
+};
+
+setup.isVenueLockedOutToday = function (venueId) {
+    const lockouts = State.variables.venueDailyLockouts || {};
+    return lockouts[venueId] === setup.getGameDateKey();
+};
+
+setup.getVenueCooldownRemaining = function (venueId) {
+    const cooldowns = State.variables.venueAccessCooldowns || {};
+    const until = cooldowns[venueId];
+    if (!until || !State.variables.gameDate) { return 0; }
+    return Math.max(0, Math.ceil((new Date(until).getTime() - State.variables.gameDate.getTime()) / 60000));
+};
+
+setup.setVenueAccessPending = function (venueId) {
+    State.variables.venueAccessPending = venueId;
+};
+
+setup.setVenueAttemptCooldown = function (venueId) {
+    const rule = setup.getVenueAccessRule(venueId);
+    const lockpick = rule && rule.lockpick;
+    if (!lockpick) { return; }
+    const cooldowns = State.variables.venueAccessCooldowns || (State.variables.venueAccessCooldowns = {});
+    cooldowns[venueId] = new Date(State.variables.gameDate.getTime() + lockpick.attemptCooldownMinutes * 60 * 1000);
+};
+
+setup.setVenueLockedOutToday = function (venueId) {
+    const lockouts = State.variables.venueDailyLockouts || (State.variables.venueDailyLockouts = {});
+    lockouts[venueId] = setup.getGameDateKey();
+};
+
+setup.getLockpickChance = function (venueId) {
+    const rule = setup.getVenueAccessRule(venueId);
+    const lockpick = rule && rule.lockpick;
+    const state = State.variables;
+    if (!lockpick) { return 0; }
+    const chance = lockpick.baseChance + state.skills.dexterity.level * lockpick.dexterityLevelWeight + setup.getEffectiveLuck() * lockpick.luckWeight - lockpick.difficulty;
+    return Math.max(lockpick.minimumChance, Math.min(lockpick.maximumChance, chance));
+};
+
+setup.getGuardCatchChance = function (venueId) {
+    const rule = setup.getVenueAccessRule(venueId);
+    const lockpick = rule && rule.lockpick;
+    const state = State.variables;
+    if (!lockpick) { return 0; }
+    const chance = lockpick.guardBaseChance - state.skills.dexterity.level * lockpick.guardDexterityReductionPerLevel - setup.getEffectiveLuck() * lockpick.guardLuckReduction;
+    return Math.max(lockpick.guardMinimumChance, Math.min(lockpick.guardMaximumChance, chance));
 };
 
 setup.t = function (path, fallback) {
@@ -670,8 +1386,15 @@ setup.initializeGameDatabaseState = function () {
         state.cart[itemId] = 0;
     });
     state.inventoryMessage = "";
+    state.timedEffects = {};
     state.knownNpcs = [];
     state.playerTags = [];
+    state.rentDebt = 0;
+    state.rentGraceDeadline = null;
+    state.rentNextAffectionPenaltyAt = null;
+    state.housingStatus = "housed";
+    state.reputationEvictionTriggered = false;
+    state.rentEventPending = null;
     state.npcRelations = {};
     Object.keys(setup.gameDatabase.npcs).forEach(function (npcId) {
         const relation = setup.gameDatabase.npcs[npcId].relationship;
@@ -682,6 +1405,103 @@ setup.initializeGameDatabaseState = function () {
     });
     state.flags = {};
 };
+
+/*
+    舊存檔補值：只補「不存在」的欄位，絕不覆蓋玩家原有進度。
+    之後新增新的存檔變數時，請把預設值加在這裡，並將 saveVersion 加 1。
+*/
+setup.ensureGameState = function () {
+    const state = State.variables;
+    const balance = setup.balance;
+    const statDefaults = balance.player.stats;
+
+    Object.keys(statDefaults).forEach(function (stat) {
+        const definition = statDefaults[stat];
+        if (state[stat] === undefined) { state[stat] = definition.start; }
+        if (state[stat + "Max"] === undefined) { state[stat + "Max"] = definition.max; }
+    });
+
+    if (state.money === undefined) { state.money = balance.player.startMoney; }
+    state.money = Math.max(0, Number(state.money) || 0);
+    if (state.rentDebt === undefined) { state.rentDebt = 0; }
+    if (state.rentGraceDeadline === undefined) { state.rentGraceDeadline = null; }
+    if (state.rentNextAffectionPenaltyAt === undefined) { state.rentNextAffectionPenaltyAt = null; }
+    if (state.housingStatus === undefined) { state.housingStatus = "housed"; }
+    if (state.reputationEvictionTriggered === undefined) { state.reputationEvictionTriggered = false; }
+    if (state.rentEventPending === undefined) { state.rentEventPending = null; }
+    if (state.language === undefined) { state.language = setup.gameDatabase.defaultLanguage; }
+    if (state.skillMaxLevel === undefined) { state.skillMaxLevel = balance.skills.maxLevel; }
+    if (state.gymMember === undefined) { state.gymMember = false; }
+    if (state.gymExpiry === undefined) { state.gymExpiry = null; }
+    if (state.energyBuffer === undefined) { state.energyBuffer = 0; }
+    if (state.hygieneBuffer === undefined) { state.hygieneBuffer = 0; }
+    if (state.satietyBuffer === undefined) { state.satietyBuffer = 0; }
+    if (state.hornyBuffer === undefined) { state.hornyBuffer = 0; }
+    if (state.timedEffects === undefined) { state.timedEffects = {}; }
+    if (state.robberEventCooldownUntil === undefined) { state.robberEventCooldownUntil = null; }
+    if (state.convenienceRobberyCooldownUntil === undefined) { state.convenienceRobberyCooldownUntil = null; }
+    if (state.venueAccessDenied === undefined) { state.venueAccessDenied = null; }
+    if (state.venueAccessPending === undefined) { state.venueAccessPending = null; }
+    if (state.venueDailyLockouts === undefined) { state.venueDailyLockouts = {}; }
+    if (state.venueAccessCooldowns === undefined) { state.venueAccessCooldowns = {}; }
+    if (state.playerGender === undefined) { state.playerGender = null; }
+    if (state.majorId === undefined) { state.majorId = null; }
+    if (state.majorChangeAvailableAt === undefined) {
+        const waitDays = setup.gameDatabase.venueRules.university.education.majorChangeWaitDays;
+        state.majorChangeAvailableAt = state.gameDate ? new Date(state.gameDate.getTime() + (waitDays * 24 * 60 * 60 * 1000)) : null;
+    }
+    if (state.faintEventActive === undefined) { state.faintEventActive = false; }
+    if (state.faintedAtHome === undefined) { state.faintedAtHome = false; }
+    if (state.cheatsEnabled === undefined) { state.cheatsEnabled = false; }
+    if (state.saveVersion === undefined) { state.saveVersion = balance.saveVersion; }
+
+    if (state.inventory === undefined) { state.inventory = {}; }
+    if (state.cart === undefined) { state.cart = {}; }
+    Object.keys(setup.gameDatabase.items).forEach(function (itemId) {
+        if (state.inventory[itemId] === undefined) { state.inventory[itemId] = 0; }
+        if (state.cart[itemId] === undefined) { state.cart[itemId] = 0; }
+    });
+
+    if (state.knownNpcs === undefined) { state.knownNpcs = []; }
+    if (state.playerTags === undefined) { state.playerTags = []; }
+    /* 舊存檔曾以中文儲存無家可歸標籤，讀檔時轉為一致的英文 ID。 */
+    if (state.playerTags.includes("無家可歸")) {
+        state.playerTags = state.playerTags.filter(function (tag) { return tag !== "無家可歸"; });
+        if (!state.playerTags.includes("homeless")) { state.playerTags.push("homeless"); }
+    }
+    if (state.flags === undefined) { state.flags = {}; }
+    if (state.npcRelations === undefined) { state.npcRelations = {}; }
+    Object.keys(setup.gameDatabase.npcs).forEach(function (npcId) {
+        const relation = setup.gameDatabase.npcs[npcId].relationship;
+        if (state.npcRelations[npcId] === undefined) {
+            state.npcRelations[npcId] = { affection: relation.affectionStart || 0 };
+        }
+        if (relation.romanceEnabled && state.npcRelations[npcId].romance === undefined) {
+            state.npcRelations[npcId].romance = relation.romanceStart || 0;
+        }
+        state.npcRelations[npcId].affection = Math.clamp(Number(state.npcRelations[npcId].affection) || 0, -100, 100);
+    });
+};
+
+/* 好感度的合法範圍為 -100～100；負數可用於厭惡與仇人關係。 */
+setup.changeNpcAffection = function (npcId, amount) {
+    const relation = State.variables.npcRelations && State.variables.npcRelations[npcId];
+    if (!relation) { return false; }
+    relation.affection = Math.clamp((Number(relation.affection) || 0) + (Number(amount) || 0), -100, 100);
+    return true;
+};
+
+setup.getNpcRelationTier = function (affection) {
+    const value = Math.clamp(Number(affection) || 0, -100, 100);
+    if (value <= -80) { return "仇人"; }
+    if (value <= -10) { return "厭惡"; }
+    return "普通";
+};
+
+/* 每次進入故事前安全補齊舊存檔缺少的欄位。 */
+jQuery(document).on(":passagestart.ensureGameState", function () {
+    setup.ensureGameState();
+});
 
 /* 已認識 NPC 是存檔狀態；同一角色不會重複加入。 */
 setup.meetNpc = function (npcId) {
@@ -704,6 +1524,15 @@ setup.addPlayerTag = function (tag) {
     return true;
 };
 
+/* 移除可逆的玩家身分／狀態，例如辭職或重新取得住處。 */
+setup.removePlayerTag = function (tag) {
+    const tags = State.variables.playerTags || (State.variables.playerTags = []);
+    const index = tags.indexOf(tag);
+    if (index === -1) { return false; }
+    tags.splice(index, 1);
+    return true;
+};
+
 setup.npcSocialInfo = function (npcId) {
     const npc = setup.gameDatabase.npcs[npcId];
     return (npc && npc.social) || {};
@@ -718,17 +1547,90 @@ setup.inventoryCount = function () {
 setup.useItem = function (itemId) {
     const item = setup.gameDatabase.items[itemId];
     const state = State.variables;
-    if (!item || !state.inventory[itemId]) { return false; }
-    state.inventory[itemId] -= 1;
+    const inventory = state.inventory || (state.inventory = {});
+    if (!item || !inventory[itemId]) { return false; }
+
+    /* 同一種限時效果不疊加；效果持續時再次使用不消耗物品。 */
+    const timedEffect = item.effects.find(function (effect) { return effect.type === "timedStat"; });
+    if (timedEffect && state.timedEffects && state.timedEffects[timedEffect.effectId]) {
+        state.inventoryMessage = "袋裝「二手幸運」的效果仍在持續中。";
+        return false;
+    }
+
+    inventory[itemId] -= 1;
     item.effects.forEach(function (effect) {
         if (effect.type === "stat") {
             const max = state[effect.stat + "Max"];
-            state[effect.stat] = Math.clamp(state[effect.stat] + effect.amount, 0, max);
+            state[effect.stat] = Math.min(max, Math.max(0, state[effect.stat] + effect.amount));
+        }
+        if (effect.type === "timedStat") {
+            const timedEffects = state.timedEffects || (state.timedEffects = {});
+            const originalValue = state[effect.stat];
+            const max = state[effect.stat + "Max"];
+            timedEffects[effect.effectId] = {
+                itemId: itemId,
+                stat: effect.stat,
+                amount: effect.amount,
+                originalValue: originalValue,
+                expireAmount: effect.expireAmount,
+                debuffDurationMinutes: effect.debuffDurationMinutes,
+                phase: "buff",
+                expiresAt: new Date(state.gameDate.getTime() + effect.durationMinutes * 60 * 1000)
+            };
+            state[effect.stat] = Math.min(max, Math.max(0, originalValue + effect.amount));
         }
     });
     state.inventoryMessage = setup.itemText(itemId, "useMessage");
+    if (itemId === "ramen") {
+        state.inventoryMessage += " 目前飽食度：" + Math.round(state.satiety) + " / " + Math.round(state.satietyMax) + "。";
+    }
     return true;
 };
+
+/* 供左側狀態欄顯示目前套用中的限時 BUFF／DEBUFF。 */
+setup.getTimedEffectStatus = function () {
+    const state = State.variables;
+    const effects = state.timedEffects || {};
+    const statNames = { luck: "幸運", mood: "心情", hp: "體力", satiety: "飢餓" };
+
+    return Object.keys(effects).map(function (effectId) {
+        const effect = effects[effectId];
+        const isDebuff = effect.phase === "debuff";
+        const amount = isDebuff ? effect.expireAmount : (effect.amount !== undefined ? effect.amount : Math.abs(effect.expireAmount || 0));
+        const remainingMinutes = Math.max(0, Math.ceil((new Date(effect.expiresAt).getTime() - state.gameDate.getTime()) / 60000));
+        const itemName = setup.itemText(effect.itemId || effectId, "name");
+        const sign = amount > 0 ? "+" : "";
+        const phaseLabel = isDebuff ? "DEBUFF" : "BUFF";
+
+        return itemName + "：" + phaseLabel + "，" + (statNames[effect.stat] || effect.stat) + " " + sign + amount + "（剩餘 " + remainingMinutes + " 分鐘）";
+    });
+};
+
+/*
+    背包是彈出視窗，不透過 passage 轉場；使用物品後只重繪視窗中的內容，
+    避免 SugarCube 的 replace 巨集重建整個彈窗而造成版面跳動。
+*/
+setup.refreshInventoryDialog = function () {
+    const target = document.querySelector("#ui-dialog-body.inventory-dialog #inventory-content");
+    if (!target) { return; }
+    jQuery(target).empty();
+    new Wikifier(target, Story.get("背包內容").processText());
+};
+
+setup.refreshStoryCaption = function () {
+    const target = document.getElementById("story-caption");
+    if (!target) { return; }
+    jQuery(target).empty();
+    new Wikifier(target, Story.get("StoryCaption").processText());
+};
+
+jQuery(document).off("click.inventoryUse", "#ui-dialog-body.inventory-dialog .inventory-use-button");
+jQuery(document).on("click.inventoryUse", "#ui-dialog-body.inventory-dialog .inventory-use-button", function (event) {
+    event.preventDefault();
+    setup.useItem(this.getAttribute("data-item-id"));
+    setup.refreshInventoryDialog();
+    setup.refreshStoryCaption();
+});
 
 setup.checkout = function (shopId) {
     const state = State.variables;
@@ -736,7 +1638,8 @@ setup.checkout = function (shopId) {
     if (total <= 0 || state.money < total) { return false; }
     setup.getShopItems(shopId).forEach(function (item) {
         const quantity = Math.max(0, Math.floor(Number(state.cart[item.id]) || 0));
-        state.inventory[item.id] += quantity;
+        /* 舊存檔可能沒有後來新增物品的欄位，先以 0 初始化再加入數量。 */
+        state.inventory[item.id] = (state.inventory[item.id] || 0) + quantity;
         state.cart[item.id] = 0;
     });
     state.money -= total;
@@ -769,8 +1672,82 @@ setup.conditionMet = function (condition) {
     }
     return false;
 };
-/* twine-user-script #3: "TimeSystemScript" */
+/* twine-user-script #4: "TimeSystemScript" */
+/* 欠租不會讓金錢變成負數；房租不足時改為記錄欠款並開始寬限期。 */
+setup.startRentDebt = function (debtStartedAt) {
+    const state = State.variables;
+    const rent = setup.balance.rent;
+    if (state.rentDebt > 0 || state.housingStatus === "evicted") { return false; }
+
+    const availableMoney = Math.max(0, Number(state.money) || 0);
+    state.rentDebt = Math.max(0, rent.amount - availableMoney);
+    state.money = 0;
+    if (state.rentDebt <= 0) { return false; }
+
+    const startAt = debtStartedAt || state.gameDate;
+    state.rentGraceDeadline = new Date(startAt.getTime() + rent.graceDays * 24 * 60 * 60 * 1000);
+    state.rentNextAffectionPenaltyAt = new Date(startAt.getTime() + 24 * 60 * 60 * 1000);
+    state.rentEventPending = "玩家欠租";
+    return true;
+};
+
+setup.payRentDebt = function () {
+    const state = State.variables;
+    if (state.rentDebt <= 0 || state.housingStatus === "evicted") { return 0; }
+    const payment = Math.min(Math.max(0, Number(state.money) || 0), state.rentDebt);
+    state.money -= payment;
+    state.rentDebt -= payment;
+    if (state.rentDebt <= 0) {
+        state.rentDebt = 0;
+        state.rentGraceDeadline = null;
+        state.rentNextAffectionPenaltyAt = null;
+    }
+    return payment;
+};
+
+setup.processRentDebt = function () {
+    const state = State.variables;
+    const rent = setup.balance.rent;
+    if (state.rentDebt <= 0 || state.housingStatus === "evicted") { return; }
+
+    while (state.rentNextAffectionPenaltyAt && state.gameDate >= state.rentNextAffectionPenaltyAt) {
+        setup.changeNpcAffection("joel", -rent.dailyAffectionPenalty);
+        state.rentNextAffectionPenaltyAt = new Date(state.rentNextAffectionPenaltyAt.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    if (state.rentGraceDeadline && state.gameDate >= state.rentGraceDeadline) {
+        state.housingStatus = "evicted";
+        state.rentDebt = 0;
+        state.rentGraceDeadline = null;
+        state.rentNextAffectionPenaltyAt = null;
+        setup.changeNpcAffection("joel", -rent.evictionAffectionPenalty);
+        setup.addPlayerTag("homeless");
+        state.rentEventPending = "玩家被趕出去了";
+    }
+};
+
+/* 聲望過低的驅逐與欠租分開處理；每個存檔只會觸發一次。 */
+setup.processReputationEviction = function () {
+    const state = State.variables;
+    const rule = setup.balance.housing;
+    if (state.reputationEvictionTriggered || state.housingStatus === "evicted") { return; }
+    if ((Number(state.reputation) || 0) > rule.reputationEvictionAt) { return; }
+
+    state.reputationEvictionTriggered = true;
+    state.housingStatus = "evicted";
+    state.rentDebt = 0;
+    state.rentGraceDeadline = null;
+    state.rentNextAffectionPenaltyAt = null;
+    setup.addPlayerTag("homeless");
+
+    const joelAffection = state.npcRelations && state.npcRelations.joel ? state.npcRelations.joel.affection : 0;
+    state.rentEventPending = joelAffection >= rule.highJoelAffectionAt
+        ? "被喬爾趕出去_高好感"
+        : "被喬爾趕出去";
+};
+
 window.advanceTime = function (minutesPassed, type) {
+    const balance = setup.balance;
     // ----------------------------------------------------
     // 【第一步：推進遊戲時間】
     // ----------------------------------------------------
@@ -780,15 +1757,25 @@ window.advanceTime = function (minutesPassed, type) {
     // 2. 把傳進來的分鐘數加進遊戲時間裡
     d.setMinutes(d.getMinutes() + minutesPassed);
 
-    // 每週房租：第一次付款日為遊戲開始後 7 天，之後每 7 天扣除 600 元。
-    // 金錢可暫時為負數，代表玩家尚未補足的房租。
+    // 每週房租：第一次付款日為遊戲開始後 7 天，之後每 7 天扣除設定中的房租金額。
+    // 金錢不會低於 0；不足的部分轉為欠租，並給玩家三天補齊。
     if (State.variables.rentDueDate === undefined) {
-        State.variables.rentDueDate = new Date(d.getTime() + (7 * 24 * 60 * 60 * 1000));
+        State.variables.rentDueDate = new Date(d.getTime() + (balance.rent.intervalDays * 24 * 60 * 60 * 1000));
     }
     while (d >= State.variables.rentDueDate) {
-        State.variables.money -= 600;
-        State.variables.rentDueDate = new Date(State.variables.rentDueDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+        if (State.variables.housingStatus !== "evicted" && State.variables.rentDebt <= 0) {
+            if (State.variables.money >= balance.rent.amount) {
+                State.variables.money -= balance.rent.amount;
+            } else {
+                setup.startRentDebt(State.variables.rentDueDate);
+            }
+        }
+        State.variables.rentDueDate = new Date(State.variables.rentDueDate.getTime() + (balance.rent.intervalDays * 24 * 60 * 60 * 1000));
     }
+    setup.processRentDebt();
+
+    // 不論這次時間推進是否會扣體力／衛生，都要檢查限時物品效果是否到期。
+    window.updateTimedEffects();
     
     
     // ----------------------------------------------------
@@ -803,14 +1790,60 @@ window.advanceTime = function (minutesPassed, type) {
     if (State.variables.hygieneBuffer === undefined) {
         State.variables.hygieneBuffer = 0;
     }
+
+    // 飢餓值同樣以分鐘累積，讓零碎行動的時間不會遺失。
+    if (State.variables.satietyBuffer === undefined) {
+        State.variables.satietyBuffer = 0;
+    }
+
+    if (State.variables.hornyBuffer === undefined) {
+        State.variables.hornyBuffer = 0;
+    }
+
+    /*
+        無論是否為 no_drain，時間流逝都會讓玩家感到飢餓。
+        必須一小時一小時處理，而不能一次扣完：這樣才知道玩家是在第幾小時
+        進入「飽食 1～10」或「飽食 0」區間，並正確結算對應的體力損失。
+    */
+    State.variables.satietyBuffer += minutesPassed;
+    const satietyTicks = Math.floor(State.variables.satietyBuffer / balance.time.minutesPerTick);
+    for (let tick = 0; tick < satietyTicks; tick += 1) {
+        State.variables.satiety = Math.max(0, State.variables.satiety - balance.time.satietyLossPerTick);
+
+        let hungerHpLoss = 0;
+        if (State.variables.satiety <= 0) {
+            hungerHpLoss = balance.survival.starvationHpLossPerHour;
+
+            /* 睡覺時記錄「餓到歸零」的時數，交給睡眠 passage 把回體減半。 */
+            if (type === "sleep") {
+                State.temporary.starvationSleepMinutes = (State.temporary.starvationSleepMinutes || 0) + balance.time.minutesPerTick;
+            }
+        } else if (State.variables.satiety <= State.variables.satietyMax * balance.survival.criticalPercent / 100) {
+            hungerHpLoss = balance.survival.criticalHungerHpLossPerHour;
+        }
+
+        if (hungerHpLoss > 0) {
+            State.variables.hp = Math.max(0, State.variables.hp - hungerHpLoss);
+        }
+    }
+    State.variables.satietyBuffer %= balance.time.minutesPerTick;
+
+    // 慾望每累積一小時增加設定中的點數，並保留不足一小時的零碎時間。
+    State.variables.hornyBuffer += minutesPassed;
+    let hornyGain = Math.floor(State.variables.hornyBuffer / balance.time.minutesPerTick) * balance.time.hornyGainPerTick;
+    if (hornyGain > 0) {
+        State.variables.horny = Math.min(State.variables.hornyMax, State.variables.horny + hornyGain);
+        State.variables.hornyBuffer %= 60;
+    }
     
     
     // ----------------------------------------------------
     // 【第三步：判斷是否為特殊事件】
     // ----------------------------------------------------
-    // 如果傳進來的類型是 "no_drain"（例如：睡覺或洗澡）
-    // 我們就直接結束這個函數，不把時間存入筆記本，也不會自然扣除體力與清潔度！
-    if (type === "no_drain") {
+    // 如果傳進來的類型是 "no_drain" 或 "sleep"（例如：睡覺或洗澡）
+    // 我們就直接結束這個函數，不把時間存入體力與清潔度筆記本，也不會自然扣除它們！
+    // 飢餓值已在前面依實際流逝時間結算。
+    if (type === "no_drain" || type === "sleep") {
         return; 
     }
     
@@ -822,7 +1855,7 @@ window.advanceTime = function (minutesPassed, type) {
     State.variables.energyBuffer += minutesPassed;
     
     // 2. 算算看滿 60 分鐘了沒？（例如：記了 125 分鐘，算出來就是扣 2 點）
-    let energyLoss = Math.floor(State.variables.energyBuffer / 60);
+    let energyLoss = Math.floor(State.variables.energyBuffer / balance.time.minutesPerTick) * balance.time.hpLossPerTick;
     
     // 3. 如果滿 60 分鐘（扣點大於 0），就開始扣體力
     if (energyLoss > 0) {
@@ -847,7 +1880,7 @@ window.advanceTime = function (minutesPassed, type) {
     State.variables.hygieneBuffer += minutesPassed;
     
     // 2. 同樣算算看滿 60 分鐘了沒？
-    let hygieneLoss = Math.floor(State.variables.hygieneBuffer / 60);
+    let hygieneLoss = Math.floor(State.variables.hygieneBuffer / balance.time.minutesPerTick) * balance.time.hygieneLossPerTick;
     
     // 3. 如果滿 60 分鐘，就開始扣清潔度
     if (hygieneLoss > 0) {
@@ -857,21 +1890,252 @@ window.advanceTime = function (minutesPassed, type) {
         // 扣完後，把剩下的零點幾小時留在筆記本裡
         State.variables.hygieneBuffer %= 60;
     }
-};</script><tw-passagedata pid="1" name="RobberEvent" tags="no-jpg" position="100,100" size="100,100">暗處突然衝出一個持刀的搶匪！
+};
 
-「把身上的錢通通交出來！」搶匪惡狠狠地盯著你。
+/* 測試用設定選單共用功能；所有操作直接修改目前存檔的遊戲狀態。 */
+setup.cheats = {
+    refreshUi: function () {
+        if (typeof UIBar !== "undefined" && UIBar.update) {
+            UIBar.update();
+        }
+    },
 
-@@.button-container;
-&lt;&lt;if $money &gt;= 100&gt;&gt;
-	&lt;&lt;go &quot;💸 乖乖交出 100 元&quot; &quot;交錢&quot; 1&gt;&gt;
+    addMoney: function (amount) {
+        const state = State.variables;
+        state.money = Math.max(0, (Number(state.money) || 0) + amount);
+        this.refreshUi();
+    },
+
+    advanceToHour: function (hour) {
+        const state = State.variables;
+        if (!state.gameDate) { return; }
+        const nowMinutes = state.gameDate.getHours() * 60 + state.gameDate.getMinutes();
+        const targetMinutes = hour * 60;
+        const minutes = targetMinutes >= nowMinutes ? targetMinutes - nowMinutes : (24 * 60) - nowMinutes + targetMinutes;
+        window.advanceTime(minutes);
+        this.refreshUi();
+    },
+
+    advanceOneDay: function () {
+        window.advanceTime(24 * 60);
+        this.refreshUi();
+    },
+
+    fillNeeds: function () {
+        const state = State.variables;
+        ["hp", "mood", "satiety", "hygiene", "horny"].forEach(function (stat) {
+            state[stat] = state[stat + "Max"];
+        });
+        this.refreshUi();
+    },
+
+    setValue: function (stat, value) {
+        const parsed = Number(value);
+        if (!Number.isFinite(parsed)) { return false; }
+        State.variables[stat] = parsed;
+        this.refreshUi();
+        return true;
+    },
+
+    increaseAllSkills: function () {
+        const state = State.variables;
+        const maximum = state.skillMaxLevel || setup.balance.skills.maxLevel;
+        Object.keys(state.skills || {}).forEach(function (skillId) {
+            const skill = state.skills[skillId];
+            if (!skill || skill.level >= maximum) { return; }
+            skill.level += 1;
+            skill.exp = 0;
+            if (skillId === "fitness") {
+                state.hpMax += setup.balance.skills.fitnessHpMaxGain;
+            }
+        });
+        this.refreshUi();
+    }
+};
+
+/* 欠租／驅逐事件在本次行動完成後插入，不中斷正在執行的時間結算。 */
+jQuery(document).on(":passageend.rentEvents", function () {
+    const state = State.variables;
+    setup.processReputationEviction();
+    const eventPassage = state.rentEventPending;
+    if (!eventPassage || State.passage === eventPassage) { return; }
+    state.rentEventPending = null;
+    Engine.play(eventPassage);
+});
+
+/*
+    到期的限時數值效果在此統一結算。
+    袋裝「二手幸運」分為 buff 與 debuff 兩個階段，各持續兩小時；
+    originalValue 是使用物品前的玩家數值，因此不會把暫時加成後的數字當作扣除基準。
+*/
+window.updateTimedEffects = function () {
+    const state = State.variables;
+    const effects = state.timedEffects;
+    if (!effects || !state.gameDate) { return; }
+
+    Object.keys(effects).forEach(function (effectId) {
+        const effect = effects[effectId];
+
+        /*
+            while 可處理一次跳過多個階段的情況，例如睡覺 8 小時。
+            負面效果的結束時間以「正面效果原本到期時刻」往後算，
+            不會因為一次跳過大量時間而被意外延長。
+        */
+        while (effects[effectId] && state.gameDate >= effect.expiresAt) {
+            const max = state[effect.stat + "Max"];
+            /* 舊存檔的效果可能沒有 phase，視為仍在正面階段。 */
+            if (!effect.phase || effect.phase === "buff") {
+                state[effect.stat] = Math.clamp(effect.originalValue + effect.expireAmount, 0, max);
+                effect.phase = "debuff";
+                effect.expiresAt = new Date(effect.expiresAt.getTime() + (effect.debuffDurationMinutes || 120) * 60 * 1000);
+                state.inventoryMessage = "袋裝「二手幸運」的正面效果結束：幸運 -30 持續 2 小時。";
+            } else {
+                state[effect.stat] = Math.clamp(effect.originalValue, 0, max);
+                delete effects[effectId];
+                state.inventoryMessage = "袋裝「二手幸運」的負面效果結束，幸運已恢復。";
+            }
+        }
+    });
+};</script><tw-passagedata pid="1" name="設定" tags="no-jpg" position="100,100" size="100,100">&lt;div class=&quot;settings-panel&quot;&gt;
+    &lt;label class=&quot;settings-toggle&quot;&gt;&lt;input id=&quot;settings-cheats-enabled&quot; type=&quot;checkbox&quot;&gt; 顯示作弊選單&lt;/label&gt;
+
+    &lt;div id=&quot;cheat-menu&quot; class=&quot;cheat-menu&quot;&gt;
+        &lt;p class=&quot;cheat-warning&quot;&gt;測試功能會直接修改目前存檔。&lt;/p&gt;
+
+        &lt;div class=&quot;cheat-actions&quot;&gt;
+            &lt;button type=&quot;button&quot; data-cheat=&quot;money-plus&quot;&gt;金錢 +1000&lt;/button&gt;
+            &lt;button type=&quot;button&quot; data-cheat=&quot;money-minus&quot;&gt;金錢 -1000&lt;/button&gt;
+            &lt;button type=&quot;button&quot; data-cheat=&quot;time-noon&quot;&gt;快轉至 12:00&lt;/button&gt;
+            &lt;button type=&quot;button&quot; data-cheat=&quot;time-evening&quot;&gt;快轉至 18:00&lt;/button&gt;
+            &lt;button type=&quot;button&quot; data-cheat=&quot;time-day&quot;&gt;快轉 1 整天&lt;/button&gt;
+            &lt;button type=&quot;button&quot; data-cheat=&quot;fill-needs&quot;&gt;滿足所有需求&lt;/button&gt;
+            &lt;button type=&quot;button&quot; data-cheat=&quot;skills-plus&quot;&gt;所有技能等級 +1&lt;/button&gt;
+        &lt;/div&gt;
+
+        &lt;div class=&quot;cheat-inputs&quot;&gt;
+            &lt;label&gt;聲望 &lt;input id=&quot;cheat-reputation&quot; type=&quot;number&quot; step=&quot;1&quot;&gt;&lt;/label&gt;
+            &lt;button type=&quot;button&quot; data-cheat=&quot;set-reputation&quot;&gt;套用聲望&lt;/button&gt;
+            &lt;label&gt;幸運 &lt;input id=&quot;cheat-luck&quot; type=&quot;number&quot; step=&quot;1&quot;&gt;&lt;/label&gt;
+            &lt;button type=&quot;button&quot; data-cheat=&quot;set-luck&quot;&gt;套用幸運&lt;/button&gt;
+        &lt;/div&gt;
+        &lt;div id=&quot;cheat-feedback&quot; class=&quot;cheat-feedback&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;&lt;script&gt;&gt;
+(function () {
+    const $body = jQuery(&quot;#ui-dialog-body&quot;);
+    const $menu = $body.find(&quot;#cheat-menu&quot;);
+    const $feedback = $body.find(&quot;#cheat-feedback&quot;);
+    $body.find(&quot;#settings-cheats-enabled&quot;).prop(&quot;checked&quot;, !!State.variables.cheatsEnabled);
+    $menu.prop(&quot;hidden&quot;, !State.variables.cheatsEnabled);
+    $body.find(&quot;#cheat-reputation&quot;).val(State.variables.reputation);
+    $body.find(&quot;#cheat-luck&quot;).val(State.variables.luck);
+
+    function feedback(message) {
+        $feedback.text(message);
+    }
+
+    $body.off(&quot;change.cheatSettings&quot;, &quot;#settings-cheats-enabled&quot;)
+        .on(&quot;change.cheatSettings&quot;, &quot;#settings-cheats-enabled&quot;, function () {
+            State.variables.cheatsEnabled = this.checked;
+            $menu.prop(&quot;hidden&quot;, !this.checked);
+            feedback(this.checked ? &quot;作弊選單已啟用。&quot; : &quot;作弊選單已隱藏。&quot;);
+        });
+
+    $body.off(&quot;click.cheatSettings&quot;, &quot;[data-cheat]&quot;)
+        .on(&quot;click.cheatSettings&quot;, &quot;[data-cheat]&quot;, function () {
+            const cheat = jQuery(this).data(&quot;cheat&quot;);
+            const helpers = setup.cheats;
+            if (cheat === &quot;money-plus&quot;) { helpers.addMoney(1000); feedback(&quot;金錢 +1000。&quot;); }
+            if (cheat === &quot;money-minus&quot;) { helpers.addMoney(-1000); feedback(&quot;金錢 -1000。&quot;); }
+            if (cheat === &quot;time-noon&quot;) { helpers.advanceToHour(12); feedback(&quot;已快轉至 12:00。&quot;); }
+            if (cheat === &quot;time-evening&quot;) { helpers.advanceToHour(18); feedback(&quot;已快轉至 18:00。&quot;); }
+            if (cheat === &quot;time-day&quot;) { helpers.advanceOneDay(); feedback(&quot;已快轉 1 整天。&quot;); }
+            if (cheat === &quot;fill-needs&quot;) { helpers.fillNeeds(); feedback(&quot;所有需求已補滿。&quot;); }
+            if (cheat === &quot;skills-plus&quot;) { helpers.increaseAllSkills(); feedback(&quot;所有技能等級 +1（已滿級者不變）。&quot;); }
+            if (cheat === &quot;set-reputation&quot;) {
+                feedback(helpers.setValue(&quot;reputation&quot;, $body.find(&quot;#cheat-reputation&quot;).val()) ? &quot;聲望已套用。&quot; : &quot;請輸入有效的聲望數值。&quot;);
+            }
+            if (cheat === &quot;set-luck&quot;) {
+                feedback(helpers.setValue(&quot;luck&quot;, $body.find(&quot;#cheat-luck&quot;).val()) ? &quot;幸運已套用。&quot; : &quot;請輸入有效的幸運數值。&quot;);
+            }
+        });
+}());
+&lt;&lt;/script&gt;&gt;</tw-passagedata><tw-passagedata pid="2" name="昏倒事件" tags="no-jpg" position="225,100" size="100,100">&lt;&lt;silently&gt;&gt;
+/%
+    在家昏倒不會遺失金錢；外出昏倒則會被洗劫。
+    無論在哪裡，醒來後都會恢復全部體力，並清空零碎體力時間，
+    避免玩家醒來後立刻又因為舊的累積時間再次扣血。
+%/
+&lt;&lt;if not $faintedAtHome&gt;&gt;
+    &lt;&lt;set $money to 0&gt;&gt;
 &lt;&lt;/if&gt;&gt;
-&lt;&lt;go &quot;🏃 嘗試拔腿就跑&quot; &quot;逃跑&quot; 2&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="2" name="交錢" tags="no-jpg" position="225,100" size="100,100">&lt;&lt;set $money to $money - 100&gt;&gt;
-你交出了 100 元，搶匪滿意地離開了。
+&lt;&lt;set $hp to $hpMax&gt;&gt;
+&lt;&lt;set $energyBuffer to 0&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
 
-&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="3" name="逃跑" tags="no-jpg" position="350,100" size="100,100">&lt;&lt;set $hp to $hp - 5&gt;&gt;
+&lt;&lt;if $faintedAtHome&gt;&gt;
+    你的體力耗盡，在家中昏倒了。休息一陣子後，你在自己的床上醒來，體力已完全恢復。
+&lt;&lt;else&gt;&gt;
+    你的體力耗盡，在外頭昏倒了。醒來時，你已經回到家中，卻發現身上的錢被洗劫一空；體力已完全恢復。
+&lt;&lt;/if&gt;&gt;
 
-&lt;&lt;if $hp &gt;= 50&gt;&gt;
+&lt;&lt;link &quot;醒來&quot;&gt;&gt;
+    &lt;&lt;set $faintEventActive to false&gt;&gt;
+    &lt;&lt;goto &quot;YourHome&quot;&gt;&gt;
+&lt;&lt;/link&gt;&gt;</tw-passagedata><tw-passagedata pid="3" name="RobberEvent" tags="no-jpg" position="350,100" size="100,100">&lt;&lt;silently&gt;&gt;
+/%
+    只要遇到搶匪就扣心情；無論最後是交錢、逃跑成功或失敗都適用。
+    數值集中在 setup.balance.robber。
+%/
+&lt;&lt;set $mood to Math.max(0, $mood - setup.balance.robber.moodPenalty)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+/%
+    沒錢時不會再讓玩家進入一般的交錢／逃跑流程，
+    而是由專屬事件決定搶匪的反應。
+%/
+&lt;&lt;if $money lte 0&gt;&gt;
+    &lt;&lt;goto &quot;RobberEvent_沒錢&quot;&gt;&gt;
+&lt;&lt;else&gt;&gt;
+    暗處突然衝出一個持刀的搶匪！
+
+    「把身上的錢通通交出來！」搶匪惡狠狠地盯著你。
+    （心情 -&lt;&lt;print setup.balance.robber.moodPenalty&gt;&gt;）
+
+    @@.button-container;
+    &lt;&lt;if $money &gt;= setup.balance.robber.paymentDemand&gt;&gt;
+	    &lt;&lt;go &quot;💸 乖乖交錢&quot; &quot;交錢&quot; 1&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+    &lt;&lt;go &quot;🏃 嘗試拔腿就跑&quot; &quot;逃跑&quot; 2&gt;&gt;
+    &lt;&lt;go &quot;⚔️ 和搶匪戰鬥&quot; &quot;戰鬥&quot; 1&gt;&gt;
+    @@
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="4" name="RobberEvent_沒錢" tags="no-jpg" position="475,100" size="100,100">/%
+    零金錢時的隨機後續；機率在 setup.balance.robber.noMoneyAttackChance。
+%/
+&lt;&lt;set _robberNoMoneyRoll to random(1, 100)&gt;&gt;
+
+暗處突然衝出一個持刀的搶匪！你摸遍口袋，卻找不到半毛錢。
+
+（心情 -5）
+
+&lt;&lt;if _robberNoMoneyRoll lte setup.balance.robber.noMoneyAttackChance&gt;&gt;
+    搶匪不敢相信地翻了翻你的口袋，最後不屑地嗤笑一聲。
+    「窮成這樣還敢在街上晃？」他丟下這句話後離開了。
+&lt;&lt;else&gt;&gt;
+    搶匪發現你身無分文，惱羞成怒地推了你一把，還狠狠踹了你幾腳才離開。
+    &lt;&lt;set $hp to Math.max(0, $hp - setup.balance.robber.noMoneyHpDamage)&gt;&gt;
+    &lt;&lt;set $mood to Math.max(0, $mood - setup.balance.robber.noMoneyMoodDamage)&gt;&gt;
+    （體力 -&lt;&lt;print setup.balance.robber.noMoneyHpDamage&gt;&gt;、心情 -&lt;&lt;print setup.balance.robber.noMoneyMoodDamage&gt;&gt;）
+&lt;&lt;/if&gt;&gt;
+
+&lt;&lt;go &quot;🏘️返回街道&quot; &quot;街道&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="5" name="交錢" tags="no-jpg" position="600,100" size="100,100">&lt;&lt;set $money to Math.max(0, $money - setup.balance.robber.paymentDemand)&gt;&gt;
+你交出了 &lt;&lt;print setup.balance.robber.paymentDemand&gt;&gt; 元，搶匪滿意地離開了。
+
+&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="6" name="逃跑" tags="no-jpg" position="725,100" size="100,100">&lt;&lt;set $hp to Math.max(0, $hp - setup.balance.robber.escapeHpCost)&gt;&gt;
+
+&lt;&lt;if $hp &gt;= setup.balance.robber.guaranteedEscapeHp&gt;&gt;
     /* 條件一：體力 50 以上，100% 成功逃跑 */
     你咬緊牙關，邁開大腿全力往前奔跑！
     憑藉著充沛的體力，你很快就把搶匪甩得遠遠的，順利脫身！
@@ -884,7 +2148,7 @@ window.advanceTime = function (minutesPassed, type) {
     /* 條件二：體力低於 50，根據「幸運值」擲骰子判定 */
     &lt;&lt;set _chance to random(1, 100)&gt;&gt;
     
-    &lt;&lt;if _chance &lt;= $luck&gt;&gt;
+    &lt;&lt;if _chance &lt;= setup.getEffectiveLuck()&gt;&gt;
         /* 骰出的點數小於等於幸運值 -&gt; 逃跑成功 */
         你的體力有些吃緊，但幸運的是，路邊剛好有一堆障礙物倒下擋住了搶匪的去路！
         你成功趁亂甩掉了搶匪！
@@ -902,10 +2166,105 @@ window.advanceTime = function (minutesPassed, type) {
         &lt;&lt;go &quot;🏘️爬起來回街道&quot; &quot;街道&quot; 1&gt;&gt;
         @@
     &lt;&lt;/if&gt;&gt;
-&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="4" name="背包" tags="no-jpg" position="475,100" size="100,100">/% 彈出式背包的外層。每次使用物品後，只重畫 inventory-content 這個區塊。 %/
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="7" name="戰鬥" tags="no-jpg" position="850,100" size="100,100">&lt;&lt;silently&gt;&gt;
+/%
+    戰鬥成功率公式（可直接調整以下常數）：
+    公式與上限都集中在 setup.balance.robber.combat。
+%/
+&lt;&lt;set _combatBaseChance to setup.balance.robber.combat.baseChance&gt;&gt;
+&lt;&lt;set _hpChance to ($hp / $hpMax) * setup.balance.robber.combat.hpWeight&gt;&gt;
+&lt;&lt;set _fitnessChance to $skills.fitness.level * setup.balance.robber.combat.fitnessLevelWeight&gt;&gt;
+&lt;&lt;set _dexterityChance to $skills.dexterity.level * setup.balance.robber.combat.dexterityLevelWeight&gt;&gt;
+&lt;&lt;set _luckChance to (setup.getEffectiveLuck() / $luckMax) * setup.balance.robber.combat.luckWeight&gt;&gt;
+&lt;&lt;set _combatChance to Math.max(setup.balance.robber.combat.minimumChance, Math.min(setup.balance.robber.combat.maximumChance, _combatBaseChance + _hpChance + _fitnessChance + _dexterityChance + _luckChance))&gt;&gt;
+&lt;&lt;set _combatRoll to random(1, 100)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+你決定不再退讓，擺出架勢迎戰搶匪！
+
+（戰鬥成功率：&lt;&lt;print Math.round(_combatChance)&gt;&gt;%；擲骰：&lt;&lt;print _combatRoll&gt;&gt;）
+
+&lt;&lt;if _combatRoll lte _combatChance&gt;&gt;
+    &lt;&lt;set $mood to Math.min($moodMax, $mood + setup.balance.robber.combat.victoryMoodGain)&gt;&gt;
+    &lt;&lt;set $money to $money + setup.balance.robber.combat.victoryMoneyReward&gt;&gt;
+
+    你抓準空檔反擊，成功制服搶匪！他狼狽逃走，還留下了一疊鈔票。
+    （心情 +&lt;&lt;print setup.balance.robber.combat.victoryMoodGain&gt;&gt;、獲得 &lt;&lt;print setup.balance.robber.combat.victoryMoneyReward&gt;&gt; 元）
+
+    &lt;&lt;go &quot;🏘️返回街道&quot; &quot;街道&quot; 1&gt;&gt;
+&lt;&lt;else&gt;&gt;
+    &lt;&lt;set $money to 0&gt;&gt;
+    &lt;&lt;set $mood to Math.max(0, $mood - setup.balance.robber.combat.defeatMoodPenalty)&gt;&gt;
+
+    你奮力抵抗，但仍被搶匪擊倒。他搜走你身上所有金錢後揚長而去。
+    （金錢歸零、心情 -35）
+
+    &lt;&lt;go &quot;🏘️爬起來回街道&quot; &quot;街道&quot; 1&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="8" name="玩家欠租" tags="home safe" position="975,100" size="100,100">@@color:#f44336;目前尚欠房租：&lt;&lt;print Math.round($rentDebt)&gt;&gt; 元。@@
+
+@@.npc-joel;「……我記得房租不是這個數字吧。」@@
+@@.npc-joel;喬爾@@眉心擠出一道深深的褶皺，神情極其不悅。你頓時感到一陣沉重的壓迫感，彷彿自己真的讓他非常失望。
+@@.npc-joel;「我給你三天時間。」喬爾@@深深嘆了一口氣，冷冷地說：@@.npc-joel;「把剩下的租金補齊。」@@
+
+&lt;&lt;go &quot;努力籌錢&quot; &quot;街道&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="9" name="繳清欠租" tags="no-jpg" position="1100,100" size="100,100">&lt;&lt;silently&gt;&gt;
+&lt;&lt;set _rentPayment to setup.payRentDebt()&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+&lt;&lt;if _rentPayment is 0&gt;&gt;
+你目前沒有可繳的金錢。
+&lt;&lt;else&gt;&gt;
+你繳了 &lt;&lt;print Math.round(_rentPayment)&gt;&gt; 元房租。
+&lt;&lt;/if&gt;&gt;
+
+&lt;&lt;if $rentDebt gt 0&gt;&gt;
+還差 &lt;&lt;print Math.round($rentDebt)&gt;&gt; 元。
+&lt;&lt;else&gt;&gt;
+房租已補齊。
+&lt;&lt;/if&gt;&gt;
+
+&lt;&lt;go &quot;離開&quot; &quot;街道&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="10" name="玩家被趕出去了" tags="no-jpg" position="1225,100" size="100,100">玩家被趕出去了
+
+&lt;&lt;go &quot;離開&quot; &quot;睡公園&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="11" name="睡公園" tags="park" position="100,225" size="100,100">&lt;&lt;if not setup.playerHasTag(&quot;homeless&quot;)&gt;&gt;
+    你現在還有住處，沒有必要露宿公園。
+    &lt;&lt;go &quot;離開公園&quot; &quot;街道&quot; 0&gt;&gt;
+&lt;&lt;else&gt;&gt;
+    你沒有地方可住，只能在公園找個角落過夜。這裡非常危險。
+
+    &lt;&lt;link &quot;露宿 6 小時&quot;&gt;&gt;
+        &lt;&lt;set _parkSleepRoll to random(1, 100)&gt;&gt;
+        &lt;&lt;passTime 360 &quot;sleep&quot;&gt;&gt;
+        &lt;&lt;if _parkSleepRoll lte 75&gt;&gt;
+            &lt;&lt;goto &quot;公園露宿事件&quot;&gt;&gt;
+        &lt;&lt;else&gt;&gt;
+            &lt;&lt;set $hp to Math.min($hpMax, $hp + 18)&gt;&gt;
+            &lt;&lt;goto &quot;公園露宿結果&quot;&gt;&gt;
+        &lt;&lt;/if&gt;&gt;
+    &lt;&lt;/link&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="12" name="公園露宿事件" tags="park" position="225,225" size="100,100">你在公園睡覺時遇上了麻煩。
+
+&lt;&lt;go &quot;撐到天亮&quot; &quot;街道&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="13" name="公園露宿結果" tags="park" position="350,225" size="100,100">你勉強撐過了一晚，卻完全沒有睡好。
+
+&lt;&lt;go &quot;離開公園&quot; &quot;街道&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="14" name="被喬爾趕出去" tags="home safe" position="475,225" size="100,100">@@.npc-joel;喬爾@@站在你面前，深吸了一口菸，隨手將火星閃爍的菸蒂扔在腳邊，用鞋尖狠狠碾熄。
+@@.npc-joel;「我自認不算什麼好人，平常也懶得過問你那些爛事。」喬爾@@盯著你看，臉上沒有任何情緒起伏，你讀不懂他的表情。
+@@.npc-joel;「一個警察房東，卻將房子租給罪犯房客，這像話嗎？」@@
+
+他朝你攤開掌心。你心領神會，只能默默將鑰匙交還給他。
+
+@@.npc-joel;「看來你並不怎麼在意自己的名聲，嗯？」喬爾@@接過鑰匙收進口袋，語氣冷淡。
+@@.npc-joel;「把東西收一收，給我走人。」@@他離開前，抬手用食指點了點你單薄的家當。
+
+在@@.npc-joel;喬爾@@那如芒刺在背的死亡注視下，你總算硬著頭皮把行李收拾乾淨。後路在何方，你心裡一點底也沒有。
+@@.npc-joel;「想找地方住？市區那邊還有不少空房。」@@喬爾側過身，冷冷地說：@@.npc-joel;「房租比這裡貴上幾倍。沒錢你也可以選擇去睡公園。」@@
+
+&lt;&lt;go &quot;離開&quot; &quot;街道&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="15" name="被喬爾趕出去_高好感" tags="home safe" position="600,225" size="100,100">/%
+    TODO：聲望低於 -35、但喬爾好感至少 30 時的驅逐對話。
+    驅逐狀態與 homeless 標籤已在觸發前寫入；此處只需補劇情內容。
+%/
+
+&lt;&lt;go &quot;離開&quot; &quot;街道&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="16" name="背包" tags="no-jpg" position="725,225" size="100,100">/% 彈出式背包的外層。每次使用物品後，只重畫 inventory-content 這個區塊。 %/
 &lt;div id=&quot;inventory-content&quot;&gt;
     &lt;&lt;include &quot;背包內容&quot;&gt;&gt;
-&lt;/div&gt;</tw-passagedata><tw-passagedata pid="5" name="背包內容" tags="no-jpg" position="600,100" size="100,100">&lt;&lt;if $inventoryMessage&gt;&gt;
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="17" name="背包內容" tags="no-jpg" position="850,225" size="100,100">&lt;&lt;if $inventoryMessage&gt;&gt;
     &lt;p&gt;$inventoryMessage&lt;/p&gt;
 &lt;&lt;/if&gt;&gt;
 &lt;&lt;if setup.inventoryCount() is 0&gt;&gt;
@@ -922,39 +2281,64 @@ window.advanceTime = function (minutesPassed, type) {
                 &lt;div class=&quot;item-name&quot;&gt;&lt;&lt;print setup.itemText(_itemId, &quot;name&quot;)&gt;&gt;&lt;/div&gt;\
                 &lt;div class=&quot;item-quantity&quot;&gt;× $inventory[_itemId]&lt;/div&gt;\
                 &lt;&lt;if _item.usable&gt;&gt;&lt;div class=&quot;item-use-button&quot;&gt;\
-                    &lt;&lt;button &quot;使用&quot;&gt;&gt;\
-                        &lt;&lt;run setup.useItem(_itemId)&gt;&gt;\
-                        &lt;&lt;replace &quot;#inventory-content&quot;&gt;&gt;&lt;&lt;include &quot;背包內容&quot;&gt;&gt;&lt;&lt;/replace&gt;&gt;\
-                    &lt;&lt;/button&gt;&gt;\
+                    &lt;button type=&quot;button&quot; class=&quot;inventory-use-button&quot; @data-item-id=&quot;_itemId&quot;&gt;使用&lt;/button&gt;\
                 &lt;/div&gt;&lt;&lt;/if&gt;&gt;\
             &lt;/div&gt;\
         &lt;&lt;/if&gt;&gt;\
         &lt;&lt;/for&gt;&gt;
     &lt;/div&gt;
-&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="6" name="街道" tags="street" position="725,100" size="100,100">你在街上。
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="18" name="場所衛生不足" tags="no-jpg" position="975,225" size="100,100">&lt;&lt;silently&gt;&gt;
+/% 所有場所共用這個 passage；不同場所的文字與返回位置讀取 GameDatabase 的 venueRules。 %/
+&lt;&lt;set _venueDeniedData to $venueAccessDenied ? setup.getVenueHygieneRule($venueAccessDenied.venueId, $venueAccessDenied.context) : null&gt;&gt;
+&lt;&lt;set $venueAccessDenied to null&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+&lt;&lt;if _venueDeniedData&gt;&gt;
+    &lt;h3&gt;儀容不合格&lt;/h3&gt;
+    _venueDeniedData.message
+    &lt;br&gt;&lt;br&gt;
+    目前衛生：&lt;&lt;print Math.round($hygiene)&gt;&gt; / &lt;&lt;print Math.round($hygieneMax)&gt;&gt;（需要至少 &lt;&lt;print _venueDeniedData.minimum&gt;&gt;）
+
+    @@.button-container;
+    &lt;&lt;go _venueDeniedData.returnLabel _venueDeniedData.returnPassage 0&gt;&gt;
+    &lt;&lt;go &quot;回家洗澡&quot; &quot;浴室&quot; 5&gt;&gt;
+    @@
+&lt;&lt;else&gt;&gt;
+    這個場所目前無法進入。
+    &lt;&lt;go &quot;返回街道&quot; &quot;街道&quot; 0&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="19" name="街道" tags="street" position="1100,225" size="100,100">你在街上。
 
 @@.button-container;
+&lt;&lt;if not setup.playerHasTag(&quot;homeless&quot;)&gt;&gt;
 &lt;&lt;go &quot;🏠回家&quot; &quot;YourHome&quot; 5&gt;&gt;
+&lt;&lt;/if&gt;&gt;
 &lt;&lt;go &quot;🏪便利商店&quot; &quot;便利商店&quot; 2&gt;&gt;
 &lt;&lt;go &quot;🏪雜貨店&quot; &quot;雜貨店&quot; 3&gt;&gt;
 &lt;&lt;go &quot;🌳公園&quot; &quot;公園&quot; 3&gt;&gt;
 &lt;&lt;go &quot;☕咖啡廳&quot; &quot;咖啡廳入口&quot; 3&gt;&gt;
 &lt;&lt;go &quot;💪健身房&quot; &quot;健身房入口&quot; 4&gt;&gt;
 &lt;&lt;go &quot;📚圖書館&quot; &quot;圖書館入口&quot; 5&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="7" name="便利商店" tags="711" position="850,100" size="100,100">24小時營業。
+&lt;&lt;go &quot;🏙️市區&quot; &quot;市區&quot; 20&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="20" name="便利商店" tags="711" position="1225,225" size="100,100">&lt;&lt;if $gameDate.getHours() gte setup.balance.convenienceRobbery.startHour and $gameDate.getHours() lt setup.balance.convenienceRobbery.endHour and $convenienceRobberyCooldownUntil and $gameDate lt $convenienceRobberyCooldownUntil&gt;&gt;
+    &lt;div class=&quot;warning-text store-robbery-warning&quot;&gt;店員仍處於警戒中，今晚不能再嘗試搶劫。&lt;/div&gt;
+&lt;&lt;/if&gt;&gt;
+24小時營業。
 「歡迎光臨。」店員有氣無力地說，字都黏在一起。
 
-@@.button-container;
+/% store-actions 不讓其他 flex 項目拉高按鈕；便利商店按鈕會和一般按鈕保持同高。 %/
+@@.button-container.store-actions;
 &lt;&lt;go &quot;🛒購物&quot; &quot;711購物&quot; 0&gt;&gt;
-&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot;&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="8" name="711購物" tags="711" position="975,100" size="100,100">/%
+&lt;&lt;if $gameDate.getHours() gte setup.balance.convenienceRobbery.startHour and $gameDate.getHours() lt setup.balance.convenienceRobbery.endHour&gt;&gt;
+    &lt;&lt;if not $convenienceRobberyCooldownUntil or $gameDate gte $convenienceRobberyCooldownUntil&gt;&gt;
+        &lt;&lt;go &quot;🔪 搶劫便利商店&quot; &quot;便利商店搶劫確認&quot; 0&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+&lt;&lt;/if&gt;&gt;
+&lt;&lt;go &quot;🏘️街道&quot; &quot;街道&quot;&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="21" name="711購物" tags="711 safe" position="100,350" size="100,100">/%
     購買選單讀取 _GameDatabase.twee 的 shops.shop_711.itemIds。
     新增商品後，只要把 ID 加進該清單即可出現在這裡。
 %/
-&lt;h3&gt;7-11 購物&lt;/h3&gt;
-目前金額：&lt;strong&gt;$money 元&lt;/strong&gt;
-
-&lt;div id=&quot;shop-cart&quot; class=&quot;shopping-grid&quot;&gt;
+&lt;&lt;nobr&gt;&gt;
+&lt;div id=&quot;shop-cart&quot; class=&quot;shopping-grid&quot; data-shop-id=&quot;shop_711&quot;&gt;
     /% 每個 shopping-row 是一整列；每列最多放三項商品。 %/
     &lt;div class=&quot;shopping-row&quot;&gt;
         &lt;&lt;for _item range setup.getShopItems(&quot;shop_711&quot;)&gt;&gt;
@@ -970,17 +2354,16 @@ window.advanceTime = function (minutesPassed, type) {
         &lt;&lt;/for&gt;&gt;
     &lt;/div&gt;
 &lt;/div&gt;
-
-/% 此區塊由 ShopInputProtection.twee 即時更新，不需要玩家先按結帳。 %/
 &lt;div id=&quot;shop-summary&quot;&gt;
     預計金額：&lt;strong&gt;&lt;span id=&quot;shop-total&quot;&gt;0&lt;/span&gt; 元&lt;/strong&gt;
     &lt;span id=&quot;shop-insufficient&quot; class=&quot;warning-text&quot;&gt;&lt;/span&gt;
 &lt;/div&gt;
-
+&lt;br&gt;
 @@.button-container;
 &lt;&lt;go &quot;結帳&quot; &quot;711結帳&quot; 0&gt;&gt;
 &lt;&lt;go &quot;返回&quot; &quot;便利商店&quot; 0&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="9" name="711結帳" tags="711" position="1100,100" size="100,100">&lt;&lt;silently&gt;&gt;
+@@
+&lt;&lt;/nobr&gt;&gt;</tw-passagedata><tw-passagedata pid="22" name="711結帳" tags="711" position="225,350" size="100,100">&lt;&lt;silently&gt;&gt;
     /% 金額與數量皆由資料庫中這間商店的 itemIds 自動計算。 %/
     &lt;&lt;set _total to setup.getCartTotal(&quot;shop_711&quot;)&gt;&gt;
 &lt;&lt;/silently&gt;&gt;
@@ -999,35 +2382,146 @@ window.advanceTime = function (minutesPassed, type) {
 &lt;&lt;/if&gt;&gt;
 
 @@.button-container;
-&lt;&lt;go &quot;繼續購物&quot; &quot;711購物&quot; 0&gt;&gt;
-&lt;&lt;go &quot;返回便利商店&quot; &quot;便利商店&quot; 0&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="10" name="公園" tags="park" position="1225,100" size="100,100">有很多人在這。
+&lt;&lt;go &quot;🛒繼續購物&quot; &quot;711購物&quot; 0&gt;&gt;
+&lt;&lt;go &quot;返回&quot; &quot;便利商店&quot; 0&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="23" name="公園" tags="park" position="350,350" size="100,100">有很多人在這。
+/% 事件挑選與實際對話請見 NPC_Winley.twee，日後新增劇情不需要修改這個地點。 %/
+&lt;&lt;set _winleyLeftParkToday to $flags[&quot;winley_park_left_on&quot;] is $gameDate.toDateString()&gt;&gt;
+&lt;&lt;if setup.playerHasTag(&quot;cafe_employee&quot;) and $gameDate.getHours() gte 8 and $gameDate.getHours() lt 9 and not _winleyLeftParkToday&gt;&gt;
+    &lt;&lt;link &quot;溫莉&quot;&gt;&gt;&lt;&lt;goto &quot;NPC_Winley_公園入口&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;坐在公園的長椅上，正在記錄些什麼。
+&lt;&lt;/if&gt;&gt;[[公園跑步|公園跑步]]
+[[坐在樹下休息|公園休息]]
 
 @@.button-container;
-&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot;&gt;&gt; 
-&lt;&lt;go &quot;🏠回家&quot; &quot;YourHome&quot; 8&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="11" name="雜貨店" tags="cornerstore" position="100,225" size="100,100">賣奇怪的東西。
-
-&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="12" name="咖啡廳" tags="cafe safe" position="225,225" size="100,100">新開的咖啡廳。
+&lt;&lt;go &quot;🏘️街道&quot; &quot;街道&quot;&gt;&gt;
+&lt;&lt;go &quot;📚圖書館&quot; &quot;圖書館入口&quot; 2&gt;&gt;
+&lt;&lt;go &quot;💪健身房&quot; &quot;健身房入口&quot; 2&gt;&gt;
+&lt;&lt;go &quot;☕咖啡廳&quot; &quot;咖啡廳入口&quot; 1&gt;&gt;
+&lt;&lt;if setup.playerHasTag(&quot;homeless&quot;)&gt;&gt;
+    &lt;&lt;go &quot;🛏️在公園睡覺&quot; &quot;睡公園&quot; 0&gt;&gt;
+&lt;&lt;else&gt;&gt;
+    &lt;&lt;go &quot;🏠回家&quot; &quot;YourHome&quot; 8&gt;&gt;
+&lt;&lt;/if&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="24" name="公園跑步" tags="park" position="475,350" size="100,100">&lt;&lt;silently&gt;&gt;
+/%
+    公園跑步是免費但效率低的訓練：少量健身經驗，並額外練習靈巧。
+    passTime 不使用 no_drain，因此仍會正常累積體力與衛生的自然消耗。
+%/
+&lt;&lt;passTime setup.balance.parkRun.minutes&gt;&gt;
+/% 運動固定額外消耗 3 點飢餓值。 %/
+&lt;&lt;set $satiety to Math.max(0, $satiety - setup.balance.parkRun.satietyCost)&gt;&gt;
+&lt;&lt;set $hygiene to Math.max(0, $hygiene - setup.balance.parkRun.hygieneCost)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+你在公園跑步 &lt;&lt;print setup.balance.parkRun.minutes&gt;&gt; 分鐘，流了一身汗。
+&lt;&lt;gainSkillExp &quot;fitness&quot; setup.balance.parkRun.fitnessExp&gt;&gt;
+&lt;&lt;gainSkillExp &quot;dexterity&quot; setup.balance.parkRun.dexterityExp&gt;&gt;
 
 @@.button-container;
-&lt;&lt;if setup.playerHasTag(&quot;cafe_employee&quot;)&gt;&gt;&lt;&lt;go &quot;在咖啡廳工作&quot; &quot;在咖啡廳工作&quot;&gt;&gt;&lt;&lt;else&gt;&gt;&lt;&lt;go &quot;詢問工作&quot; &quot;咖啡廳工作&quot; 5&gt;&gt;&lt;&lt;/if&gt;&gt;
+&lt;&lt;go &quot;🏃繼續跑步&quot; &quot;公園跑步&quot; 0&gt;&gt;
+&lt;&lt;go &quot;🌳公園&quot; &quot;公園&quot; 0&gt;&gt;
+&lt;&lt;go &quot;🏘️街道&quot; &quot;街道&quot; 0&gt;&gt;
+&lt;&lt;go &quot;📚圖書館&quot; &quot;圖書館入口&quot; 2&gt;&gt;
+&lt;&lt;go &quot;💪健身房&quot; &quot;健身房入口&quot; 2&gt;&gt;
+&lt;&lt;go &quot;☕咖啡廳&quot; &quot;咖啡廳入口&quot; 1&gt;&gt;
+&lt;&lt;go &quot;🏠回家&quot; &quot;YourHome&quot; 3&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="25" name="公園休息" tags="park" position="600,350" size="100,100">&lt;&lt;silently&gt;&gt;
+/%
+    短暫休息仍會推進時間，因此會照常累積飢餓、體力與衛生的自然變化。
+    恢復量集中在 setup.balance.parkRest，方便日後平衡。
+%/
+&lt;&lt;passTime setup.balance.parkRest.minutes&gt;&gt;
+&lt;&lt;set $hp to Math.min($hpMax, $hp + setup.balance.parkRest.hpRestore)&gt;&gt;
+&lt;&lt;set $mood to Math.min($moodMax, $mood + setup.balance.parkRest.moodRestore)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+你在樹下坐了 &lt;&lt;print setup.balance.parkRest.minutes&gt;&gt; 分鐘，讓自己稍微放鬆一下。
+（體力 +&lt;&lt;print setup.balance.parkRest.hpRestore&gt;&gt;；心情 +&lt;&lt;print setup.balance.parkRest.moodRestore&gt;&gt;）
+
+
+@@.button-container;
+&lt;&lt;go &quot;繼續休息&quot; &quot;公園休息&quot; 0&gt;&gt;
+&lt;&lt;go &quot;🌳公園&quot; &quot;公園&quot; 0&gt;&gt;
+&lt;&lt;go &quot;🏘️街道&quot; &quot;街道&quot; 0&gt;&gt;
+&lt;&lt;go &quot;📚圖書館&quot; &quot;圖書館入口&quot; 2&gt;&gt;
+&lt;&lt;go &quot;💪健身房&quot; &quot;健身房入口&quot; 2&gt;&gt;
+&lt;&lt;go &quot;☕咖啡廳&quot; &quot;咖啡廳入口&quot; 1&gt;&gt;
+&lt;&lt;go &quot;🏠回家&quot; &quot;YourHome&quot; 3&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="26" name="雜貨店" tags="cornerstore" position="725,350" size="100,100">奇怪的奶奶賣奇怪的東西。
+
+@@.button-container;
+&lt;&lt;go &quot;🛒購物&quot; &quot;雜貨店購物&quot; 0&gt;&gt;
+&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot;&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="27" name="雜貨店購物" tags="cornerstore safe" position="850,350" size="100,100">&lt;&lt;nobr&gt;&gt;
+&lt;br&gt;
+&lt;div id=&quot;shop-cart&quot; class=&quot;shopping-grid&quot; data-shop-id=&quot;cornerstore&quot;&gt;
+    &lt;div class=&quot;shopping-row&quot;&gt;
+        &lt;&lt;for _item range setup.getShopItems(&quot;cornerstore&quot;)&gt;&gt;
+        &lt;div class=&quot;shopping-item&quot; @data-item-id=&quot;_item.id&quot;&gt;
+            &lt;span class=&quot;item-icon&quot; @aria-label=&quot;setup.itemText(_item.id, &#39;name&#39;)&quot;&gt;_item.icon&lt;/span&gt;
+            &lt;div class=&quot;item-info&quot;&gt;
+                &lt;strong&gt;&lt;&lt;print setup.itemText(_item.id, &quot;name&quot;)&gt;&gt;&lt;/strong&gt;
+                &lt;div&gt;&lt;&lt;print setup.itemText(_item.id, &quot;description&quot;)&gt;&gt;&lt;/div&gt;
+                &lt;div&gt;價格：_item.price 元&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;label&gt;數量&lt;br&gt;&lt;input class=&quot;shop-quantity&quot; type=&quot;number&quot; min=&quot;0&quot; step=&quot;1&quot; @data-item-id=&quot;_item.id&quot; @value=&quot;$cart[_item.id]&quot;&gt;&lt;/label&gt;
+        &lt;/div&gt;
+        &lt;&lt;/for&gt;&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+&lt;div id=&quot;shop-summary&quot;&gt;
+    預計金額：&lt;strong&gt;&lt;span id=&quot;shop-total&quot;&gt;0&lt;/span&gt; 元&lt;/strong&gt;
+    &lt;span id=&quot;shop-insufficient&quot; class=&quot;warning-text&quot;&gt;&lt;/span&gt;
+&lt;/div&gt;
+&lt;br&gt;
+@@.button-container;
+&lt;&lt;go &quot;結帳&quot; &quot;雜貨店結帳&quot; 0&gt;&gt;
+&lt;&lt;go &quot;返回&quot; &quot;雜貨店&quot; 0&gt;&gt;
+@@
+&lt;&lt;/nobr&gt;&gt;</tw-passagedata><tw-passagedata pid="28" name="雜貨店結帳" tags="cornerstore" position="975,350" size="100,100">&lt;&lt;silently&gt;&gt;
+    &lt;&lt;set _total to setup.getCartTotal(&quot;cornerstore&quot;)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+&lt;h3&gt;結帳&lt;/h3&gt;
+&lt;&lt;if _total is 0&gt;&gt;
+    你還沒有選擇商品。
+&lt;&lt;elseif $money lt _total&gt;&gt;
+    金額不足。本次合計 &lt;strong&gt;_total 元&lt;/strong&gt;，你只有 &lt;strong&gt;$money 元&lt;/strong&gt;。
+&lt;&lt;else&gt;&gt;
+    &lt;&lt;run setup.checkout(&quot;cornerstore&quot;)&gt;&gt;
+    購買成功！本次花費 &lt;strong&gt;_total 元&lt;/strong&gt;，剩餘 &lt;strong&gt;$money 元&lt;/strong&gt;。
+    物品已放入背包。
+&lt;&lt;/if&gt;&gt;
+
+@@.button-container;
+&lt;&lt;go &quot;繼續購物&quot; &quot;雜貨店購物&quot; 0&gt;&gt;
+&lt;&lt;go &quot;返回雜貨店&quot; &quot;雜貨店&quot; 0&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="29" name="咖啡廳" tags="cafe safe" position="1100,350" size="100,100">新開的咖啡廳。
+
+@@.button-container;
+&lt;&lt;if setup.playerHasTag(&quot;cafe_employee&quot;)&gt;&gt;&lt;&lt;venueGo &quot;在咖啡廳工作&quot; &quot;cafe&quot; &quot;work&quot; &quot;在咖啡廳工作&quot;&gt;&gt;&lt;&lt;else&gt;&gt;&lt;&lt;go &quot;詢問工作&quot; &quot;咖啡廳工作&quot; 5&gt;&gt;&lt;&lt;/if&gt;&gt;
 &lt;&lt;go &quot;排隊點餐&quot; &quot;咖啡廳點餐&quot; 5&gt;&gt;
 @@
 
-&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="13" name="咖啡廳入口" tags="cafe safe" position="350,225" size="100,100">&lt;&lt;if $gameDate.getHours() gte 11 and $gameDate.getHours() lt 21&gt;&gt;&lt;&lt;goto &quot;咖啡廳&quot;&gt;&gt;&lt;&lt;else&gt;&gt;&lt;&lt;goto &quot;咖啡廳打烊&quot;&gt;&gt;&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="14" name="咖啡廳打烊" tags="cafe safe" position="475,225" size="100,100">咖啡廳目前已打烊。
+&lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="30" name="咖啡廳入口" tags="cafe safe" position="1225,350" size="100,100">&lt;&lt;if not setup.canUseVenue(&quot;cafe&quot;, &quot;entry&quot;)&gt;&gt;
+    &lt;&lt;run setup.setVenueHygieneDenied(&quot;cafe&quot;, &quot;entry&quot;)&gt;&gt;
+    &lt;&lt;goto &quot;場所衛生不足&quot;&gt;&gt;
+&lt;&lt;elseif $gameDate.getHours() gte 11 and $gameDate.getHours() lt 21&gt;&gt;
+    &lt;&lt;goto &quot;咖啡廳&quot;&gt;&gt;
+&lt;&lt;else&gt;&gt;
+    &lt;&lt;goto &quot;咖啡廳打烊&quot;&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="31" name="咖啡廳打烊" tags="cafe safe" position="100,475" size="100,100">咖啡廳目前已打烊。
 
 營業時間為每天早上 11:00 至晚上 9:00，請在營業時間內再來。
 
-&lt;&lt;go &quot;返回街道&quot; &quot;街道&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="15" name="咖啡廳工作" tags="cafe safe" position="600,225" size="100,100">「我看見外面貼了徵人海報，這裡還有缺人嗎？」你試探地問。
+&lt;&lt;go &quot;返回街道&quot; &quot;街道&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="32" name="咖啡廳工作" tags="cafe safe" position="225,475" size="100,100">「我看見外面貼了徵人海報，這裡還有缺人嗎？」你試探地問。
 櫃台的工讀生沒有回答，反而豎起食指比了等待的手勢後，轉身走向後方員工休息室。
 沒多久，工讀生帶了另一人走出休息室。跟在工讀生後方的女子看起來與你年紀相近，更像一名大學生而非店長。她頂著一頭紮成高馬尾的淺棕色大波浪捲髮，身穿略顯鬆垮的墨綠色圍裙，臉上掛著圓框眼鏡。
-@@.npc-winley;「來應徵的嗎？有缺喔。」@@她抬手輕推鏡框，@@.npc-winley;「我們這裡排班很自由，你想什麼時後來都可以，時薪35元，能接受嗎？」@@
+@@.npc-winley;「來應徵的嗎？有缺喔。」@@她抬手輕推鏡框，@@.npc-winley;「我們這裡排班很自由，你想什麼時後來都可以，時薪&lt;&lt;print setup.balance.cafeWork.hourlyPay&gt;&gt;元，能接受嗎？」@@
 
 @@.button-container;
 &lt;&lt;go &quot;想要這份工作&quot; &quot;接受咖啡廳工作&quot; 1&gt;&gt;
 &lt;&lt;go &quot;我再考慮一下&quot; &quot;考慮咖啡廳工作&quot; 1&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="16" name="接受咖啡廳工作" tags="cafe safe" position="725,225" size="100,100">&lt;&lt;if setup.playerHasTag(&quot;cafe_employee&quot;)&gt;&gt;&lt;&lt;goto &quot;咖啡廳&quot;&gt;&gt;&lt;&lt;else&gt;&gt;&lt;&lt;silently&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="33" name="接受咖啡廳工作" tags="cafe safe" position="350,475" size="100,100">&lt;&lt;if setup.playerHasTag(&quot;cafe_employee&quot;)&gt;&gt;&lt;&lt;goto &quot;咖啡廳&quot;&gt;&gt;&lt;&lt;else&gt;&gt;&lt;&lt;silently&gt;&gt;
 &lt;&lt;run setup.meetNpc(&quot;winley&quot;)&gt;&gt;
 &lt;&lt;run setup.addPlayerTag(&quot;cafe_employee&quot;)&gt;&gt;
 &lt;&lt;/silently&gt;&gt;雖然時薪不高，但勝在排班彈性，環境看起來也挺舒服，對現在的你是不無小補。
@@ -1037,22 +2531,157 @@ window.advanceTime = function (minutesPassed, type) {
 @@.npc-winley;「你想什麼時後上班都可以！」@@她笑著說。
 
 &lt;&lt;go &quot;返回&quot; &quot;咖啡廳&quot;&gt;&gt;
-&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="17" name="在咖啡廳工作" tags="cafe safe" position="850,225" size="100,100">&lt;&lt;if not setup.playerHasTag(&quot;cafe_employee&quot;)&gt;&gt;&lt;&lt;goto &quot;咖啡廳&quot;&gt;&gt;&lt;&lt;else&gt;&gt;&lt;&lt;silently&gt;&gt;
-&lt;&lt;passTime 60 &quot;no_drain&quot;&gt;&gt;
-&lt;&lt;set $money to $money + 35&gt;&gt;
-&lt;&lt;set $hp to Math.max(0, $hp - 3)&gt;&gt;
-&lt;&lt;set $hygiene to Math.max(0, $hygiene - 1)&gt;&gt;
-&lt;&lt;set $mood to Math.max(0, $mood - 0.5)&gt;&gt;
-&lt;&lt;/silently&gt;&gt;你完成了一小時的咖啡廳工作，獲得 35 元。
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="34" name="在咖啡廳工作" tags="cafe safe" position="475,475" size="100,100">/% 防呆：舊存檔／歷史紀錄直接跳到工作 passage 時，也不能繞過衛生規則。 %/
+&lt;&lt;if not setup.canUseVenue(&quot;cafe&quot;, &quot;work&quot;)&gt;&gt;
+    &lt;&lt;run setup.setVenueHygieneDenied(&quot;cafe&quot;, &quot;work&quot;)&gt;&gt;
+    &lt;&lt;goto &quot;場所衛生不足&quot;&gt;&gt;
+&lt;&lt;elseif not setup.playerHasTag(&quot;cafe_employee&quot;)&gt;&gt;
+    &lt;&lt;goto &quot;咖啡廳&quot;&gt;&gt;
+&lt;&lt;elseif $gameDate.getHours() gte 21&gt;&gt;
+    /% 防呆：舊歷史紀錄或直接跳轉到此段落時，也不能在打烊後工作。 %/
+    &lt;&lt;goto &quot;咖啡廳打烊&quot;&gt;&gt;
+&lt;&lt;else&gt;&gt;&lt;&lt;silently&gt;&gt;
+/%
+    每次工作最多一小時；若距離 21:00 不足一小時，只工作到打烊。
+    時薪與工作消耗集中在 setup.balance.cafeWork；未滿一小時的薪水無條件捨去為整數元。
+%/
+&lt;&lt;set _minutesUntilClose to (21 - $gameDate.getHours()) * 60 - $gameDate.getMinutes()&gt;&gt;
+&lt;&lt;set _workMinutes to Math.min(60, _minutesUntilClose)&gt;&gt;
+&lt;&lt;set _workPay to Math.floor(setup.balance.cafeWork.hourlyPay * _workMinutes / 60)&gt;&gt;
+&lt;&lt;passTime _workMinutes &quot;no_drain&quot;&gt;&gt;
+&lt;&lt;set $money to $money + _workPay&gt;&gt;
+&lt;&lt;set $hp to Math.max(0, $hp - setup.balance.cafeWork.hpCost)&gt;&gt;
+&lt;&lt;set $hygiene to Math.max(0, $hygiene - setup.balance.cafeWork.hygieneCost)&gt;&gt;
+&lt;&lt;set $mood to Math.max(0, $mood - setup.balance.cafeWork.moodCost)&gt;&gt;
+&lt;&lt;set _cafeClosed to $gameDate.getHours() gte 21&gt;&gt;
+&lt;&lt;/silently&gt;&gt;你完成了 &lt;&lt;print _workMinutes&gt;&gt; 分鐘的咖啡廳工作，獲得 &lt;&lt;print _workPay&gt;&gt; 元。
+
+&lt;&lt;if _cafeClosed&gt;&gt;
+    咖啡廳已經打烊，今天不能再繼續工作了。
+
+    &lt;&lt;go &quot;返回街道&quot; &quot;街道&quot; 0&gt;&gt;
+&lt;&lt;else&gt;&gt;
 
 @@.button-container;
 &lt;&lt;go &quot;繼續工作&quot; &quot;在咖啡廳工作&quot;&gt;&gt;
 &lt;&lt;go &quot;返回咖啡廳&quot; &quot;咖啡廳&quot;&gt;&gt;
 @@
-&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="18" name="考慮咖啡廳工作" tags="cafe safe" position="975,225" size="100,100">「我想再考慮一下。」你說。
+&lt;&lt;/if&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="35" name="考慮咖啡廳工作" tags="cafe safe" position="600,475" size="100,100">「我想再考慮一下。」你說。
 @@.npc-winley;「噢，當然沒問題。」@@她點點頭表示理解後便走回休息室。
 
-&lt;&lt;go &quot;返回&quot; &quot;咖啡廳&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="19" name="咖啡廳點餐" tags="cafe safe" position="1100,225" size="100,100">&lt;&lt;go &quot;結束&quot; &quot;咖啡廳&quot; 1&gt;&gt;</tw-passagedata><tw-passagedata pid="20" name="圖書館" tags="library safe" position="1225,225" size="100,100">社區內的小型圖書館。
+&lt;&lt;go &quot;返回&quot; &quot;咖啡廳&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="36" name="咖啡廳點餐" tags="cafe safe" position="725,475" size="100,100">&lt;&lt;nobr&gt;&gt;&lt;&lt;if $gameDate.getHours() lt 11 or $gameDate.getHours() gte 21&gt;&gt;    /% 防呆：即使玩家從舊歷史紀錄或其他事件直接跳來，打烊後也不能點餐。 %/
+    &lt;&lt;goto &quot;咖啡廳打烊&quot;&gt;&gt;
+&lt;&lt;/if&gt;&gt;
+&lt;&lt;if not $flags.cafeOrderIntroSeen&gt;&gt;
+@@.npc-raven;「想點什麼？」@@一聲拖著尾音的哈欠聲吸引了你的注意。
+&lt;br&gt;站在櫃台後的工讀生懶洋洋地看向你，等你回答。
+&lt;br&gt;她留著一頭及腰的漆黑長髮，唇上抹著黑色唇膏，雙耳上打滿了金屬耳環，這名工讀生與這間風格溫馨的咖啡廳格格不入。
+&lt;&lt;set $flags.cafeOrderIntroSeen to true&gt;&gt;
+&lt;&lt;else&gt;&gt;&lt;&lt;silently&gt;&gt;
+/% 日後新增隨機點餐台詞，只要在這個清單多加一行即可。 %/
+&lt;&lt;set _cafeOrderGreetings to [
+    &quot;店員什麼話都不說，只是用下巴點了點菜單。&quot;,
+    &quot;「歡迎光臨！今天想要什麼餐點呢？」店員臉上掛著營業笑容。不是之前見到的那位啊……&quot;
+]&gt;&gt;
+&lt;&lt;set _cafeOrderGreeting to _cafeOrderGreetings[random(0, _cafeOrderGreetings.length - 1)]&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+_cafeOrderGreeting
+&lt;&lt;/if&gt;&gt;&lt;br&gt;&lt;&lt;/nobr&gt;&gt;
+[[黑咖啡 40元|黑咖啡]]
+[[拿鐵 50元|拿鐵]]
+[[三明治 60元|三明治]]
+[[可頌 50元|可頌]]
+[[貝果 60元|貝果]]
+[[歐姆蛋 70元|歐姆蛋]]
+
+@@.button-container;
+&lt;&lt;go &quot;返回&quot; &quot;咖啡廳&quot; 1&gt;&gt;
+&lt;&lt;go &quot;回家&quot; &quot;YourHome&quot; 5&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="37" name="黑咖啡" tags="cafe safe" position="850,475" size="100,100">&lt;&lt;set $cafeOrder to { name: &quot;黑咖啡&quot;, price: 40, hpRestore: 10, satietyRestore: 0, minutes: 0 }&gt;&gt;
+&lt;&lt;goto &quot;咖啡廳餐點結果&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="38" name="拿鐵" tags="cafe safe" position="975,475" size="100,100">&lt;&lt;set $cafeOrder to { name: &quot;拿鐵&quot;, price: 50, hpRestore: 10, satietyRestore: 0, minutes: 0 }&gt;&gt;
+&lt;&lt;goto &quot;咖啡廳餐點結果&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="39" name="三明治" tags="cafe safe" position="1100,475" size="100,100">&lt;&lt;set $cafeOrder to { name: &quot;三明治&quot;, price: 60, hpRestore: 0, satietyRestore: 20, minutes: 5 }&gt;&gt;
+&lt;&lt;goto &quot;咖啡廳餐點結果&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="40" name="可頌" tags="cafe safe" position="1225,475" size="100,100">&lt;&lt;set $cafeOrder to { name: &quot;可頌&quot;, price: 50, hpRestore: 0, satietyRestore: 15, minutes: 5 }&gt;&gt;
+&lt;&lt;goto &quot;咖啡廳餐點結果&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="41" name="貝果" tags="cafe safe" position="100,600" size="100,100">&lt;&lt;set $cafeOrder to { name: &quot;貝果&quot;, price: 60, hpRestore: 0, satietyRestore: 20, minutes: 5 }&gt;&gt;
+&lt;&lt;goto &quot;咖啡廳餐點結果&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="42" name="歐姆蛋" tags="cafe safe" position="225,600" size="100,100">&lt;&lt;set $cafeOrder to { name: &quot;歐姆蛋&quot;, price: 70, hpRestore: 0, satietyRestore: 25, minutes: 5 }&gt;&gt;
+&lt;&lt;goto &quot;咖啡廳餐點結果&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="43" name="咖啡廳餐點結果" tags="cafe safe" position="350,600" size="100,100">/% 防呆：不允許透過舊連結或直接跳轉，在咖啡廳打烊後結算餐點。 %/
+&lt;&lt;if $gameDate.getHours() lt 11 or $gameDate.getHours() gte 21&gt;&gt;
+    &lt;&lt;goto &quot;咖啡廳打烊&quot;&gt;&gt;
+&lt;&lt;/if&gt;&gt;
+&lt;&lt;if $money lt $cafeOrder.price&gt;&gt;
+    你的現金不足，無法購買 $cafeOrder.name。（需要 $cafeOrder.price 元，現有 $money 元）
+&lt;&lt;else&gt;&gt;&lt;&lt;silently&gt;&gt;
+    &lt;&lt;set $money to Math.max(0, $money - $cafeOrder.price)&gt;&gt;
+    &lt;&lt;if $cafeOrder.minutes gt 0&gt;&gt;&lt;&lt;passTime $cafeOrder.minutes&gt;&gt;&lt;&lt;/if&gt;&gt;
+    &lt;&lt;set $hp to Math.min($hpMax, $hp + $cafeOrder.hpRestore)&gt;&gt;
+    &lt;&lt;set $satiety to Math.min($satietyMax, $satiety + $cafeOrder.satietyRestore)&gt;&gt;
+    &lt;&lt;set _cafeMoodGain to random(1, 5)&gt;&gt;
+    &lt;&lt;set $mood to Math.min($moodMax, $mood + _cafeMoodGain)&gt;&gt;
+    &lt;&lt;if _cafeMoodGain lte 3&gt;&gt;
+        &lt;&lt;set _cafeMoodText to &quot;餐點很好，你的心情也很好。&quot;&gt;&gt;
+    &lt;&lt;else&gt;&gt;
+        &lt;&lt;set _cafeMoodText to &quot;咖啡廳環境優美，讓你心情恢復了不少。&quot;&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+    你享用了 $cafeOrder.name。（花費 $cafeOrder.price 元）
+    &lt;&lt;if $cafeOrder.hpRestore gt 0&gt;&gt;體力 +$cafeOrder.hpRestore。&lt;&lt;/if&gt;&gt;
+    &lt;&lt;if $cafeOrder.satietyRestore gt 0&gt;&gt;飽食度 +$cafeOrder.satietyRestore。&lt;&lt;/if&gt;&gt;
+    &lt;&lt;if $cafeOrder.minutes gt 0&gt;&gt;你花了 $cafeOrder.minutes 分鐘慢慢享用。&lt;&lt;/if&gt;&gt;
+
+    _cafeMoodText（心情 +_cafeMoodGain）
+&lt;&lt;/if&gt;&gt;
+
+@@.button-container;
+&lt;&lt;go &quot;繼續點餐&quot; &quot;咖啡廳點餐&quot; 0&gt;&gt;
+&lt;&lt;go &quot;結束&quot; &quot;咖啡廳&quot; 1&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="44" name="便利商店搶劫確認" tags="711 safe" position="475,600" size="100,100">你趁深夜店內沒有其他客人，打量著櫃台與收銀機。這不是沒有代價的賺錢方式：不論成功或失敗，都會失去聲望。
+
+（成功可拿至少 &lt;&lt;print setup.balance.convenienceRobbery.guaranteedReward&gt;&gt; 元；失敗則體力 -&lt;&lt;print setup.balance.convenienceRobbery.failureHpDamage&gt;&gt;、心情 -&lt;&lt;print setup.balance.convenienceRobbery.failureMoodDamage&gt;&gt;、聲望 -&lt;&lt;print setup.balance.convenienceRobbery.reputationLoss&gt;&gt;）
+
+@@.button-container;
+&lt;&lt;go &quot;🔪 動手搶劫&quot; &quot;便利商店搶劫結果&quot; 0&gt;&gt;
+&lt;&lt;go &quot;算了，離開&quot; &quot;便利商店&quot; 0&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="45" name="便利商店搶劫結果" tags="711 safe" position="600,600" size="100,100">&lt;&lt;silently&gt;&gt;
+/%
+    成功率只看健身與幸運：健身讓人更有威嚇力，幸運決定臨場破綻。
+    所有數字都放在 setup.balance.convenienceRobbery，日後只需改那裡。
+%/
+&lt;&lt;set _storeRobbery to setup.balance.convenienceRobbery&gt;&gt;
+&lt;&lt;set _storeRobberyChance to _storeRobbery.baseChance + $skills.fitness.level * _storeRobbery.fitnessLevelWeight + (setup.getEffectiveLuck() / $luckMax) * _storeRobbery.luckWeight&gt;&gt;
+&lt;&lt;set _storeRobberyChance to Math.max(_storeRobbery.minimumChance, Math.min(_storeRobbery.maximumChance, _storeRobberyChance))&gt;&gt;
+&lt;&lt;set _storeRobberyRoll to random(1, 100)&gt;&gt;
+&lt;&lt;set $reputation to Math.max(-100, $reputation - _storeRobbery.reputationLoss)&gt;&gt;
+&lt;&lt;set $convenienceRobberyCooldownUntil to new Date($gameDate.getTime() + _storeRobbery.cooldownMinutes * 60 * 1000)&gt;&gt;
+&lt;&lt;run window.advanceTime(_storeRobbery.minutes, &quot;no_drain&quot;)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+（成功率：&lt;&lt;print Math.round(_storeRobberyChance)&gt;&gt;%；擲骰：&lt;&lt;print _storeRobberyRoll&gt;&gt;；聲望 -&lt;&lt;print _storeRobbery.reputationLoss&gt;&gt;）
+
+&lt;&lt;if _storeRobberyRoll lte _storeRobberyChance&gt;&gt;
+    &lt;&lt;silently&gt;&gt;
+    &lt;&lt;set _storeRobberyReward to _storeRobbery.guaranteedReward&gt;&gt;
+    &lt;&lt;set _storeRobberyBonus to 0&gt;&gt;
+    /% 成功後再依幸運擲一次；幸運越高，越常拿到額外鈔票。 %/
+    &lt;&lt;set _storeRobberyBonusRoll to random(1, 100)&gt;&gt;
+    &lt;&lt;if _storeRobberyBonusRoll lte setup.getEffectiveLuck()&gt;&gt;
+        &lt;&lt;set _storeRobberyBonus to random(_storeRobbery.luckyBonusMinimum, _storeRobbery.luckyBonusMaximum)&gt;&gt;
+        &lt;&lt;set _storeRobberyReward += _storeRobberyBonus&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+    &lt;&lt;set $money += _storeRobberyReward&gt;&gt;
+    &lt;&lt;/silently&gt;&gt;
+
+    你用氣勢逼退了慌張的店員，抓起收銀機裡的鈔票後逃離現場。
+    &lt;&lt;if _storeRobberyBonus gt 0&gt;&gt;幸運的是，收銀機裡剛好有一筆還沒收好的現金。&lt;&lt;/if&gt;&gt;
+    （獲得 &lt;&lt;print _storeRobberyReward&gt;&gt; 元）
+&lt;&lt;else&gt;&gt;
+    &lt;&lt;set $hp to Math.max(0, $hp - _storeRobbery.failureHpDamage)&gt;&gt;
+    &lt;&lt;set $mood to Math.max(0, $mood - _storeRobbery.failureMoodDamage)&gt;&gt;
+
+    店員沒有如你預期般害怕，反而立刻反擊。你被揍得狼狽不堪，只能空手逃離。
+    （體力 -&lt;&lt;print _storeRobbery.failureHpDamage&gt;&gt;、心情 -&lt;&lt;print _storeRobbery.failureMoodDamage&gt;&gt;）
+&lt;&lt;/if&gt;&gt;
+
+&lt;&lt;go &quot;🏘️離開便利商店&quot; &quot;街道&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="46" name="圖書館" tags="library safe" position="725,600" size="100,100">社區內的小型圖書館。
 
 [[《鋼鐵意志：徒手健身聖經》|健身書籍]]
 [[《FBI教你冷讀術》|魅力書籍]]
@@ -1066,78 +2695,224 @@ window.advanceTime = function (minutesPassed, type) {
 @@.button-container;
 &lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot; 0&gt;&gt;
 &lt;&lt;go &quot;🏠回家&quot; &quot;YourHome&quot; 5&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="21" name="圖書館入口" tags="library safe" position="100,350" size="100,100">&lt;&lt;if $gameDate.getDay() &gt; 0 &amp;&amp; $gameDate.getHours() &gt;= 8 &amp;&amp; $gameDate.getHours() &lt; 19&gt;&gt;&lt;&lt;goto &quot;圖書館&quot;&gt;&gt;&lt;&lt;else&gt;&gt;&lt;&lt;goto &quot;閉館&quot;&gt;&gt;&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="22" name="閉館" tags="library safe" position="225,350" size="100,100">圖書館週日休館；週一至週六開放時間為早上 08:00 至晚上 07:00。
+@@</tw-passagedata><tw-passagedata pid="47" name="圖書館入口" tags="library safe" position="850,600" size="100,100">&lt;&lt;if $gameDate.getDay() &gt; 0 &amp;&amp; $gameDate.getHours() &gt;= 8 &amp;&amp; $gameDate.getHours() &lt; 19&gt;&gt;&lt;&lt;goto &quot;圖書館&quot;&gt;&gt;&lt;&lt;else&gt;&gt;&lt;&lt;goto &quot;閉館&quot;&gt;&gt;&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="48" name="閉館" tags="library safe" position="975,600" size="100,100">圖書館週日休館；週一至週六開放時間為早上 08:00 至晚上 07:00。
 
-&lt;&lt;go &quot;返回街道&quot; &quot;街道&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="23" name="健身書籍" tags="library safe" position="350,350" size="100,100">&lt;&lt;passTime 20 &quot;no_hygiene&quot;&gt;&gt;&lt;&lt;set $hp to Math.max(0, $hp - 1)&gt;&gt;&lt;&lt;gainSkillExp &quot;fitness&quot; 0.2&gt;&gt;
-&lt;&lt;go &quot;返回&quot; &quot;圖書館&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="24" name="魅力書籍" tags="library safe" position="475,350" size="100,100">&lt;&lt;passTime 20 &quot;no_hygiene&quot;&gt;&gt;&lt;&lt;set $hp to Math.max(0, $hp - 1)&gt;&gt;&lt;&lt;gainSkillExp &quot;charm&quot; 0.3&gt;&gt;
-&lt;&lt;go &quot;返回&quot; &quot;圖書館&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="25" name="意識書籍" tags="library safe" position="600,350" size="100,100">&lt;&lt;passTime 20 &quot;no_hygiene&quot;&gt;&gt;&lt;&lt;set $hp to Math.max(0, $hp - 1)&gt;&gt;&lt;&lt;gainSkillExp &quot;awareness&quot; 0.1&gt;&gt;
-&lt;&lt;go &quot;返回&quot; &quot;圖書館&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="26" name="知識書籍" tags="library safe" position="725,350" size="100,100">&lt;&lt;passTime 20 &quot;no_hygiene&quot;&gt;&gt;&lt;&lt;set $hp to Math.max(0, $hp - 1)&gt;&gt;&lt;&lt;gainSkillExp &quot;knowledge&quot; 0.2&gt;&gt;
-&lt;&lt;go &quot;返回&quot; &quot;圖書館&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="27" name="靈巧書籍" tags="library safe" position="850,350" size="100,100">&lt;&lt;passTime 20 &quot;no_hygiene&quot;&gt;&gt;&lt;&lt;set $hp to Math.max(0, $hp - 1)&gt;&gt;&lt;&lt;gainSkillExp &quot;dexterity&quot; 0.2&gt;&gt;
-&lt;&lt;go &quot;返回&quot; &quot;圖書館&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="28" name="科技書籍" tags="library safe" position="975,350" size="100,100">&lt;&lt;passTime 20 &quot;no_hygiene&quot;&gt;&gt;&lt;&lt;set $hp to Math.max(0, $hp - 1)&gt;&gt;&lt;&lt;gainSkillExp &quot;tech&quot; 0.2&gt;&gt;
-&lt;&lt;go &quot;返回&quot; &quot;圖書館&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="29" name="創作書籍" tags="library safe" position="1100,350" size="100,100">&lt;&lt;passTime 20 &quot;no_hygiene&quot;&gt;&gt;&lt;&lt;set $hp to Math.max(0, $hp - 1)&gt;&gt;&lt;&lt;gainSkillExp &quot;creative&quot; 0.1&gt;&gt;
-&lt;&lt;go &quot;返回&quot; &quot;圖書館&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="30" name="料理書籍" tags="library safe" position="1225,350" size="100,100">&lt;&lt;passTime 20 &quot;no_hygiene&quot;&gt;&gt;&lt;&lt;set $hp to Math.max(0, $hp - 1)&gt;&gt;&lt;&lt;gainSkillExp &quot;cooking&quot; 0.3&gt;&gt;
-&lt;&lt;go &quot;返回&quot; &quot;圖書館&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="31" name="健身房" tags="gym safe" position="100,475" size="100,100">/% 1. 先檢查會員是否過期 %/
-&lt;&lt;nobr&gt;&gt;
+@@.button-container;
+&lt;&lt;go &quot;返回街道&quot; &quot;街道&quot;&gt;&gt;
+&lt;&lt;go &quot;🏠回家&quot; &quot;YourHome&quot; 5&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="49" name="健身書籍" tags="library safe" position="1100,600" size="100,100">&lt;&lt;libraryRead &quot;fitness&quot; 0.2&gt;&gt;</tw-passagedata><tw-passagedata pid="50" name="魅力書籍" tags="library safe" position="1225,600" size="100,100">&lt;&lt;libraryRead &quot;charm&quot; 0.3&gt;&gt;</tw-passagedata><tw-passagedata pid="51" name="意識書籍" tags="library safe" position="100,725" size="100,100">&lt;&lt;libraryRead &quot;awareness&quot; 0.1&gt;&gt;</tw-passagedata><tw-passagedata pid="52" name="知識書籍" tags="library safe" position="225,725" size="100,100">&lt;&lt;libraryRead &quot;knowledge&quot; 0.2&gt;&gt;</tw-passagedata><tw-passagedata pid="53" name="靈巧書籍" tags="library safe" position="350,725" size="100,100">&lt;&lt;libraryRead &quot;dexterity&quot; 0.2&gt;&gt;</tw-passagedata><tw-passagedata pid="54" name="科技書籍" tags="library safe" position="475,725" size="100,100">&lt;&lt;libraryRead &quot;tech&quot; 0.2&gt;&gt;</tw-passagedata><tw-passagedata pid="55" name="創作書籍" tags="library safe" position="600,725" size="100,100">&lt;&lt;libraryRead &quot;creative&quot; 0.1&gt;&gt;</tw-passagedata><tw-passagedata pid="56" name="料理書籍" tags="library safe" position="725,725" size="100,100">&lt;&lt;libraryRead &quot;cooking&quot; 0.3&gt;&gt;</tw-passagedata><tw-passagedata pid="57" name="健身房" tags="gym safe" position="850,725" size="100,100">&lt;&lt;nobr&gt;&gt;        /% 先檢查會員是否過期 %/
 &lt;&lt;if $gymMember and $gameDate &gt; $gymExpiry&gt;&gt;
     &lt;&lt;set $gymMember to false&gt;&gt;
 &lt;&lt;/if&gt;&gt;
 健身房櫃檯服務人員親切地向你微笑。
-&lt;&lt;if $gymMember&gt;&gt;
-    💳 目前會員狀態：&lt;span style=&quot;color: #4CAF50;&quot;&gt;有效&lt;/span&gt;（到期時間：&lt;&lt;print $gymExpiry.toLocaleDateString()&gt;&gt;）
-&lt;&lt;else&gt;&gt;&lt;br&gt;
-    ⚠️ 目前會員狀態：&lt;span style=&quot;color: #f44336;&quot;&gt;未申辦或已過期&lt;/span&gt;（需先申辦會員並繳交每週 200 元會費）
-&lt;&lt;/if&gt;&gt;
 &lt;br&gt;
+你看見牆上的海報：@@color:#4CAF50;非會員單次健身 80 元。升級會員每週 300 元，享有無限次免費健身！@@
+&lt;br&gt;
+&lt;&lt;if $gymMember&gt;&gt;
+    &lt;br&gt;💳 目前會員狀態：&lt;span style=&quot;color: #4CAF50;&quot;&gt;有效&lt;/span&gt;（到期時間：&lt;&lt;print $gymExpiry.toLocaleDateString()&gt;&gt;）
+&lt;&lt;else&gt;&gt;
+    &lt;br&gt;⚠️ 目前會員狀態：&lt;span style=&quot;color: #f44336;&quot;&gt;未申辦或已過期&lt;/span&gt;（需先申辦會員並繳交每週 &lt;&lt;print setup.balance.gym.membershipFee&gt;&gt; 元會費）
+&lt;&lt;/if&gt;&gt;
 &lt;br&gt;
 @@.button-container;
 &lt;&lt;if not $gymMember&gt;&gt;
     /% 非會員或過期時：顯示申請/續約按鈕 %/
-    &lt;&lt;if $money &gt;= 200&gt;&gt;
-        &lt;&lt;go &quot;💳 辦理 / 續期會員 (200元)&quot; &quot;申請會員&quot; 5&gt;&gt;
+    &lt;&lt;if $money &gt;= setup.balance.gym.membershipFee&gt;&gt;
+        &lt;&lt;go &quot;💳 辦理 / 續期會員&quot; &quot;申請會員&quot; 5&gt;&gt;
     &lt;&lt;else&gt;&gt;
-        &lt;&lt;button &quot;💳 辦理 / 續期會員 (現金不足 200元)&quot;&gt;&gt;&lt;&lt;/button&gt;&gt;
+        &lt;&lt;button &quot;💳 辦理 / 續期會員（現金不足）&quot;&gt;&gt;&lt;&lt;/button&gt;&gt;
     &lt;&lt;/if&gt;&gt;
-    &lt;&lt;if $money &gt;= 50&gt;&gt;
-        &lt;&lt;go &quot;🏋️ 開始健身 (50元)&quot; &quot;健身&quot; 20&gt;&gt;
+    &lt;&lt;if $money &gt;= setup.balance.gym.visitFee&gt;&gt;
+        &lt;&lt;go &quot;🏋️ 開始健身&quot; &quot;健身&quot; 0&gt;&gt;
     &lt;&lt;else&gt;&gt;
-        &lt;&lt;button &quot;🏋️ 開始健身 (現金不足 50元)&quot;&gt;&gt;&lt;&lt;/button&gt;&gt;
+        &lt;&lt;button &quot;🏋️ 開始健身（現金不足）&quot;&gt;&gt;&lt;&lt;/button&gt;&gt;
     &lt;&lt;/if&gt;&gt;
 &lt;&lt;else&gt;&gt;
     /% 有效會員可免費使用健身設施。 %/
-    &lt;&lt;go &quot;🏋️ 開始健身&quot; &quot;健身&quot; 20&gt;&gt;
-    &lt;&lt;go &quot;淋浴間&quot; &quot;gym淋浴間&quot; 0&gt;&gt;
+    &lt;&lt;go &quot;🏋️ 開始健身&quot; &quot;健身&quot; 0&gt;&gt;
+    &lt;&lt;go &quot;🚿淋浴間&quot; &quot;gym淋浴間&quot; 0&gt;&gt;
 &lt;&lt;/if&gt;&gt;
 &lt;&lt;go &quot;🏘️離開&quot; &quot;街道&quot; 3&gt;&gt;
 @@
-&lt;&lt;/nobr&gt;&gt;</tw-passagedata><tw-passagedata pid="32" name="健身房入口" tags="gym safe" position="225,475" size="100,100">&lt;&lt;if $gameDate.getHours() gte 10 and $gameDate.getHours() lt 23&gt;&gt;&lt;&lt;goto &quot;健身房&quot;&gt;&gt;&lt;&lt;else&gt;&gt;&lt;&lt;goto &quot;健身房打烊&quot;&gt;&gt;&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="33" name="健身房打烊" tags="gym safe" position="350,475" size="100,100">健身房目前已打烊。
+&lt;&lt;/nobr&gt;&gt;</tw-passagedata><tw-passagedata pid="58" name="健身房入口" tags="gym safe" position="975,725" size="100,100">&lt;&lt;if $gameDate.getHours() gte 10 and $gameDate.getHours() lt 23&gt;&gt;&lt;&lt;goto &quot;健身房&quot;&gt;&gt;&lt;&lt;else&gt;&gt;&lt;&lt;goto &quot;健身房打烊&quot;&gt;&gt;&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="59" name="健身房打烊" tags="gym safe" position="1100,725" size="100,100">健身房目前已打烊。
 
 營業時間為每天早上 10:00 至晚上 11:00，請在營業時間內再來。
 
-&lt;&lt;go &quot;返回街道&quot; &quot;街道&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="34" name="申請會員" tags="gym safe" position="475,475" size="100,100">&lt;&lt;nobr&gt;&gt;
-&lt;&lt;set $money to $money - 200&gt;&gt;
+&lt;&lt;go &quot;返回街道&quot; &quot;街道&quot;&gt;&gt;</tw-passagedata><tw-passagedata pid="60" name="申請會員" tags="gym safe" position="1225,725" size="100,100">&lt;&lt;nobr&gt;&gt;
+&lt;&lt;set $money to Math.max(0, $money - setup.balance.gym.membershipFee)&gt;&gt;
 &lt;&lt;set $gymMember to true&gt;&gt;
-&lt;&lt;set $gymExpiry to new Date($gameDate.getTime() + (7 * 24 * 60 * 60 * 1000))&gt;&gt;     /% 計算 7 天後的到期時間 %/
-你順利辦理了健身房會員卡（會費 200 元），會員資格可使用至&lt;&lt;print $gymExpiry.toLocaleDateString()&gt;&gt;。
+&lt;&lt;set $gymExpiry to new Date($gameDate.getTime() + (setup.balance.gym.membershipDays * 24 * 60 * 60 * 1000))&gt;&gt;
+你順利辦理了健身房會員卡（會費 &lt;&lt;print setup.balance.gym.membershipFee&gt;&gt; 元），會員資格可使用至&lt;&lt;print $gymExpiry.toLocaleDateString()&gt;&gt;。
 &lt;&lt;/nobr&gt;&gt;
 
-&lt;&lt;go &quot;返回&quot; &quot;健身房&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="35" name="健身" tags="gym safe" position="600,475" size="100,100">&lt;&lt;nobr&gt;&gt;
-&lt;&lt;if not $gymMember&gt;&gt;&lt;&lt;set $money to $money - 50&gt;&gt;&lt;&lt;/if&gt;&gt;
-你進行了一輪充實的訓練，汗流浹背！
-&lt;&lt;gainSkillExp &quot;fitness&quot; 3&gt;&gt;
-&lt;br&gt;
+&lt;&lt;go &quot;返回&quot; &quot;健身房&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="61" name="健身" tags="gym safe" position="100,850" size="100,100">&lt;&lt;if $gameDate.getHours() gte 23&gt;&gt;
+    &lt;&lt;goto &quot;健身房打烊&quot;&gt;&gt;
+&lt;&lt;else&gt;&gt;&lt;&lt;silently&gt;&gt;
+    /% 每輪時長與消耗集中在 setup.balance.gym；最後一輪只持續到 23:00 打烊。 %/
+    &lt;&lt;set _minutesUntilGymClose to (23 - $gameDate.getHours()) * 60 - $gameDate.getMinutes()&gt;&gt;
+    &lt;&lt;set _workoutMinutes to Math.min(setup.balance.gym.workoutMinutes, _minutesUntilGymClose)&gt;&gt;
+    &lt;&lt;set _fitnessExp to setup.balance.gym.fitnessExpPerWorkout * _workoutMinutes / setup.balance.gym.workoutMinutes&gt;&gt;
+    &lt;&lt;passTime _workoutMinutes&gt;&gt;
+    &lt;&lt;if not $gymMember&gt;&gt;&lt;&lt;set $money to Math.max(0, $money - setup.balance.gym.visitFee)&gt;&gt;&lt;&lt;/if&gt;&gt;
+    &lt;&lt;set $hp to Math.max(0, $hp - setup.balance.gym.hpCost)&gt;&gt;
+    &lt;&lt;set $satiety to Math.max(0, $satiety - setup.balance.gym.satietyCost)&gt;&gt;
+    &lt;&lt;set $hygiene to Math.max(0, $hygiene - setup.balance.gym.hygieneCost)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+    你進行了 &lt;&lt;print _workoutMinutes&gt;&gt; 分鐘的充實訓練，汗流浹背！
+    &lt;&lt;gainSkillExp &quot;fitness&quot; _fitnessExp&gt;&gt;
+
+    &lt;&lt;if $gameDate.getHours() gte 23&gt;&gt;
+        健身房已經打烊，今天不能再繼續健身了。
+        &lt;&lt;go &quot;返回街道&quot; &quot;街道&quot; 0&gt;&gt;
+    &lt;&lt;else&gt;&gt;
+        @@.button-container;
+        &lt;&lt;go &quot;🏋️繼續健身&quot; &quot;健身&quot; 0&gt;&gt;
+        &lt;&lt;go &quot;💪返回大廳&quot; &quot;健身房&quot; 0&gt;&gt;
+        &lt;&lt;go &quot;🚿淋浴間&quot; &quot;gym淋浴間&quot; 0&gt;&gt;
+        &lt;&lt;go &quot;🏘️離開健身房&quot; &quot;街道&quot; 1&gt;&gt;
+        &lt;&lt;go &quot;🏠直接回家&quot; &quot;YourHome&quot; 8&gt;&gt;
+        @@
+    &lt;&lt;/if&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="62" name="gym淋浴間" tags="gym safe" position="225,850" size="100,100">你走進淋浴間，享受著熱水沖刷的舒適感。
+
+&lt;&lt;run window.advanceTime(setup.balance.gym.showerMinutes, &quot;no_drain&quot;)&gt;&gt;
+&lt;&lt;set $hygiene to $hygieneMax&gt;&gt;
+
 @@.button-container;
-&lt;&lt;go &quot;繼續健身&quot; &quot;健身&quot; 20&gt;&gt;
-&lt;&lt;go &quot;返回大廳&quot; &quot;健身房&quot; 1&gt;&gt;
-&lt;&lt;go &quot;🏘️離開健身房&quot; &quot;街道&quot; 3&gt;&gt;
+&lt;&lt;go &quot;💪返回大廳&quot; &quot;健身房&quot; 1&gt;&gt;
+&lt;&lt;go &quot;🏘️離開健身房&quot; &quot;街道&quot; 1&gt;&gt;
+&lt;&lt;go &quot;🏠直接回家&quot; &quot;YourHome&quot; 8&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="63" name="市區" tags="city" position="350,850" size="100,100">這裡很熱鬧。
+@@.button-container;
+&lt;&lt;go &quot;🏘️離開市區&quot; &quot;街道&quot; 20&gt;&gt;
+&lt;&lt;go &quot;住宅區&quot; &quot;住宅區&quot; 6&gt;&gt;
+&lt;&lt;go &quot;警察局&quot; &quot;警察局&quot; 3&gt;&gt;
+&lt;&lt;venueEnter &quot;🏫大學&quot; &quot;university&quot; 3&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="64" name="警察局" tags="police safe" position="475,850" size="100,100">&lt;&lt;go &quot;離開&quot; &quot;市區&quot; 3&gt;&gt;</tw-passagedata><tw-passagedata pid="65" name="大學" tags="university safe" position="600,850" size="100,100">這裡是大學。你目前就讀 &lt;strong&gt;&lt;&lt;print setup.getMajorName()&gt;&gt;&lt;/strong&gt;。
+
+@@.button-container;
+&lt;&lt;go &quot;🏫上課&quot; &quot;上課&quot; 1&gt;&gt;
+&lt;&lt;go &quot;👨🏻‍💻學生服務中心&quot; &quot;學生服務中心&quot; 1&gt;&gt;
+&lt;&lt;go &quot;🏫洗手間&quot; &quot;公共廁所&quot; 1&gt;&gt;
 @@
-&lt;&lt;/nobr&gt;&gt;</tw-passagedata><tw-passagedata pid="36" name="gym淋浴間" tags="gym safe" position="725,475" size="100,100">你走進淋浴間，享受著熱水沖刷的舒適感。
 
-&lt;&lt;run window.advanceTime(20, &quot;no_drain&quot;)&gt;&gt; /* 過了 20 分鐘，但不會自然扣體力和清潔度 */
-&lt;&lt;set $hygiene to 100&gt;&gt;                   /* 將清潔度直接補滿至 100 */
+&lt;&lt;go &quot;離開&quot; &quot;市區&quot; 3&gt;&gt;</tw-passagedata><tw-passagedata pid="66" name="上課" tags="university safe" position="725,850" size="100,100">&lt;&lt;silently&gt;&gt;
+&lt;&lt;set _classPlan to setup.getUniversityClassPlan()&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
 
-&lt;&lt;go &quot;返回大廳&quot; &quot;健身房&quot; 1&gt;&gt;
-&lt;&lt;go &quot;🏘️離開健身房&quot; &quot;街道&quot; 3&gt;&gt;</tw-passagedata><tw-passagedata pid="37" name="社交" tags="nobr" position="850,475" size="100,100">&lt;&lt;if not $knownNpcs or $knownNpcs.length is 0&gt;&gt;
-    &lt;p class=&quot;social-empty&quot;&gt;你還沒有認識任何 NPC。&lt;/p&gt;
+&lt;&lt;if not setup.isVenueOpenNow(&quot;university&quot;) or setup.getMinutesUntilVenueClose(&quot;university&quot;) lt _classPlan.classMinutes&gt;&gt;
+    &lt;&lt;goto &quot;大學下課&quot;&gt;&gt;
+&lt;&lt;elseif _classPlan.majorExp is 0 and _classPlan.minorExp is 0&gt;&gt;
+    你的主修與副修技能都已達上限，目前沒有適合你的課程，因此不會收取學費。
+    &lt;&lt;go &quot;返回大學&quot; &quot;大學&quot; 0&gt;&gt;
+&lt;&lt;elseif $money lt _classPlan.tuition&gt;&gt;
+    這堂課需要 &lt;&lt;print _classPlan.tuition&gt;&gt; 元學費，但你目前只有 &lt;&lt;print Math.round($money)&gt;&gt; 元。
+    &lt;&lt;go &quot;返回大學&quot; &quot;大學&quot; 0&gt;&gt;
+&lt;&lt;else&gt;&gt;&lt;&lt;silently&gt;&gt;
+    &lt;&lt;set $money to Math.max(0, $money - _classPlan.tuition)&gt;&gt;
+    /% 上課是室內靜態活動：會花時間與體力，但不自然消耗衛生。 %/
+    &lt;&lt;passTime _classPlan.classMinutes &quot;no_hygiene&quot;&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+你上了 &lt;&lt;print _classPlan.classMinutes&gt;&gt; 分鐘的課，支付 &lt;&lt;print _classPlan.tuition&gt;&gt; 元學費。
+
+&lt;&lt;if _classPlan.majorExp gt 0&gt;&gt;
+    主修 &lt;&lt;print setup.getSkillName(_classPlan.majorSkill)&gt;&gt; 經驗 +&lt;&lt;print _classPlan.majorExp&gt;&gt;。
+    &lt;&lt;gainSkillExp _classPlan.majorSkill _classPlan.majorExp&gt;&gt;
+&lt;&lt;/if&gt;&gt;
+&lt;&lt;if _classPlan.minorExp gt 0&gt;&gt;
+    副修 &lt;&lt;print setup.getSkillName(_classPlan.minorSkill)&gt;&gt; 經驗 +&lt;&lt;print _classPlan.minorExp&gt;&gt;。
+    &lt;&lt;gainSkillExp _classPlan.minorSkill _classPlan.minorExp&gt;&gt;
+&lt;&lt;/if&gt;&gt;
+
+&lt;&lt;if setup.getMinutesUntilVenueClose(&quot;university&quot;) gte _classPlan.classMinutes&gt;&gt;
+    &lt;&lt;go &quot;繼續上課&quot; &quot;上課&quot; 0&gt;&gt;
+&lt;&lt;/if&gt;&gt;
+&lt;&lt;go &quot;返回大學&quot; &quot;大學&quot; 0&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="67" name="大學下課" tags="university safe" position="850,850" size="100,100">大學目前沒有足夠時間讓你完成一堂課。上課時間為週一至週五早上 07:00 至晚上 07:00，每堂課需要 60 分鐘。
+
+&lt;&lt;go &quot;返回大學&quot; &quot;大學&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="68" name="學生服務中心" tags="university safe" position="975,850" size="100,100">&lt;&lt;if not setup.isVenueOpenNow(&quot;university&quot;)&gt;&gt;
+    學生服務中心目前沒有開放辦理業務，請在週一至週五 07:00～19:00 再來。
+&lt;&lt;elseif setup.canChangeMajor()&gt;&gt;
+    學生服務中心的承辦人確認你的資料後，表示現在可以申請轉系。
+    你目前就讀 &lt;strong&gt;&lt;&lt;print setup.getMajorName()&gt;&gt;&lt;/strong&gt;。
+
+    &lt;&lt;go &quot;申請轉系&quot; &quot;更換科系&quot; 0&gt;&gt;
+&lt;&lt;else&gt;&gt;
+    承辦人說：「入學未滿一週，現在還不能申請轉系。」
+    你可以在 &lt;&lt;print $majorChangeAvailableAt.getMonth() + 1&gt;&gt; 月 &lt;&lt;print $majorChangeAvailableAt.getDate()&gt;&gt; 日後再來辦理。
+&lt;&lt;/if&gt;&gt;
+
+&lt;&lt;go &quot;返回大學&quot; &quot;大學&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="69" name="住宅區" tags="residential safe" position="1100,850" size="100,100">&lt;&lt;go &quot;離開&quot; &quot;市區&quot; 6&gt;&gt;</tw-passagedata><tw-passagedata pid="70" name="NPC_Winley_公園入口" tags="Park safe" position="1225,850" size="100,100">/%
+    入口只決定本次要播放哪一個事件，優先順序由上到下：
+    一次性事件 → 條件事件 → 可重複的日常對話。
+%/
+&lt;&lt;if not $flags[&quot;winley_park_intro_done&quot;]&gt;&gt;
+    &lt;&lt;goto &quot;NPC_Winley_公園_初次見面&quot;&gt;&gt;
+&lt;&lt;else&gt;&gt;
+    /% 日常對話清單；日後請直接在這裡加入新的 passage 名稱。 %/
+    &lt;&lt;set _dailyDialogues to [
+        &quot;NPC_Winley_公園_日常_咖啡香&quot;,
+        &quot;NPC_Winley_公園_日常_晨間散步&quot;
+    ]&gt;&gt;
+
+    /%
+        好感 30 以上時，這段新對話會加入清單一起隨機抽選，
+        而非取代原本的日常對話。
+    %/
+    &lt;&lt;if $npcRelations[&quot;winley&quot;].affection gte 30&gt;&gt;
+        &lt;&lt;run _dailyDialogues.push(&quot;NPC_Winley_公園_日常_好感30&quot;)&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+
+    /% &lt;&lt;goto&gt;&gt; 只接收已求值的 passage 名稱，陣列索引要先存成變數。 %/
+    &lt;&lt;set _dailyDialogueIndex to random(0, _dailyDialogues.length - 1)&gt;&gt;
+    &lt;&lt;set _dailyDialoguePassage to _dailyDialogues[_dailyDialogueIndex]&gt;&gt;
+    &lt;&lt;goto _dailyDialoguePassage&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="71" name="NPC_Winley_公園_初次見面" tags="Park safe" position="100,975" size="100,100">/% 防呆：若玩家透過舊的歷史紀錄或重新整理回到這裡，已完成的初次事件不會再次演出。%/
+&lt;&lt;if $flags[&quot;winley_park_intro_done&quot;]&gt;&gt;
+    &lt;&lt;goto &quot;NPC_Winley_公園入口&quot;&gt;&gt;
+&lt;&lt;/if&gt;&gt;
+當你還在猶豫要不要上前打招呼時，@@.npc-winley;溫莉@@就已經先注意到了你。
+@@.npc-winley;「啊，早安！」@@她眼睛一亮，急著想站起身，卻一時忘了放在大腿上的手帳。@@.npc-winley;「噢，該死！」@@她慌忙蹲下身撿起手帳，結果這一彎腰，連架在鼻樑上的圓框眼鏡也順勢滑落到地上。
+
+你走上前，幫忙撿起眼鏡遞還給她。
+
+@@.npc-winley;「謝謝你，我總是這麼笨手笨腳的。」@@她不好意思地笑著接過，重新戴好眼鏡。@@.npc-winley;「早上的公園空氣真好，對吧？」@@
+你點了點頭。看著她手裡的手帳，你心中有些好奇，但考慮到兩人剛認識不久，又不確定冒昧打聽合不合適。
+溫莉似乎看出了你的猶豫，主動揚了揚手中的手帳說明：@@.npc-winley;「我在做研究，紀錄這裡每天的早晨。」@@
+
+「……研究……什麼呢？」你順著問道。
+
+@@.npc-winley;「我在記錄公園裡的鳥類行為模式。你不覺得這裡的麻雀規律得有點神奇嗎？每天早上同一時間、相同數量的麻雀，都會飛到完全一樣的地方。」@@她指向不遠處的噴水池，@@.npc-winley;「連牠們在原地跳躍的次數都一模一樣。」@@
+你順著溫莉手指的方向望向噴水池，但在你眼裡，那不過就是一群普通跳來跳去的麻雀，完全看不出什麼特別之處。嗯……
+溫莉餘光瞥見公園圓柱上的大時鐘，@@.npc-winley;「啊，時間差不多了，我該去準備開店了。很高興見到你！」@@她一邊熱情地向你揮手，一邊腳步輕快地倒退著離開。
+
+@@.button-container;
+&lt;&lt;button &quot;繼續&quot;&gt;&gt;
+    /% 這是一次性事件的完成旗標；不要任意改名，以免舊存檔失效。 %/
+    &lt;&lt;set $flags[&quot;winley_park_intro_done&quot;] to true&gt;&gt;
+    /% 劇情中她已去準備開店；同一天回到公園時不再顯示她。 %/
+    &lt;&lt;set $flags[&quot;winley_park_left_on&quot;] to $gameDate.toDateString()&gt;&gt;
+    &lt;&lt;goto &quot;公園&quot;&gt;&gt;
+&lt;&lt;/button&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="72" name="NPC_Winley_公園_日常_咖啡香" tags="" position="225,975" size="100,100">溫莉手上拿著一杯咖啡，朝你揮了揮手。
+
+@@.npc-winley;「早安。今天的空氣很適合慢慢喝杯咖啡呢。」@@
+
+&lt;&lt;go &quot;告別溫莉&quot; &quot;公園&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="73" name="NPC_Winley_公園_日常_晨間散步" tags="" position="350,975" size="100,100">溫莉從長椅上起身，稍微活動了一下肩膀。
+
+@@.npc-winley;「在開店以前來公園走一走，精神會好很多。」@@
+
+&lt;&lt;go &quot;告別溫莉&quot; &quot;公園&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="74" name="NPC_Winley_公園_日常_好感30" tags="" position="475,975" size="100,100">/%
+    這段只會由入口在好感度至少 30 時加入日常對話池。
+    它是可重複的對話，因此不設定任何完成旗標。
+%/
+溫莉看見你時，露出了比平常更放鬆的笑容。
+
+@@.npc-winley;「能在開店前見到你，讓今天感覺是個好日子。」@@
+
+&lt;&lt;go &quot;告別溫莉&quot; &quot;公園&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="75" name="社交" tags="nobr" position="600,975" size="100,100">&lt;&lt;if not $knownNpcs or $knownNpcs.length is 0&gt;&gt;
+    &lt;p class=&quot;social-empty&quot;&gt;你還沒有見到任何 NPC。&lt;/p&gt;
 &lt;&lt;else&gt;&gt;
     &lt;div class=&quot;social-list&quot;&gt;
         &lt;&lt;for _npcId range $knownNpcs&gt;&gt;
@@ -1151,7 +2926,7 @@ window.advanceTime = function (minutesPassed, type) {
                         &lt;dt&gt;職業身分&lt;/dt&gt;&lt;dd&gt;&lt;&lt;print _social.occupation || &quot;未知&quot;&gt;&gt;&lt;/dd&gt;
                         &lt;dt&gt;性別&lt;/dt&gt;&lt;dd&gt;&lt;&lt;print _npc.gender || &quot;未知&quot;&gt;&gt;&lt;/dd&gt;
                         &lt;dt&gt;生日&lt;/dt&gt;&lt;dd&gt;&lt;&lt;print _npc.birthday || &quot;未知&quot;&gt;&gt;&lt;/dd&gt;
-                        &lt;dt&gt;好感度&lt;/dt&gt;&lt;dd&gt;&lt;&lt;print $npcRelations[_npcId].affection&gt;&gt;&lt;/dd&gt;
+                        &lt;dt&gt;好感度&lt;/dt&gt;&lt;dd&gt;&lt;&lt;print $npcRelations[_npcId].affection&gt;&gt;（&lt;&lt;print setup.getNpcRelationTier($npcRelations[_npcId].affection)&gt;&gt;）&lt;/dd&gt;
                         &lt;&lt;if _npc.relationship.romanceEnabled&gt;&gt;
                             &lt;dt&gt;浪漫度&lt;/dt&gt;&lt;dd&gt;&lt;&lt;print $npcRelations[_npcId].romance&gt;&gt;&lt;/dd&gt;
                         &lt;&lt;/if&gt;&gt;
@@ -1163,10 +2938,83 @@ window.advanceTime = function (minutesPassed, type) {
             &lt;/article&gt;
         &lt;&lt;/for&gt;&gt;
     &lt;/div&gt;
-&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="38" name="Start" tags="start" position="975,475" size="100,100">這是最開始
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="76" name="Start" tags="start" position="725,975" size="100,100">/% 這個入口刻意保持簡單；日後可在按鈕上方加入遊戲說明、設定或警語。 %/
+@@.red;&lt;&lt;go &quot;開始&quot; &quot;角色性別選擇&quot; 0&gt;&gt;@@</tw-passagedata><tw-passagedata pid="77" name="角色性別選擇" tags="no-jpg" position="850,975" size="100,100">&lt;h3&gt;你是？&lt;/h3&gt;
 
-@@.red;&lt;&lt;go &quot;開始&quot; &quot;YourHome&quot; 0&gt;&gt;@@</tw-passagedata><tw-passagedata pid="39" name="StoryMenu" tags="" position="1100,475" size="100,100">/% 左側介面中的按鈕；點擊後會讀取對應段落並顯示成彈出視窗。 %/
-&lt;&lt;link &quot;技能面板&quot;&gt;&gt;\
+@@.button-container;
+&lt;&lt;button &quot;男生&quot;&gt;&gt;&lt;&lt;set $playerGender to &quot;male&quot;&gt;&gt;&lt;&lt;goto &quot;科系選擇&quot;&gt;&gt;&lt;&lt;/button&gt;&gt;
+&lt;&lt;button &quot;女生&quot;&gt;&gt;&lt;&lt;set $playerGender to &quot;female&quot;&gt;&gt;&lt;&lt;goto &quot;科系選擇&quot;&gt;&gt;&lt;&lt;/button&gt;&gt;
+&lt;&lt;button &quot;非二元&quot;&gt;&gt;&lt;&lt;set $playerGender to &quot;nonbinary&quot;&gt;&gt;&lt;&lt;goto &quot;科系選擇&quot;&gt;&gt;&lt;&lt;/button&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="78" name="科系選擇" tags="no-jpg" position="975,975" size="100,100">&lt;h3&gt;你就讀哪個科系？&lt;/h3&gt;
+選擇後，開放時間可到大學上課；主修獲得的經驗比副修多。
+
+@@.button-container;
+&lt;&lt;for _majorId range Object.keys(setup.gameDatabase.majors)&gt;&gt;
+    &lt;&lt;set _major to setup.getMajor(_majorId)&gt;&gt;
+    &lt;&lt;button _major.name&gt;&gt;
+        &lt;&lt;set $majorId to _majorId&gt;&gt;
+        &lt;&lt;goto &quot;開局完成&quot;&gt;&gt;
+    &lt;&lt;/button&gt;&gt;
+&lt;&lt;/for&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="79" name="開局完成" tags="no-jpg" position="1100,975" size="100,100">&lt;&lt;silently&gt;&gt;
+&lt;&lt;set _major to setup.getMajor($majorId)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+你選擇了 &lt;strong&gt;&lt;&lt;print _major.name&gt;&gt;&lt;/strong&gt;。
+主修：&lt;&lt;print setup.getSkillName(_major.majorSkill)&gt;&gt;；副修：&lt;&lt;print setup.getSkillName(_major.minorSkill)&gt;&gt;。
+
+你的新生活，正式開始。
+
+&lt;&lt;go &quot;我再想一下&quot; &quot;科系選擇&quot; 0&gt;&gt;
+&lt;&lt;go &quot;開始遊戲&quot; &quot;初見房東&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="80" name="更換科系" tags="no-jpg" position="1225,975" size="100,100">&lt;h3&gt;你想轉到哪個科系？&lt;/h3&gt;
+轉系不會扣除金錢，也不會重設已經獲得的技能經驗；它只會改變你未來上課時的主修與副修。
+
+@@.button-container;
+&lt;&lt;for _majorId range Object.keys(setup.gameDatabase.majors)&gt;&gt;
+    &lt;&lt;if _majorId !== $majorId&gt;&gt;
+        &lt;&lt;set _major to setup.getMajor(_majorId)&gt;&gt;
+        &lt;&lt;button _major.name&gt;&gt;
+            &lt;&lt;set $majorId to _majorId&gt;&gt;
+            &lt;&lt;goto &quot;轉系完成&quot;&gt;&gt;
+        &lt;&lt;/button&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+&lt;&lt;/for&gt;&gt;
+@@
+
+&lt;&lt;go &quot;暫時不換系&quot; &quot;學生服務中心&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="81" name="轉系完成" tags="no-jpg" position="100,1100" size="100,100">你已轉入 &lt;strong&gt;&lt;&lt;print setup.getMajorName()&gt;&gt;&lt;/strong&gt;。
+之後可在大學修讀主修 &lt;&lt;print setup.getSkillName(setup.getMajor($majorId).majorSkill)&gt;&gt; 與副修 &lt;&lt;print setup.getSkillName(setup.getMajor($majorId).minorSkill)&gt;&gt; 的課程。
+
+&lt;&lt;go &quot;返回學生服務中心&quot; &quot;學生服務中心&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="82" name="初見房東" tags="home safe" position="225,1100" size="100,100">為了展開全新的生活，你決定一個人搬進這間公寓。
+
+@@.npc-joel;「你的鑰匙，拿著。」@@
+
+站在面前的房東身材魁梧，留著一頭夾雜些許銀灰的俐落短髮，下巴有些鬍渣。你記得他叫@@.npc-joel;喬爾@@，正職是一名警察，而這也是你當初選擇這裡的原因。畢竟，房東是警察，安全感直接拉滿，對吧？
+你伸手準備接過鑰匙，喬爾卻沒有放開的意思，雙眼反而直勾勾地盯著你看。
+
+@@.npc-joel;「這間房子曾屬於我過世的妻子……你懂我的意思對吧？」@@
+//嗯？我懂嗎？// ──你在心裡狂打問號。
+
+你迎上他的視線，那雙眼睛像是可以隨時把你處理掉。他是警察。你在內心提醒自己。
+「絕對不能弄壞房子……對吧？」你小心翼翼地試探道。
+聽到這句話，喬爾才鬆開手指，任由金屬鑰匙落入你的掌心。
+@@.npc-joel;「每週房租八百元，別讓我花心思催你。」@@他語氣沉悶，略顯不耐。@@.npc-joel;「還有問題嗎？」@@
+
+你連忙搖頭。
+
+@@.npc-joel;「很好。」@@他轉身走到門口，手搭在門把上停頓了一下。@@.npc-joel;「……你有我的聯絡方式，要是發生什麼怪事，可以聯絡我。」@@
+不等你細想「怪事」到底是指什麼，門已經在面前俐落地關上。
+
+&lt;&lt;run setup.meetNpc(&quot;joel&quot;)&gt;&gt;
+&lt;&lt;go &quot;開始生活&quot; &quot;YourHome&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="83" name="StoryMenu" tags="" position="350,1100" size="100,100">/% 左側介面中的按鈕；點擊後會讀取對應段落並顯示成彈出視窗。 %/
+&lt;&lt;link &quot;👤 角色&quot;&gt;&gt;\
+    &lt;&lt;script&gt;&gt;
+        Dialog.create(&quot;角色資訊&quot;)
+            .wikiPassage(&quot;CharacterSheet&quot;)
+            .open();
+&lt;&lt;/script&gt;&gt;\
+&lt;&lt;/link&gt;&gt;
+
+&lt;&lt;link &quot;📈 技能&quot;&gt;&gt;\
     &lt;&lt;script&gt;&gt;
         Dialog.create(&quot;玩家技能與經驗&quot;)
             .wikiPassage(&quot;SkillSheet&quot;)
@@ -1174,40 +3022,128 @@ window.advanceTime = function (minutesPassed, type) {
 &lt;&lt;/script&gt;&gt;\
 &lt;&lt;/link&gt;&gt;
 
-&lt;br&gt;
-
 &lt;&lt;link &quot;背包&quot;&gt;&gt;\
     &lt;&lt;script&gt;&gt;
         /* inventory-dialog 這個 CSS 類別，專門讓背包視窗比一般視窗更寬。 */
         Dialog.create(&quot;玩家背包&quot;, &quot;inventory-dialog&quot;)
             .wikiPassage(&quot;背包&quot;)
             .open();
-    &lt;&lt;/script&gt;&gt;\
+&lt;&lt;/script&gt;&gt;\
 &lt;&lt;/link&gt;&gt;
-
-&lt;br&gt;
 
 &lt;&lt;link &quot;👥 社交&quot;&gt;&gt;\
     &lt;&lt;script&gt;&gt;
         Dialog.create(&quot;社交&quot;, &quot;social-dialog&quot;)
             .wikiPassage(&quot;社交&quot;)
             .open();
+&lt;&lt;/script&gt;&gt;\
+&lt;&lt;/link&gt;&gt;
+
+&lt;&lt;link &quot;⚙ 設定&quot;&gt;&gt;\
+    &lt;&lt;script&gt;&gt;
+        Dialog.create(&quot;設定&quot;, &quot;settings-dialog&quot;)
+            .wikiPassage(&quot;設定&quot;)
+            .open();
     &lt;&lt;/script&gt;&gt;\
-&lt;&lt;/link&gt;&gt;</tw-passagedata><tw-passagedata pid="40" name="YourHome" tags="home safe" position="1225,475" size="100,100">你在客廳。
+&lt;&lt;/link&gt;&gt;</tw-passagedata><tw-passagedata pid="84" name="場所入口檢查" tags="no-jpg" position="475,1100" size="100,100">&lt;&lt;silently&gt;&gt;
+/% 所有有 access 規則的場所共用此入口；場所 ID 由 &lt;&lt;venueEnter&gt;&gt; 記錄。 %/
+&lt;&lt;set _venueAccessRule to $venueAccessPending ? setup.getVenueAccessRule($venueAccessPending) : null&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+&lt;&lt;if not _venueAccessRule&gt;&gt;
+    這個場所目前無法進入。
+    &lt;&lt;go &quot;返回市區&quot; &quot;市區&quot; 0&gt;&gt;
+&lt;&lt;elseif setup.isVenueOpenNow($venueAccessPending)&gt;&gt;
+    &lt;&lt;goto _venueAccessRule.entryPassage&gt;&gt;
+&lt;&lt;elseif setup.isVenueLockedOutToday($venueAccessPending)&gt;&gt;
+    &lt;&lt;goto &quot;場所當日禁止進入&quot;&gt;&gt;
+&lt;&lt;elseif setup.getVenueCooldownRemaining($venueAccessPending) gt 0&gt;&gt;
+    &lt;&lt;goto &quot;場所開鎖冷卻&quot;&gt;&gt;
+&lt;&lt;else&gt;&gt;
+    &lt;&lt;goto &quot;場所夜間入口&quot;&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="85" name="場所夜間入口" tags="no-jpg" position="600,1100" size="100,100">&lt;&lt;silently&gt;&gt;
+&lt;&lt;set _venueAccessRule to setup.getVenueAccessRule($venueAccessPending)&gt;&gt;
+&lt;&lt;set _lockpickRule to _venueAccessRule.lockpick&gt;&gt;
+&lt;&lt;set _lockpickChance to setup.getLockpickChance($venueAccessPending)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+&lt;h3&gt;&lt;&lt;print _venueAccessRule.name&gt;&gt;已關閉&lt;/h3&gt;
+&lt;&lt;print _venueAccessRule.afterHoursMessage&gt;&gt;
+
+（開鎖成功率：&lt;&lt;print Math.round(_lockpickChance)&gt;&gt;%）
+
+@@.button-container;
+&lt;&lt;go &quot;🔓 嘗試開鎖&quot; &quot;場所開鎖結果&quot; 0&gt;&gt;
+&lt;&lt;go _venueAccessRule.returnLabel _venueAccessRule.returnPassage 0&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="86" name="場所開鎖結果" tags="no-jpg" position="725,1100" size="100,100">&lt;&lt;silently&gt;&gt;
+&lt;&lt;set _venueAccessRule to setup.getVenueAccessRule($venueAccessPending)&gt;&gt;
+&lt;&lt;set _lockpickRule to _venueAccessRule.lockpick&gt;&gt;
+&lt;&lt;set _lockpickChance to setup.getLockpickChance($venueAccessPending)&gt;&gt;
+&lt;&lt;set _lockpickRoll to random(1, 100)&gt;&gt;
+/% 開鎖花 15 分鐘；使用 advanceTime 避免此小型演出額外觸發街道搶匪事件。 %/
+&lt;&lt;run window.advanceTime(_lockpickRule.minutes)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+（開鎖成功率：&lt;&lt;print Math.round(_lockpickChance)&gt;&gt;%；擲骰：&lt;&lt;print _lockpickRoll&gt;&gt;）
+
+&lt;&lt;if _lockpickRoll lte _lockpickChance&gt;&gt;
+    &lt;&lt;print _lockpickRule.successMessage&gt;&gt;
+    &lt;&lt;set $venueAccessPending to null&gt;&gt;
+    &lt;&lt;goto _venueAccessRule.entryPassage&gt;&gt;
+&lt;&lt;else&gt;&gt;&lt;&lt;silently&gt;&gt;
+    &lt;&lt;set _guardCatchChance to setup.getGuardCatchChance($venueAccessPending)&gt;&gt;
+    &lt;&lt;set _guardCatchRoll to random(1, 100)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+    &lt;&lt;if _guardCatchRoll lte _guardCatchChance&gt;&gt;
+        &lt;&lt;set $reputation to Math.max(-100, $reputation - _lockpickRule.caughtReputationLoss)&gt;&gt;
+        &lt;&lt;run setup.setVenueLockedOutToday($venueAccessPending)&gt;&gt;
+        &lt;&lt;print _lockpickRule.caughtMessage&gt;&gt;
+        （聲望 -&lt;&lt;print _lockpickRule.caughtReputationLoss&gt;&gt;；今天無法再嘗試進入）
+        &lt;&lt;set $venueAccessPending to null&gt;&gt;
+        &lt;&lt;go _venueAccessRule.returnLabel _venueAccessRule.returnPassage 0&gt;&gt;
+    &lt;&lt;else&gt;&gt;
+        &lt;&lt;run setup.setVenueAttemptCooldown($venueAccessPending)&gt;&gt;
+        &lt;&lt;print _lockpickRule.failedMessage&gt;&gt;
+        （警衛發現率：&lt;&lt;print Math.round(_guardCatchChance)&gt;&gt;%；這次擲骰：&lt;&lt;print _guardCatchRoll&gt;&gt;）
+        &lt;&lt;set $venueAccessPending to null&gt;&gt;
+        &lt;&lt;go _venueAccessRule.returnLabel _venueAccessRule.returnPassage 0&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+&lt;&lt;/if&gt;&gt;</tw-passagedata><tw-passagedata pid="87" name="場所當日禁止進入" tags="no-jpg" position="850,1100" size="100,100">&lt;&lt;silently&gt;&gt;
+&lt;&lt;set _venueAccessRule to setup.getVenueAccessRule($venueAccessPending)&gt;&gt;
+&lt;&lt;set _lockpickRule to _venueAccessRule.lockpick&gt;&gt;
+&lt;&lt;set $venueAccessPending to null&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+&lt;h3&gt;&lt;&lt;print _venueAccessRule.name&gt;&gt;提高了警戒&lt;/h3&gt;
+&lt;&lt;print _lockpickRule.lockoutMessage&gt;&gt;
+
+&lt;&lt;go _venueAccessRule.returnLabel _venueAccessRule.returnPassage 0&gt;&gt;</tw-passagedata><tw-passagedata pid="88" name="場所開鎖冷卻" tags="no-jpg" position="975,1100" size="100,100">&lt;&lt;silently&gt;&gt;
+&lt;&lt;set _venueAccessRule to setup.getVenueAccessRule($venueAccessPending)&gt;&gt;
+&lt;&lt;set _lockpickRule to _venueAccessRule.lockpick&gt;&gt;
+&lt;&lt;set _cooldownMinutes to setup.getVenueCooldownRemaining($venueAccessPending)&gt;&gt;
+&lt;&lt;set $venueAccessPending to null&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+&lt;&lt;print _lockpickRule.cooldownMessage&gt;&gt;至少等 &lt;&lt;print _cooldownMinutes&gt;&gt; 分鐘後，再考慮嘗試開鎖。
+
+&lt;&lt;go _venueAccessRule.returnLabel _venueAccessRule.returnPassage 0&gt;&gt;</tw-passagedata><tw-passagedata pid="89" name="YourHome" tags="home safe" position="1100,1100" size="100,100">&lt;&lt;if setup.playerHasTag(&quot;homeless&quot;)&gt;&gt;&lt;&lt;goto &quot;睡公園&quot;&gt;&gt;&lt;&lt;/if&gt;&gt;
+
+你在客廳。
 
 @@.button-container;
 &lt;&lt;go &quot;🚪出門&quot; &quot;街道&quot; 0&gt;&gt;
 &lt;&lt;go &quot;📺電視&quot; &quot;電視&quot; 0&gt;&gt;
 &lt;&lt;go &quot;🛏️臥室&quot; &quot;臥室&quot; 0&gt;&gt;
 &lt;&lt;go &quot;🚿浴室&quot; &quot;浴室&quot; 0&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="41" name="電視" tags="home safe" position="100,600" size="100,100">你想看多久的電視？(請輸入時間，單位為分鐘，輸入負數會自動清零。)
+@@</tw-passagedata><tw-passagedata pid="90" name="電視" tags="home safe" position="1225,1100" size="100,100">你想看多久的電視？(請輸入時間，單位為分鐘，輸入負數會自動清零。)
 
 &lt;&lt;numberbox &quot;$watchMins&quot; 30&gt;&gt;
 
 @@.button-container;
 &lt;&lt;go &quot;📺看電視&quot; &quot;電視結果&quot;&gt;&gt;
 &lt;&lt;go &quot;🛋️不看了&quot; &quot;YourHome&quot; 0&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="42" name="電視結果" tags="home safe" position="225,600" size="100,100">&lt;&lt;silent&gt;&gt;
+@@</tw-passagedata><tw-passagedata pid="91" name="電視結果" tags="home safe" position="100,1225" size="100,100">&lt;&lt;silent&gt;&gt;
     /% 1. 確保 $watchMins 是正整數（若輸入負數自動清零） %/
     &lt;&lt;set $watchMins to Math.max(0, Number($watchMins) || 0)&gt;&gt;
 
@@ -1215,7 +3151,7 @@ window.advanceTime = function (minutesPassed, type) {
     &lt;&lt;set _roll to random(1, 100)&gt;&gt;
 
     /% 3. 判定看到爛片還是好片 %/
-    &lt;&lt;if _roll gt $luck&gt;&gt;
+    &lt;&lt;if _roll gt setup.getEffectiveLuck()&gt;&gt;
         /% 看到爛片：心情減少 %/
         &lt;&lt;set _moodChange to -Math.trunc($watchMins / 10)&gt;&gt;
         &lt;&lt;set _eventDesc to either(
@@ -1245,47 +3181,41 @@ window.advanceTime = function (minutesPassed, type) {
 _eventDesc
 (心情變化：&lt;&lt;print _moodChange &gt; 0 ? &quot;+&quot; : &quot;&quot;&gt;&gt;&lt;&lt;= _moodChange&gt;&gt;)
 
-&lt;&lt;go &quot;結束&quot; &quot;YourHome&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="43" name="臥室" tags="home safe" position="350,600" size="100,100">@@.button-container;
+&lt;&lt;go &quot;結束&quot; &quot;YourHome&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="92" name="臥室" tags="home safe" position="225,1225" size="100,100">@@.button-container;
 &lt;&lt;go &quot;🛋️客廳&quot; &quot;YourHome&quot; 0&gt;&gt;
 &lt;&lt;go &quot;🛏️睡覺&quot; &quot;睡覺&quot; 0&gt;&gt;
-&lt;&lt;go &quot;📱手遊&quot; &quot;玩手機&quot; 0&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="44" name="睡覺" tags="home safe" position="475,600" size="100,100">你睡了一覺，體力恢復了！
-&lt;&lt;passTime 480 &quot;no_drain&quot;&gt;&gt;
-&lt;&lt;set $hp to Math.clamp($hp + 50, 0, $hpMax)&gt;&gt;
-&lt;&lt;go &quot;醒來&quot; &quot;臥室&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="45" name="玩手機" tags="home safe" position="600,600" size="100,100">@@.button-container;
-&lt;&lt;go &quot;轉蛋&quot; &quot;轉蛋&quot; 1&gt;&gt;@@
-&lt;&lt;go &quot;不玩了&quot; &quot;臥室&quot; 0&gt;&gt;
-@@</tw-passagedata><tw-passagedata pid="46" name="轉蛋" tags="home safe" position="725,600" size="100,100">&lt;&lt;link &quot;花3000鑽抽卡&quot;&gt;&gt;
-    /% 1. 產生 1 到 100 的隨機數 %/
-    &lt;&lt;set _roll to random(1, 100)&gt;&gt;
-    
-    /% 2. 計算幸運加成 (幸運值超過 50 的部分當作加分) %/
-    &lt;&lt;set _bonus to $luck - 50 * 0.5&gt;&gt;
-    
-    /% 3. 計算最終分數 %/
-    &lt;&lt;set _result to _roll + _bonus&gt;&gt;
-    
-    /% 4. 根據最終分數判斷獎勵 %/
-    &lt;&lt;if _result gte 95&gt;&gt;
-        /% 分數 95 以上 (SSR) %/
-        &lt;&lt;goto &quot;SSR_Result&quot;&gt;&gt;
-    &lt;&lt;elseif _result gte 80&gt;&gt;
-        /% 分數 80 到 94 之間 (SR) %/
-        &lt;&lt;goto &quot;SR_Result&quot;&gt;&gt;
-    &lt;&lt;else&gt;&gt;
-        /% 其他結果 (R) %/
-        &lt;&lt;goto &quot;Common_Result&quot;&gt;&gt;
-    &lt;&lt;/if&gt;&gt;
-&lt;&lt;/link&gt;&gt;
-[[不抽了|玩手機]]</tw-passagedata><tw-passagedata pid="47" name="SSR_Result" tags="" position="850,600" size="100,100">恭喜你抽到了 SSR 卡片！🎉
-[[回到轉蛋|轉蛋]]</tw-passagedata><tw-passagedata pid="48" name="SR_Result" tags="" position="975,600" size="100,100">你抽到了 SR 卡片！✨
-[[回到轉蛋|轉蛋]]</tw-passagedata><tw-passagedata pid="49" name="Common_Result" tags="" position="1100,600" size="100,100">你抽到了普通卡片。😐
-[[回到轉蛋|轉蛋]]</tw-passagedata><tw-passagedata pid="50" name="浴室" tags="home safe" position="1225,600" size="100,100">你進浴室洗了一個舒舒服服的熱水澡，全身香噴噴的。
+@@</tw-passagedata><tw-passagedata pid="93" name="睡覺" tags="home safe" position="350,1225" size="100,100">你想睡多久？
+
+&lt;&lt;link &quot;睡 30 分鐘&quot;&gt;&gt;&lt;&lt;set $sleepMinutes to setup.balance.sleep.minutesPerStep&gt;&gt;&lt;&lt;goto &quot;睡眠結果&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
+&lt;&lt;link &quot;睡 1 小時&quot;&gt;&gt;&lt;&lt;set $sleepMinutes to setup.balance.sleep.minutesPerStep * 2&gt;&gt;&lt;&lt;goto &quot;睡眠結果&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
+&lt;&lt;link &quot;睡 2 小時&quot;&gt;&gt;&lt;&lt;set $sleepMinutes to setup.balance.sleep.minutesPerStep * 4&gt;&gt;&lt;&lt;goto &quot;睡眠結果&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
+&lt;&lt;link &quot;睡 3 小時&quot;&gt;&gt;&lt;&lt;set $sleepMinutes to setup.balance.sleep.minutesPerStep * 6&gt;&gt;&lt;&lt;goto &quot;睡眠結果&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
+&lt;&lt;link &quot;睡 7 小時&quot;&gt;&gt;&lt;&lt;set $sleepMinutes to setup.balance.sleep.minutesPerStep * 14&gt;&gt;&lt;&lt;goto &quot;睡眠結果&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
+&lt;&lt;link &quot;睡到體力全滿&quot;&gt;&gt;&lt;&lt;set $sleepMinutes to Math.ceil(Math.max(0, $hpMax - $hp) / setup.balance.sleep.hpGainPerStep) * setup.balance.sleep.minutesPerStep&gt;&gt;&lt;&lt;goto &quot;睡眠結果&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;
+
+&lt;&lt;go &quot;返回臥室&quot; &quot;臥室&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="94" name="睡眠結果" tags="home safe" position="475,1225" size="100,100">&lt;&lt;silently&gt;&gt;
+&lt;&lt;set $sleepMinutes to Math.max(0, Number($sleepMinutes) || 0)&gt;&gt;
+/% TimeSystem 會在飽食歸零的睡眠時數累積此暫用變數；不會寫進存檔。 %/
+&lt;&lt;set _starvationSleepMinutes to 0&gt;&gt;
+&lt;&lt;passTime $sleepMinutes &quot;sleep&quot;&gt;&gt;
+&lt;&lt;set _normalSleepMinutes to $sleepMinutes - _starvationSleepMinutes&gt;&gt;
+&lt;&lt;set _sleepHpGain to (_normalSleepMinutes / setup.balance.sleep.minutesPerStep) * setup.balance.sleep.hpGainPerStep + (_starvationSleepMinutes / setup.balance.sleep.minutesPerStep) * setup.balance.sleep.hpGainPerStep * setup.balance.survival.starvationSleepRecoveryMultiplier&gt;&gt;
+&lt;&lt;set _sleepHpGain to Math.min($hpMax - $hp, _sleepHpGain)&gt;&gt;
+&lt;&lt;set $hp to Math.min($hpMax, $hp + _sleepHpGain)&gt;&gt;
+&lt;&lt;/silently&gt;&gt;
+
+&lt;&lt;if $sleepMinutes is 0&gt;&gt;
+    你的體力已經全滿，暫時不需要休息。
+&lt;&lt;else&gt;&gt;
+    你睡了 &lt;&lt;print $sleepMinutes&gt;&gt; 分鐘，體力恢復 &lt;&lt;print _sleepHpGain&gt;&gt; 點。
+&lt;&lt;/if&gt;&gt;
+
+&lt;&lt;go &quot;醒來&quot; &quot;臥室&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="95" name="浴室" tags="home safe" position="600,1225" size="100,100">你進浴室洗了一個舒舒服服的熱水澡，全身香噴噴的。
 
 &lt;&lt;run window.advanceTime(20, &quot;no_drain&quot;)&gt;&gt; /* 過了 20 分鐘，但不會自然扣體力和清潔度 */
-&lt;&lt;set $hygiene to 100&gt;&gt;                   /* 將清潔度直接補滿至 100 */
+&lt;&lt;set $hygiene to $hygieneMax&gt;&gt;
 
-&lt;&lt;go &quot;🚪離開&quot; &quot;YourHome&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="51" name="PassageHeader" tags="" position="100,725" size="100,100">/%
+&lt;&lt;go &quot;🚪離開&quot; &quot;YourHome&quot; 0&gt;&gt;</tw-passagedata><tw-passagedata pid="96" name="PassageHeader" tags="" position="725,1225" size="100,100">/%
     重要：SugarCube 會把段落裡的換行當成畫面換行。
     Header 內有許多判斷用的程式碼，必須用 nobr 包住，否則程式碼之間的空白行會變成 banner 上方的大量留白。
 %/
@@ -1328,50 +3258,77 @@ _eventDesc
         &lt;img @src=&quot;&#39;images/&#39; + $bannerLocation + &#39;_banner.jpg&#39;&quot;&gt;
     &lt;/div&gt;
 &lt;&lt;/if&gt;&gt;
-&lt;&lt;/nobr&gt;&gt;</tw-passagedata><tw-passagedata pid="52" name="StoryCaption" tags="" position="500,225" size="100,100">&lt;&lt;nobr&gt;&gt;
+&lt;&lt;/nobr&gt;&gt;</tw-passagedata><tw-passagedata pid="97" name="StoryCaption" tags="" position="500,225" size="100,100">&lt;&lt;nobr&gt;&gt;
 &lt;&lt;print ($gameDate.getMonth() + 1).toString().padStart(2, &#39;0&#39;)&gt;&gt;/&lt;&lt;print $gameDate.getDate().toString().padStart(2, &#39;0&#39;)&gt;&gt;
 &lt;&lt;print [&quot;星期日&quot;, &quot;星期一&quot;, &quot;星期二&quot;, &quot;星期三&quot;, &quot;星期四&quot;, &quot;星期五&quot;, &quot;星期六&quot;][$gameDate.getDay()]&gt;&gt;
 &lt;&lt;print $gameDate.getHours().toString().padStart(2, &#39;0&#39;)&gt;&gt;:&lt;&lt;print $gameDate.getMinutes().toString().padStart(2, &#39;0&#39;)&gt;&gt;
 &lt;&lt;/nobr&gt;&gt;
 
-&lt;h3&gt;主角狀態&lt;/h3&gt;
-💰 金錢：&lt;&lt;print Math.round($money)&gt;&gt; 元
-❤️ 體力：&lt;&lt;print Math.round($hp)&gt;&gt;/&lt;&lt;print Math.round($hpMax)&gt;&gt;
-🍗 飢餓：&lt;&lt;print Math.round($satiety)&gt;&gt;/&lt;&lt;print Math.round($satietyMax)&gt;&gt;
-✨ 心情：&lt;&lt;print Math.round($mood)&gt;&gt;/&lt;&lt;print Math.round($moodMax)&gt;&gt;
-🚿 衛生：&lt;&lt;print Math.round($hygiene)&gt;&gt;/&lt;&lt;print Math.round($hygieneMax)&gt;&gt;
-🔥 慾望：&lt;&lt;print Math.round($horny)&gt;&gt;/&lt;&lt;print Math.round($hornyMax)&gt;&gt;</tw-passagedata><tw-passagedata pid="53" name="StoryInit" tags="" position="350,725" size="100,100">&lt;&lt;set $location to &quot;start&quot;&gt;&gt;
+&lt;div class=&quot;status-panel&quot;&gt;
+&lt;div class=&quot;status-bars&quot;&gt;
+&lt;&lt;statusBar &quot;體力&quot; $hp $hpMax &quot;hp&quot;&gt;&gt;
+&lt;&lt;statusBar &quot;心情&quot; $mood $moodMax &quot;mood&quot;&gt;&gt;
+&lt;&lt;statusBar &quot;飢餓&quot; $satiety $satietyMax &quot;satiety&quot;&gt;&gt;
+&lt;&lt;statusBar &quot;衛生&quot; $hygiene $hygieneMax &quot;hygiene&quot;&gt;&gt;
+&lt;&lt;statusBar &quot;慾望&quot; $horny $hornyMax &quot;horny&quot;&gt;&gt;
+&lt;/div&gt;
+&lt;div class=&quot;status-resources&quot;&gt;
+💰金錢：&lt;&lt;print Math.round($money)&gt;&gt; 元
+&lt;br&gt;🍀幸運：&lt;&lt;print Math.round(setup.getEffectiveLuck())&gt;&gt;/&lt;&lt;print Math.round($luckMax)&gt;&gt;
+&lt;&lt;if $rentDebt gt 0&gt;&gt;
+    &lt;br&gt;🏠欠租：&lt;&lt;print Math.round($rentDebt)&gt;&gt; 元（&lt;&lt;link &quot;繳清&quot; &gt;&gt;&lt;&lt;goto &quot;繳清欠租&quot;&gt;&gt;&lt;&lt;/link&gt;&gt;）
+&lt;&lt;/if&gt;&gt;
+&lt;&lt;if $housingStatus is &quot;evicted&quot;&gt;&gt;
+    &lt;br&gt;⚠️無家可歸
+&lt;&lt;/if&gt;&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;&lt;if setup.getMoodLuckStatus()&gt;&gt;&lt;span class=&quot;mood-luck-status&quot;&gt;（&lt;&lt;print setup.getMoodLuckStatus()&gt;&gt;）&lt;/span&gt;&lt;br&gt;&lt;&lt;/if&gt;&gt;
+&lt;&lt;for _effectStatus range setup.getTimedEffectStatus()&gt;&gt;
+⏳ &lt;&lt;print _effectStatus&gt;&gt;
+&lt;&lt;/for&gt;&gt;</tw-passagedata><tw-passagedata pid="98" name="StoryInit" tags="" position="975,1225" size="100,100">&lt;&lt;set $location to &quot;start&quot;&gt;&gt;
 /% 用於橫幅圖片的地點名稱；沒有專屬圖片的地點會暫時使用街道圖片。 %/
 &lt;&lt;set $bannerLocation to &quot;start&quot;&gt;&gt;
-&lt;&lt;set $gameDate to new Date(2026, 4, 25, 7, 30)&gt;&gt;
-&lt;&lt;set $rentDueDate to new Date($gameDate.getTime() + (7 * 24 * 60 * 60 * 1000))&gt;&gt;
-&lt;&lt;set $money to 1000&gt;&gt;      /% 初始金錢 %/
-&lt;&lt;set $hp to 60&gt;&gt;           /% 初始體力 %/
-&lt;&lt;set $hpMax to 100&gt;&gt;       /% 體力上限 %/
-&lt;&lt;set $horny to 10&gt;&gt;        /% 初始性慾 %/
-&lt;&lt;set $hornyMax to 100&gt;&gt;    /% 性慾上限 %/
-&lt;&lt;set $luck to 50&gt;&gt;         /% 初始幸運 %/
-&lt;&lt;set $luckMax to 100&gt;&gt;     /% 幸運上限 %/
-&lt;&lt;set $mood to 50&gt;&gt;         /% 初始心情 %/
-&lt;&lt;set $moodMax to 100&gt;&gt;     /% 心情上限 %/
-&lt;&lt;set $satiety to 50&gt;&gt;      /% 初始飽食度 %/
-&lt;&lt;set $satietyMax to 100&gt;&gt;  /% 飽食度上限 %/
-&lt;&lt;set $hygiene to 50&gt;&gt;      /% 初始衛生 %/
-&lt;&lt;set $hygieneMax to 100&gt;&gt;  /% 衛生上限 %/
+/% JavaScript 的月份從 0 起算；2026 年 5 月 24 日是星期日。分鐘請寫 0，避免 00 被視為舊式八進位數字。 %/
+&lt;&lt;set $gameDate to new Date(2026, 4, 24, 8, 0)&gt;&gt;
+&lt;&lt;set $rentDueDate to new Date($gameDate.getTime() + (setup.balance.rent.intervalDays * 24 * 60 * 60 * 1000))&gt;&gt;
+&lt;&lt;set $rentDebt to 0&gt;&gt;
+&lt;&lt;set $rentGraceDeadline to null&gt;&gt;
+&lt;&lt;set $rentNextAffectionPenaltyAt to null&gt;&gt;
+&lt;&lt;set $housingStatus to &quot;housed&quot;&gt;&gt;
+&lt;&lt;set $reputationEvictionTriggered to false&gt;&gt;
+&lt;&lt;set $rentEventPending to null&gt;&gt;
+/% 初始數值集中在 _GameDatabase.twee 的 setup.balance.player。 %/
+&lt;&lt;set $money to setup.balance.player.startMoney&gt;&gt;
+&lt;&lt;set $hp to setup.balance.player.stats.hp.start&gt;&gt;
+&lt;&lt;set $hpMax to setup.balance.player.stats.hp.max&gt;&gt;
+&lt;&lt;set $horny to setup.balance.player.stats.horny.start&gt;&gt;
+&lt;&lt;set $hornyMax to setup.balance.player.stats.horny.max&gt;&gt;
+&lt;&lt;set $luck to setup.balance.player.stats.luck.start&gt;&gt;
+&lt;&lt;set $luckMax to setup.balance.player.stats.luck.max&gt;&gt;
+&lt;&lt;set $mood to setup.balance.player.stats.mood.start&gt;&gt;
+&lt;&lt;set $moodMax to setup.balance.player.stats.mood.max&gt;&gt;
+&lt;&lt;set $satiety to setup.balance.player.stats.satiety.start&gt;&gt;
+&lt;&lt;set $satietyMax to setup.balance.player.stats.satiety.max&gt;&gt;
+&lt;&lt;set $hygiene to setup.balance.player.stats.hygiene.start&gt;&gt;
+&lt;&lt;set $hygieneMax to setup.balance.player.stats.hygiene.max&gt;&gt;
 &lt;&lt;set $gymMember to false&gt;&gt; /% 是否為健身房會員 %/
 &lt;&lt;set $gymExpiry to null&gt;&gt;  /% 健身房會員到期日（若不是會員則為 null） %/
 
 /%
     用來累積不足一小時的行動時間。
-    累積滿 60 分鐘時，時間系統才會扣除 1 點體力與衛生，避免零碎時間遺失。
+    累積滿 60 分鐘時，時間系統才會扣除對應數值，避免零碎時間遺失。
 %/
 &lt;&lt;set $energyBuffer to 0&gt;&gt;
 &lt;&lt;set $hygieneBuffer to 0&gt;&gt;
+&lt;&lt;set $satietyBuffer to 0&gt;&gt;
+&lt;&lt;set $hornyBuffer to 0&gt;&gt;
 
 /%
     技能資料表。
     每個技能都有 level（等級）與 exp（經驗值）。日後要新增技能時，照著同樣格式增加一行即可。
 %/
+&lt;&lt;set $skillMaxLevel to setup.balance.skills.maxLevel&gt;&gt;
 &lt;&lt;set $skills to {
     fitness:   { level: 1, exp: 0 },
     charm:     { level: 1, exp: 0 },
@@ -1394,12 +3351,31 @@ _eventDesc
 &lt;&lt;run setup.initializeGameDatabaseState()&gt;&gt;
 
 /* 世界聲望仍是玩家存檔資料。 */
-&lt;&lt;set $reputation to 0&gt;&gt;</tw-passagedata><tw-passagedata pid="54" name="GameWidgets" tags="widget" position="475,725" size="100,100">/%
+&lt;&lt;set $reputation to 0&gt;&gt;
+&lt;&lt;set $saveVersion to setup.balance.saveVersion&gt;&gt;
+&lt;&lt;set $robberEventCooldownUntil to null&gt;&gt;
+/% 深夜便利商店搶劫：同一晚只允許嘗試一次。 %/
+&lt;&lt;set $convenienceRobberyCooldownUntil to null&gt;&gt;
+/% 正式場所／工作被衛生規則拒絕時的暫存資料。 %/
+&lt;&lt;set $venueAccessDenied to null&gt;&gt;
+/% 場所開鎖系統：目前正要進入的場所、當日禁止名單與短暫嘗試冷卻。 %/
+&lt;&lt;set $venueAccessPending to null&gt;&gt;
+&lt;&lt;set $venueDailyLockouts to {}&gt;&gt;
+&lt;&lt;set $venueAccessCooldowns to {}&gt;&gt;
+/% 角色建立流程會在 Start 後設定這兩個欄位。 %/
+&lt;&lt;set $playerGender to null&gt;&gt;
+&lt;&lt;set $majorId to null&gt;&gt;
+/% 入學滿一週後可到學生服務中心申請轉系；條件判定集中在 setup.canChangeMajor()。 %/
+&lt;&lt;set $majorChangeAvailableAt to new Date($gameDate.getTime() + (setup.gameDatabase.venueRules.university.education.majorChangeWaitDays * 24 * 60 * 60 * 1000))&gt;&gt;
+&lt;&lt;set $faintEventActive to false&gt;&gt;
+&lt;&lt;set $faintedAtHome to false&gt;&gt;
+&lt;&lt;set $cheatsEnabled to false&gt;&gt;</tw-passagedata><tw-passagedata pid="99" name="GameWidgets" tags="widget" position="1100,1225" size="100,100">/%
     推進時間並檢查路上事件。
     用法：&lt;&lt;passTime 分鐘數 [&quot;no_drain&quot;]&gt;&gt;
     第二個參數為 no_drain 時，時間仍會前進，但不會自然扣體力或衛生。
 %/
 &lt;&lt;widget &quot;passTime&quot;&gt;&gt;&lt;&lt;nobr&gt;&gt;
+	&lt;&lt;set _balance to setup.balance&gt;&gt;
 	&lt;&lt;run window.advanceTime($args[0], $args[1])&gt;&gt;
 
 	/* 2. 地點檢查：如果當前 Passage 標有 &quot;safe&quot; 標籤，直接結束，不進行抽籤 */
@@ -1409,23 +3385,46 @@ _eventDesc
 		/* 3. 計算時間基礎機率 */
 		&lt;&lt;set _hour to $gameDate.getHours()&gt;&gt;
 		&lt;&lt;if _hour &gt;= 22 or _hour &lt; 5&gt;&gt;
-			&lt;&lt;set _baseChance to 30&gt;&gt; /* 晚上：30% 基礎機率 */
+			&lt;&lt;set _baseChance to _balance.robber.nightChance&gt;&gt;
 		&lt;&lt;else&gt;&gt;
-			&lt;&lt;set _baseChance to 5&gt;&gt;  /* 白天：5% 基礎機率 */
+			&lt;&lt;set _baseChance to _balance.robber.dayChance&gt;&gt;
 		&lt;&lt;/if&gt;&gt;
 
 		/* 4. 計算幸運值修正 (預設 50 為基準) */
-		&lt;&lt;set _luckMod to ($luck - 50) * 0.4&gt;&gt;
-		&lt;&lt;set _finalChance to Math.max(1, _baseChance - _luckMod)&gt;&gt; /* 機率最低保底 1% */
+		&lt;&lt;set _effectiveLuck to setup.getEffectiveLuck()&gt;&gt;
+		&lt;&lt;set _luckMod to (_effectiveLuck - 50) * _balance.robber.luckReductionPerPoint&gt;&gt;
+		&lt;&lt;set _finalChance to Math.max(_balance.robber.minimumChance, _baseChance - _luckMod)&gt;&gt;
 
 		/* 5. 擲骰子 (1~100) */
 		&lt;&lt;set _roll to random(1, 100)&gt;&gt;
 
 		/* 6. 判定是否觸發 */
-		&lt;&lt;if _roll &lt;= _finalChance&gt;&gt;
+		/%
+			同一類隨機事件的冷卻時間。
+			目前只有搶匪事件；觸發後 120 分鐘內不會再次觸發搶匪。
+			日後新增其他事件時，請各自使用獨立的「...CooldownUntil」變數，
+			避免某一事件意外封鎖全部隨機事件。
+		%/
+		&lt;&lt;set _robberOnCooldown to $robberEventCooldownUntil and $gameDate &lt; $robberEventCooldownUntil&gt;&gt;
+		&lt;&lt;if _roll &lt;= _finalChance and not _robberOnCooldown&gt;&gt;
+			/% 在進入事件時開始計時，避免離開事件後立刻再次觸發。 %/
+			&lt;&lt;set $robberEventCooldownUntil to new Date($gameDate.getTime() + (_balance.robber.cooldownMinutes * 60 * 1000))&gt;&gt;
 			&lt;&lt;goto &quot;RobberEvent&quot;&gt;&gt;
 		&lt;&lt;/if&gt;&gt;
 	&lt;&lt;/if&gt;&gt;
+&lt;&lt;/nobr&gt;&gt;&lt;&lt;/widget&gt;&gt;
+
+/%
+    需要檢查營業時間／開鎖規則的場所入口。
+    用法：&lt;&lt;venueEnter &quot;按鈕文字&quot; &quot;場所 ID&quot; [花費分鐘數]&gt;&gt;
+    場所規則會從 GameDatabase 的 venueRules.&lt;ID&gt;.access 讀取。
+%/
+&lt;&lt;widget &quot;venueEnter&quot;&gt;&gt;&lt;&lt;nobr&gt;&gt;
+    &lt;&lt;button $args[0]&gt;&gt;
+        &lt;&lt;if $args[2] gt 0&gt;&gt;&lt;&lt;passTime $args[2]&gt;&gt;&lt;&lt;/if&gt;&gt;
+        &lt;&lt;run setup.setVenueAccessPending($args[1])&gt;&gt;
+        &lt;&lt;goto &quot;場所入口檢查&quot;&gt;&gt;
+    &lt;&lt;/button&gt;&gt;
 &lt;&lt;/nobr&gt;&gt;&lt;&lt;/widget&gt;&gt;
 
 /%
@@ -1434,11 +3433,61 @@ _eventDesc
     有填寫分鐘數時，會先推進時間，再前往目的段落。
 %/
 &lt;&lt;widget &quot;go&quot;&gt;&gt;&lt;&lt;nobr&gt;&gt;
-    &lt;&lt;button $args[0] $args[1]&gt;&gt;
+    &lt;&lt;set _goTarget to $args[1]&gt;&gt;
+    &lt;&lt;if _goTarget is &quot;YourHome&quot; and setup.playerHasTag(&quot;homeless&quot;)&gt;&gt;
+        &lt;&lt;set _goTarget to &quot;睡公園&quot;&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+    &lt;&lt;button $args[0] _goTarget&gt;&gt;
         &lt;&lt;if $args[2] gt 0&gt;&gt;
             &lt;&lt;passTime $args[2]&gt;&gt;
         &lt;&lt;/if&gt;&gt;
     &lt;&lt;/button&gt;&gt;
+&lt;&lt;/nobr&gt;&gt;&lt;&lt;/widget&gt;&gt;
+
+/%
+    需要衛生門檻的按鈕。
+    用法：&lt;&lt;venueGo &quot;按鈕文字&quot; &quot;場所 ID&quot; &quot;entry 或 work&quot; &quot;目的 passage&quot; [花費分鐘數]&gt;&gt;
+    未來新增工作時，先在 GameDatabase 的 venueRules 補資料，再用這個 widget 建按鈕。
+%/
+&lt;&lt;widget &quot;venueGo&quot;&gt;&gt;&lt;&lt;nobr&gt;&gt;
+    &lt;&lt;button $args[0]&gt;&gt;
+        &lt;&lt;if setup.canUseVenue($args[1], $args[2])&gt;&gt;
+            &lt;&lt;if $args[4] gt 0&gt;&gt;&lt;&lt;passTime $args[4]&gt;&gt;&lt;&lt;/if&gt;&gt;
+            &lt;&lt;goto $args[3]&gt;&gt;
+        &lt;&lt;else&gt;&gt;
+            &lt;&lt;run setup.setVenueHygieneDenied($args[1], $args[2])&gt;&gt;
+            &lt;&lt;goto &quot;場所衛生不足&quot;&gt;&gt;
+        &lt;&lt;/if&gt;&gt;
+    &lt;&lt;/button&gt;&gt;
+&lt;&lt;/nobr&gt;&gt;&lt;&lt;/widget&gt;&gt;
+
+/%
+    圖書館閱讀的共用流程。
+    用法：&lt;&lt;libraryRead &quot;技能ID&quot; 經驗值&gt;&gt;
+    每本書都共用這段，才能保證閱讀到閉館時的處理一致。
+%/
+&lt;&lt;widget &quot;libraryRead&quot;&gt;&gt;&lt;&lt;nobr&gt;&gt;
+    &lt;&lt;if $gameDate.getHours() gte 19&gt;&gt;
+        &lt;&lt;goto &quot;閉館&quot;&gt;&gt;
+    &lt;&lt;else&gt;&gt;&lt;&lt;silently&gt;&gt;
+        /% 每次閱讀最多 20 分鐘；最後一輪只閱讀到 19:00 閉館。 %/
+        &lt;&lt;set _minutesUntilLibraryClose to (19 - $gameDate.getHours()) * 60 - $gameDate.getMinutes()&gt;&gt;
+        &lt;&lt;set _readingMinutes to Math.min(20, _minutesUntilLibraryClose)&gt;&gt;
+        &lt;&lt;set _readingExp to $args[1] * _readingMinutes / 20&gt;&gt;
+        &lt;&lt;passTime _readingMinutes &quot;no_hygiene&quot;&gt;&gt;
+        &lt;&lt;set $hp to Math.max(0, $hp - 1)&gt;&gt;
+        &lt;&lt;/silently&gt;&gt;
+
+        你閱讀了 &lt;&lt;print _readingMinutes&gt;&gt; 分鐘。
+        &lt;&lt;gainSkillExp $args[0] _readingExp&gt;&gt;
+
+        &lt;&lt;if $gameDate.getHours() gte 19&gt;&gt;
+            圖書館已經閉館，今天不能再繼續閱讀了。
+            &lt;&lt;go &quot;返回街道&quot; &quot;街道&quot; 0&gt;&gt;
+        &lt;&lt;else&gt;&gt;
+            &lt;&lt;go &quot;返回圖書館&quot; &quot;圖書館&quot; 0&gt;&gt;
+        &lt;&lt;/if&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
 &lt;&lt;/nobr&gt;&gt;&lt;&lt;/widget&gt;&gt;
 
 /%
@@ -1450,43 +3499,102 @@ _eventDesc
 &lt;&lt;widget &quot;gainSkillExp&quot;&gt;&gt;&lt;&lt;nobr&gt;&gt;
     &lt;&lt;set _skillId to $args[0]&gt;&gt;
     &lt;&lt;set _gain to $args[1] || 5&gt;&gt;
+    /% 舊存檔沒有 $skillMaxLevel 時，仍以 10 作為安全的預設上限。 %/
+    &lt;&lt;set _skillMaxLevel to $skillMaxLevel || setup.balance.skills.maxLevel&gt;&gt;
     &lt;&lt;set _skillName to ({
         fitness: &quot;健身&quot;, charm: &quot;魅力&quot;, awareness: &quot;意識&quot;, knowledge: &quot;知識&quot;,
         dexterity: &quot;靈巧&quot;, tech: &quot;科技&quot;, creative: &quot;創作&quot;, cooking: &quot;料理&quot;,
         oral: &quot;口部&quot;, manual: &quot;手部&quot;, vaginal: &quot;陰道&quot;, anal: &quot;肛門&quot;
     })[_skillId] || _skillId&gt;&gt;
-    &lt;&lt;set $skills[_skillId].exp += _gain&gt;&gt;
-    
-    &lt;div style=&quot;color: #4CAF50; margin: 4px 0 0 0;&quot;&gt;&lt;&lt;print _skillName&gt;&gt;獲得提升！&lt;/div&gt;
+    &lt;&lt;if $skills[_skillId].level gte _skillMaxLevel&gt;&gt;
+        /% 滿級後不再累積經驗，避免存檔留下永遠用不到的 exp。 %/
+        &lt;&lt;set $skills[_skillId].exp to 0&gt;&gt;
+        &lt;div style=&quot;color: #999; margin: 4px 0 0 0;&quot;&gt;_skillName 已達 Lv._skillMaxLevel 上限。&lt;/div&gt;
+    &lt;&lt;else&gt;&gt;
+        &lt;&lt;set $skills[_skillId].exp += _gain&gt;&gt;
+        &lt;div style=&quot;color: #4CAF50; margin: 4px 0 0 0;&quot;&gt;&lt;&lt;print _skillName&gt;&gt;獲得提升！&lt;/div&gt;
 
-    &lt;&lt;set _reqExp to $skills[_skillId].level * 100&gt;&gt;
+        &lt;&lt;set _reqExp to $skills[_skillId].level * setup.balance.skills.expBase&gt;&gt;
+        &lt;&lt;for $skills[_skillId].exp &gt;= _reqExp and $skills[_skillId].level lt _skillMaxLevel&gt;&gt;
+            &lt;&lt;set $skills[_skillId].exp -= _reqExp&gt;&gt;
+            &lt;&lt;set $skills[_skillId].level += 1&gt;&gt;
 
-    &lt;&lt;for $skills[_skillId].exp &gt;= _reqExp&gt;&gt;
-        &lt;&lt;set $skills[_skillId].exp -= _reqExp&gt;&gt;
-        &lt;&lt;set $skills[_skillId].level += 1&gt;&gt;
-        
-        &lt;div style=&quot;color: #FFD700; font-weight: bold; margin: 4px 0 0 0;&quot;&gt;
-            🎉 技能提升到了 Lv.&lt;&lt;print $skills[_skillId].level&gt;&gt;！
-        &lt;/div&gt;
+            &lt;div style=&quot;color: #FFD700; font-weight: bold; margin: 4px 0 0 0;&quot;&gt;
+                🎉 技能提升到了 Lv.&lt;&lt;print $skills[_skillId].level&gt;&gt;！
+            &lt;/div&gt;
 
-        /% 目前只有健身升級會提高體力上限；其他技能的效果可在這裡繼續增加。 %/
-        &lt;&lt;if _skillId is &quot;fitness&quot;&gt;&gt;
-            &lt;&lt;set $hpMax += 10&gt;&gt;
-            體力上限 +10！
+            /% 目前只有健身升級會提高體力上限；其他技能的效果可在這裡繼續增加。 %/
+            &lt;&lt;if _skillId is &quot;fitness&quot;&gt;&gt;
+                &lt;&lt;set $hpMax += setup.balance.skills.fitnessHpMaxGain&gt;&gt;
+                體力上限 +&lt;&lt;print setup.balance.skills.fitnessHpMaxGain&gt;&gt;！
+            &lt;&lt;/if&gt;&gt;
+            &lt;&lt;set _reqExp to $skills[_skillId].level * setup.balance.skills.expBase&gt;&gt;
+        &lt;&lt;/for&gt;&gt;
+
+        /% 本次經驗值剛好讓技能滿級時，多出的經驗不再保留。 %/
+        &lt;&lt;if $skills[_skillId].level gte _skillMaxLevel&gt;&gt;
+            &lt;&lt;set $skills[_skillId].exp to 0&gt;&gt;
         &lt;&lt;/if&gt;&gt;
-        &lt;&lt;set _reqExp to $skills[_skillId].level * 100&gt;&gt;
-    &lt;&lt;/for&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+&lt;&lt;/nobr&gt;&gt;&lt;&lt;/widget&gt;&gt;
+
+/%
+    左側狀態欄的共用進度條。
+    用法：&lt;&lt;statusBar &quot;名稱&quot; 目前值 最大值 &quot;類型&quot;&gt;&gt;
+    例如：&lt;&lt;statusBar &quot;體力&quot; $hp $hpMax &quot;hp&quot;&gt;&gt;
+    數值不直接顯示，但會保留在滑鼠停留提示與無障礙資訊中。
+%/
+&lt;&lt;widget &quot;statusBar&quot;&gt;&gt;&lt;&lt;nobr&gt;&gt;
+    &lt;&lt;set _label to $args[0]&gt;&gt;
+    &lt;&lt;set _value to Number($args[1]) || 0&gt;&gt;
+    &lt;&lt;set _maximum to Math.max(1, Number($args[2]) || 1)&gt;&gt;
+    &lt;&lt;set _styleId to $args[3]&gt;&gt;
+    &lt;&lt;set _percent to Math.max(0, Math.min(100, (_value / _maximum) * 100))&gt;&gt;
+    /% 慾望固定紫色；其他生存數值依剩餘比例切換綠／黃／紅。 %/
+    &lt;&lt;if _styleId is &quot;horny&quot;&gt;&gt;
+        &lt;&lt;set _riskClass to &quot;horny&quot;&gt;&gt;
+    &lt;&lt;elseif _percent lte setup.balance.survival.criticalPercent&gt;&gt;
+        &lt;&lt;set _riskClass to &quot;critical&quot;&gt;&gt;
+    &lt;&lt;elseif _percent lte setup.balance.survival.warningPercent&gt;&gt;
+        &lt;&lt;set _riskClass to &quot;warning&quot;&gt;&gt;
+    &lt;&lt;else&gt;&gt;
+        &lt;&lt;set _riskClass to &quot;normal&quot;&gt;&gt;
+    &lt;&lt;/if&gt;&gt;
+    &lt;div @class=&quot;&#39;status-bar status-bar-&#39; + _riskClass + &#39; status-bar-&#39; + _styleId&quot; @title=&quot;_label + &#39;：&#39; + Math.round(_value) + &#39;/&#39; + Math.round(_maximum)&quot;&gt;
+        &lt;div class=&quot;status-bar-label&quot;&gt;&lt;&lt;print _label&gt;&gt;&lt;/div&gt;
+        &lt;div class=&quot;status-bar-track&quot; role=&quot;progressbar&quot; @aria-label=&quot;_label&quot; @aria-valuenow=&quot;_value&quot; @aria-valuemin=&quot;0&quot; @aria-valuemax=&quot;_maximum&quot;&gt;
+            &lt;span class=&quot;status-bar-fill&quot; @style=&quot;&#39;width: &#39; + _percent + &#39;%&#39;&quot; &gt;&lt;/span&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
 &lt;&lt;/nobr&gt;&gt;&lt;&lt;/widget&gt;&gt;
 
 /% 用於技能面板的一列技能資料，避免同一段 HTML 重複寫十二次。 %/
 &lt;&lt;widget &quot;skillRow&quot;&gt;&gt;&lt;&lt;nobr&gt;&gt;
     &lt;&lt;set _skill to $skills[$args[1]]&gt;&gt;
+    &lt;&lt;set _skillMaxLevel to $skillMaxLevel || setup.balance.skills.maxLevel&gt;&gt;
     &lt;div class=&quot;skill-item&quot;&gt;
         &lt;strong&gt;$args[0]&lt;/strong&gt;：Lv.&lt;&lt;print _skill.level&gt;&gt;&lt;br&gt;
-        經驗值：&lt;&lt;print _skill.exp&gt;&gt; / &lt;&lt;print _skill.level * 100&gt;&gt;
-        &lt;progress @value=&quot;_skill.exp&quot; @max=&quot;_skill.level * 100&quot;&gt;&lt;/progress&gt;
+        &lt;&lt;if _skill.level gte _skillMaxLevel&gt;&gt;
+            經驗值：已達上限
+        &lt;&lt;else&gt;&gt;
+            經驗值：&lt;&lt;print _skill.exp&gt;&gt; / &lt;&lt;print _skill.level * setup.balance.skills.expBase&gt;&gt;
+            &lt;progress @value=&quot;_skill.exp&quot; @max=&quot;_skill.level * setup.balance.skills.expBase&quot;&gt;&lt;/progress&gt;
+        &lt;&lt;/if&gt;&gt;
     &lt;/div&gt;
-&lt;&lt;/nobr&gt;&gt;&lt;&lt;/widget&gt;&gt;</tw-passagedata><tw-passagedata pid="55" name="SkillSheet" tags="no-jpg" position="600,725" size="100,100">/% 此段落由左側的「技能面板」按鈕放進彈出視窗中。 %/
+&lt;&lt;/nobr&gt;&gt;&lt;&lt;/widget&gt;&gt;</tw-passagedata><tw-passagedata pid="100" name="CharacterSheet" tags="no-jpg" position="1225,1225" size="100,100">/% 此段落由左側「角色」按鈕放進獨立彈出視窗。 %/
+&lt;div class=&quot;character-container&quot;&gt;
+    &lt;h3&gt;角色資訊&lt;/h3&gt;
+    &lt;div class=&quot;skill-item&quot;&gt;
+        性別：&lt;&lt;print setup.getPlayerGenderName()&gt;&gt;&lt;br&gt;
+        科系：&lt;&lt;print setup.getMajorName()&gt;&gt;&lt;br&gt;
+        聲望：&lt;&lt;print setup.getReputationDescription()&gt;&gt;
+    &lt;/div&gt;
+
+    /%
+        日後的遊玩統計（例如搶劫次數、約會次數、第一次事件對象）放在這個區塊下方。
+        統計資料建立後，請先在 StoryInit 初始化，再在這裡只負責顯示。
+    %/
+&lt;/div&gt;</tw-passagedata><tw-passagedata pid="101" name="SkillSheet" tags="no-jpg" position="100,1350" size="100,100">/% 此段落由左側「技能」按鈕放進獨立彈出視窗。 %/
 &lt;div class=&quot;skill-container&quot;&gt;
     &lt;h3&gt;生活技能&lt;/h3&gt;
     &lt;&lt;skillRow &quot;健身&quot; &quot;fitness&quot;&gt;&gt;

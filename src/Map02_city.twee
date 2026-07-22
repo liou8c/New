@@ -1,0 +1,83 @@
+:: 市區 [city]
+這裡很熱鬧。
+@@.button-container;
+<<go "🏘️離開市區" "街道" 20>>
+<<go "住宅區" "住宅區" 6>>
+<<go "警察局" "警察局" 3>>
+<<venueEnter "🏫大學" "university" 3>>
+@@
+
+:: 警察局 [police safe]
+
+<<go "離開" "市區" 3>>
+
+:: 大學 [university safe]
+這裡是大學。你目前就讀 <strong><<print setup.getMajorName()>></strong>。
+
+@@.button-container;
+<<go "🏫上課" "上課" 1>>
+<<go "👨🏻‍💻學生服務中心" "學生服務中心" 1>>
+<<go "🏫洗手間" "公共廁所" 1>>
+@@
+
+<<go "離開" "市區" 3>>
+
+:: 上課 [university safe]
+<<silently>>
+<<set _classPlan to setup.getUniversityClassPlan()>>
+<</silently>>
+
+<<if not setup.isVenueOpenNow("university") or setup.getMinutesUntilVenueClose("university") lt _classPlan.classMinutes>>
+    <<goto "大學下課">>
+<<elseif _classPlan.majorExp is 0 and _classPlan.minorExp is 0>>
+    你的主修與副修技能都已達上限，目前沒有適合你的課程，因此不會收取學費。
+    <<go "返回大學" "大學" 0>>
+<<elseif $money lt _classPlan.tuition>>
+    這堂課需要 <<print _classPlan.tuition>> 元學費，但你目前只有 <<print Math.round($money)>> 元。
+    <<go "返回大學" "大學" 0>>
+<<else>><<silently>>
+    <<set $money to Math.max(0, $money - _classPlan.tuition)>>
+    /% 上課是室內靜態活動：會花時間與體力，但不自然消耗衛生。 %/
+    <<passTime _classPlan.classMinutes "no_hygiene">>
+<</silently>>
+
+你上了 <<print _classPlan.classMinutes>> 分鐘的課，支付 <<print _classPlan.tuition>> 元學費。
+
+<<if _classPlan.majorExp gt 0>>
+    主修 <<print setup.getSkillName(_classPlan.majorSkill)>> 經驗 +<<print _classPlan.majorExp>>。
+    <<gainSkillExp _classPlan.majorSkill _classPlan.majorExp>>
+<</if>>
+<<if _classPlan.minorExp gt 0>>
+    副修 <<print setup.getSkillName(_classPlan.minorSkill)>> 經驗 +<<print _classPlan.minorExp>>。
+    <<gainSkillExp _classPlan.minorSkill _classPlan.minorExp>>
+<</if>>
+
+<<if setup.getMinutesUntilVenueClose("university") gte _classPlan.classMinutes>>
+    <<go "繼續上課" "上課" 0>>
+<</if>>
+<<go "返回大學" "大學" 0>>
+<</if>>
+
+:: 大學下課 [university safe]
+大學目前沒有足夠時間讓你完成一堂課。上課時間為週一至週五早上 07:00 至晚上 07:00，每堂課需要 60 分鐘。
+
+<<go "返回大學" "大學" 0>>
+
+:: 學生服務中心 [university safe]
+<<if not setup.isVenueOpenNow("university")>>
+    學生服務中心目前沒有開放辦理業務，請在週一至週五 07:00～19:00 再來。
+<<elseif setup.canChangeMajor()>>
+    學生服務中心的承辦人確認你的資料後，表示現在可以申請轉系。
+    你目前就讀 <strong><<print setup.getMajorName()>></strong>。
+
+    <<go "申請轉系" "更換科系" 0>>
+<<else>>
+    承辦人說：「入學未滿一週，現在還不能申請轉系。」
+    你可以在 <<print $majorChangeAvailableAt.getMonth() + 1>> 月 <<print $majorChangeAvailableAt.getDate()>> 日後再來辦理。
+<</if>>
+
+<<go "返回大學" "大學" 0>>
+
+:: 住宅區 [residential safe]
+
+<<go "離開" "市區" 6>>

@@ -3,6 +3,153 @@
     遊戲的「靜態資料庫」。規則程式放在其他檔案；可編輯內容集中在這裡。
     ID（例如 tea、alice）一旦發行存檔後不要改名；顯示名稱則可隨時在 locales 裡修改。
 */
+/*
+    ╔══════════════════════════════════════════════╗
+    ║                遊戲平衡設定區                 ║
+    ║  想調整難度時，優先只修改這一區的數字。         ║
+    ╚══════════════════════════════════════════════╝
+
+    這裡放「規則數字」：初始狀態、時間消耗、工作、事件機率等。
+    物品的售價與效果則留在下方 gameDatabase.items，因為它們屬於個別物品資料。
+*/
+setup.balance = {
+    /* 改動這一區時，也請同步更新「遊戲狀態與平衡規格.md」與計算機。 */
+    saveVersion: 8,
+    player: {
+        /* 開局金額只夠撐過最初幾天；第 7 天前需要開始工作。 */
+        startMoney: 500,
+        stats: {
+            hp: { start: 80, max: 100 },
+            horny: { start: 15, max: 100 },
+            luck: { start: 50, max: 100 },
+            mood: { start: 70, max: 100 },
+            satiety: { start: 80, max: 100 },
+            hygiene: { start: 75, max: 100 }
+        }
+    },
+    /* 800 / 7 約為每天 114 元，是前期最重要的經濟壓力。 */
+    rent: {
+        intervalDays: 7,
+        amount: 800,
+        graceDays: 3,
+        dailyAffectionPenalty: 5,
+        evictionAffectionPenalty: 35
+    },
+    housing: {
+        /* 全域聲望過低時，警察房東喬爾會主動解除租約。 */
+        reputationEvictionAt: -35,
+        highJoelAffectionAt: 30
+    },
+    time: {
+        minutesPerTick: 60,
+        satietyLossPerTick: 3,
+        hornyGainPerTick: 3,
+        hpLossPerTick: 1,
+        hygieneLossPerTick: 2
+    },
+    /* 睡 7 小時回 42 體力；每天工作 4 小時約剛好維持體力，健身需要額外安排。 */
+    sleep: { minutesPerStep: 30, hpGainPerStep: 3 },
+    skills: { maxLevel: 10, expBase: 100, fitnessHpMaxGain: 6 },
+    /* 4 小時工作 = 220；扣兩份泡麵 100 後，約剛好覆蓋每天房租準備金。 */
+    cafeWork: { hourlyPay: 55, hpCost: 7, hygieneCost: 5, moodCost: 2 },
+    gym: {
+        membershipFee: 300,
+        membershipDays: 7,
+        visitFee: 80,
+        workoutMinutes: 20,
+        fitnessExpPerWorkout: 10,
+        hpCost: 6,
+        satietyCost: 5,
+        hygieneCost: 8,
+        showerMinutes: 20
+    },
+    /* 公園跑步免費但效率低；目的是讓玩家用較少健身經驗換取靈巧的起步。 */
+    parkRun: { minutes: 25, fitnessExp: 1, dexterityExp: 2, satietyCost: 3, hygieneCost: 5 },
+    /* 公園休息是短暫恢復，不應比睡覺有效率；仍會正常流逝時間與累積自然消耗。 */
+    parkRest: { minutes: 15, hpRestore: 1, moodRestore: 2 },
+    /* 聲望只在角色資訊以文字顯示；新增階段時從低到高填入即可。 */
+    reputation: {
+        minimum: -100,
+        maximum: 100,
+        tiers: [
+            { maximum: -60, text: "你在這個世界裡惡名昭彰。" },
+            { maximum: -20, text: "你在這個世界裡風評不佳。" },
+            { maximum: 19, text: "沒有多少人認識你。" },
+            { maximum: 59, text: "你在這個世界小有名氣。" },
+            { maximum: 100, text: "你很受歡迎，大家都喜歡你。" }
+        ]
+    },
+    /*
+        深夜便利商店搶劫：有高風險的一次性現金選項，不能取代正常工作。
+        初始 Lv.1 健身、幸運 50 時成功率為 34%；最高不超過 85%。
+    */
+    convenienceRobbery: {
+        startHour: 0,
+        endHour: 5,
+        cooldownMinutes: 360,
+        baseChance: 15,
+        fitnessLevelWeight: 6,
+        luckWeight: 25,
+        minimumChance: 25,
+        maximumChance: 85,
+        minutes: 20,
+        guaranteedReward: 140,
+        luckyBonusMinimum: 60,
+        luckyBonusMaximum: 160,
+        failureHpDamage: 20,
+        failureMoodDamage: 15,
+        reputationLoss: 8
+    },
+    /*
+        心情不直接扣血，而是改變「有效幸運」。不修改 $luck 本身，
+        因此不會和限時幸運道具的原始數值互相覆蓋。
+    */
+    moodLuck: {
+        lowMoodMaximumPercent: 20,
+        highMoodMinimumPercent: 80,
+        lowMoodLuckModifier: -20,
+        highMoodLuckModifier: 10
+    },
+    /*
+        三段式飢餓壓力：低飽食先提醒，嚴重飢餓會隨時間失去體力。
+        歸零時保留少量「每次行動」扣血，讓玩家一按按鈕就知道自己餓壞了。
+    */
+    survival: {
+        warningPercent: 25,
+        criticalPercent: 10,
+        criticalHungerHpLossPerHour: 1,
+        starvationHpLossPerHour: 3,
+        starvationHpCostPerAction: 1,
+        starvationSleepRecoveryMultiplier: 0.5
+    },
+    robber: {
+        dayChance: 5,
+        nightChance: 30,
+        minimumChance: 1,
+        luckReductionPerPoint: 0.4,
+        cooldownMinutes: 120,
+        moodPenalty: 5,
+        paymentDemand: 100,
+        noMoneyAttackChance: 50,
+        noMoneyHpDamage: 10,
+        noMoneyMoodDamage: 10,
+        escapeHpCost: 5,
+        guaranteedEscapeHp: 50,
+        combat: {
+            baseChance: 10,
+            hpWeight: 20,
+            fitnessLevelWeight: 5,
+            dexterityLevelWeight: 5,
+            luckWeight: 20,
+            minimumChance: 15,
+            maximumChance: 90,
+            victoryMoodGain: 20,
+            victoryMoneyReward: 800,
+            defeatMoodPenalty: 35
+        }
+    }
+};
+
 setup.gameDatabase = {
     version: 1,
     defaultLanguage: "zh-TW",
@@ -12,8 +159,8 @@ setup.gameDatabase = {
             items: {
                 tea: {
                     name: "紅茶",
-                    description: "溫熱的紅茶。飲用後心情 +5。",
-                    useMessage: "你喝下紅茶，心情 +5。"
+                    description: "溫熱的紅茶。飲用後心情 +8。",
+                    useMessage: "你喝下紅茶，心情 +8。"
                 },
                 weirdDrink: {
                     name: "包裝奇怪的飲料",
@@ -22,23 +169,31 @@ setup.gameDatabase = {
                 },
                 ramen: {
                     name: "泡麵",
-                    description: "簡單又方便的熱食。食用後飽食度 +30。",
-                    useMessage: "你吃了一碗泡麵，飽食度 +30。"
+                    description: "簡單又方便的熱食。食用後飽食度 +40。",
+                    useMessage: "你吃了一碗泡麵，飽食度 +40。"
+                },
+                recycled_luck_pouch: {
+                    name: "袋裝「二手幸運」",
+                    description: "幸運 +30 持續 2 小時，接著以使用前幸運 -30 持續 2 小時。",
+                    useMessage: "你打開了袋裝「二手幸運」。幸運暫時 +30，效果持續 2 小時。"
                 }
             },
             npcs: {
                 alice: { name: "Alice（暫定）", profile: "可戀愛 NPC 的資料範例。請在角色確定後改名與補完介紹。" },
                 bob: { name: "Bob（暫定）", profile: "非戀愛 NPC 的資料範例。請在角色確定後改名與補完介紹。" },
-                winley: { name: "溫莉", profile: "咖啡廳店長。" }
+                winley: { name: "溫莉", profile: "咖啡廳店長。" },
+                raven: { name: "瑞文", profile: "咖啡廳工讀生。" },
+                joel: { name: "喬爾", profile: "房東、警察。" }
             },
             /* 劇情事件與任務目前直接寫在各個 .twee 場景內。 */
         },
         /* 英文檔先保留同一批 key；日後只需翻譯此區，不需碰遊戲邏輯。 */
         en: {
             items: {
-                tea: { name: "Black Tea", description: "Warm black tea. Restores 5 mood.", useMessage: "You drink the tea. Mood +5." },
+                tea: { name: "Black Tea", description: "Warm black tea. Restores 8 mood.", useMessage: "You drink the tea. Mood +8." },
                 weirdDrink: { name: "Strange Packaged Drink", description: "Something feels off about it.", useMessage: "You drink the strange beverage… Nothing happens right away." },
-                ramen: { name: "Instant Noodles", description: "A quick hot meal. Restores 30 satiety.", useMessage: "You eat the instant noodles. Satiety +30." }
+                ramen: { name: "Instant Noodles", description: "A quick hot meal. Restores 40 satiety.", useMessage: "You eat the instant noodles. Satiety +40." },
+                recycled_luck_pouch: { name: "Bagged \"Secondhand Luck\"", description: "Grants +30 luck for 2 hours, then applies -30 from your pre-use luck for 2 hours.", useMessage: "You open the bagged secondhand luck. Luck +30 for 2 hours." }
             },
             npcs: {
                 alice: { name: "Alice (draft)", profile: "Template data for a romanceable NPC." },
@@ -52,8 +207,8 @@ setup.gameDatabase = {
     items: {
         tea: {
             icon: "🍵", category: "drink", tags: ["consumable", "food", "drink", "shop_711", "mood_restore"],
-            price: 25, stackable: true, usable: true,
-            effects: [{ type: "stat", stat: "mood", amount: 5 }]
+            price: 20, stackable: true, usable: true,
+            effects: [{ type: "stat", stat: "mood", amount: 8 }]
         },
         weirdDrink: {
             icon: "🧃", category: "drink", tags: ["consumable", "drink", "shop_711", "mystery", "risky"],
@@ -61,8 +216,14 @@ setup.gameDatabase = {
         },
         ramen: {
             icon: "🍜", category: "food", tags: ["consumable", "food", "shop_711", "satiety_restore"],
-            price: 45, stackable: true, usable: true,
-            effects: [{ type: "stat", stat: "satiety", amount: 30 }]
+            price: 50, stackable: true, usable: true,
+            effects: [{ type: "stat", stat: "satiety", amount: 40 }]
+        },
+        recycled_luck_pouch: {
+            icon: "🧧", category: "consumable", tags: ["consumable", "buff", "debuff", "temporary", "shop_cornerstore"],
+            price: 100, stackable: true, usable: true,
+            /* 到期時以 originalValue + expireAmount 結算，不會以加成後的數值為基礎。 */
+            effects: [{ type: "timedStat", stat: "luck", amount: 30, durationMinutes: 120, expireAmount: -30, debuffDurationMinutes: 120, effectId: "recycled_luck_pouch" }]
         }
     },
 
@@ -100,6 +261,30 @@ setup.gameDatabase = {
             birthday: "07/21", likes: [], dislikes: [],
             relationship: { affectionStart: 0, romanceEnabled: false },
             notes: "咖啡廳店長。"
+        },
+        joel: {
+            color: "#548ec1",
+            gender: "男",
+            social: {
+                portrait: "images/ico_npc_joel.png",
+                occupation: "房東、警察"
+            },
+            tags: ["named_npc", "landlord"],
+            birthday: "07/21", likes: [], dislikes: [],
+            relationship: { affectionStart: 0, romanceEnabled: false },
+            notes: "X"
+        },
+        raven: {
+            color: "#5e6887",
+            gender: "女",
+            social: {
+                portrait: "images/ico_npc_raven.png",
+                occupation: "咖啡廳工讀生"
+            },
+            tags: ["named_npc", "cafe_manager"],
+            birthday: "07/21", likes: [], dislikes: [],
+            relationship: { affectionStart: 0, romanceEnabled: false },
+            notes: "酷妹。"
         }
     },
 
@@ -113,7 +298,273 @@ setup.gameDatabase = {
         library: { passage: "圖書館", tags: ["library", "safe", "knowledge"] },
         gym: { passage: "健身房", tags: ["gym", "safe", "fitness"] }
     },
-    shops: { shop_711: { itemIds: ["tea", "weirdDrink", "ramen"], tags: ["shop", "convenience_store"] } }
+    shops: {
+        /* 商品 ID 只列在對應店舖；袋裝「二手幸運」不會出現在便利商店。 */
+        shop_711: { itemIds: ["tea", "weirdDrink", "ramen"], tags: ["shop", "convenience_store"] },
+        cornerstore: { itemIds: ["recycled_luck_pouch"], tags: ["shop", "mystery"] }
+    },
+    /* 新開局的角色選項與大學科系。主修／副修都必須是 $skills 已存在的技能 ID。 */
+    characterGenders: {
+        male: { name: "男生" },
+        female: { name: "女生" },
+        nonbinary: { name: "非二元" }
+    },
+    majors: {
+        sports_science: { name: "體育與運動科學系", majorSkill: "fitness", minorSkill: "dexterity", description: "以身體訓練與運動表現為核心。" },
+        visual_arts: { name: "藝術與視覺系", majorSkill: "creative", minorSkill: "dexterity", description: "培養創作能力與精細的手部控制。" },
+        information_technology: { name: "資訊與科技系", majorSkill: "tech", minorSkill: "knowledge", description: "從科技實作與理論知識建立專業。" },
+        hospitality_management: { name: "餐飲管理系", majorSkill: "cooking", minorSkill: "charm", description: "學習料理、服務與管理場合的應對。" },
+        performing_arts: { name: "表演藝術系", majorSkill: "charm", minorSkill: "creative", description: "以舞台表現與創作練習為主。" },
+        humanities_history: { name: "人文與歷史系", majorSkill: "knowledge", minorSkill: "charm", description: "透過閱讀、考據與論述累積知識。" },
+        criminology_security: { name: "犯罪學與安全研究系", majorSkill: "knowledge", minorSkill: "dexterity", description: "研究犯罪、調查與安全實務。" }
+    },
+    /*
+        正式場所與工作的衛生規則。
+        新增場所時，只要新增一個 ID 與 entry／work 的規則，不需要複製判斷程式。
+        minimum 是「低於此值」才禁止；例如 20 代表衛生 20 仍可通過。
+    */
+    venueRules: {
+        cafe: {
+            name: "咖啡廳",
+            hygiene: {
+                entry: {
+                    minimum: 10,
+                    message: "你正要走進咖啡廳，卻注意到自己滿身汗味，你感覺自己很邋遢，不適合走進這裡。",
+                    returnPassage: "街道",
+                    returnLabel: "返回街道"
+                },
+                work: {
+                    minimum: 15,
+                    message: '@@.npc-winley;溫莉@@看了看你凌亂的儀容，委婉地說：@@.npc-winley;「今天先去洗個澡吧，整理好再來上班。」@@',
+                    returnPassage: "咖啡廳",
+                    returnLabel: "返回咖啡廳"
+                }
+            }
+        },
+        university: {
+            name: "大學",
+            /* 大學白天正常開放；非開放時間只能嘗試開鎖。 */
+            access: {
+                entryPassage: "大學",
+                returnPassage: "市區",
+                returnLabel: "返回市區",
+                openDays: [1, 2, 3, 4, 5],
+                openHour: 7,
+                closeHour: 19,
+                afterHoursMessage: "校門已經關上，側門的門鎖看起來或許能用工具打開。",
+                lockpick: {
+                    /* 初始靈巧 Lv.1、有效幸運 50 時成功率為 28%；最高 85%。 */
+                    baseChance: 20,
+                    difficulty: 15,
+                    dexterityLevelWeight: 10,
+                    luckWeight: 0.25,
+                    minimumChance: 5,
+                    maximumChance: 85,
+                    minutes: 15,
+                    attemptCooldownMinutes: 60,
+                    guardBaseChance: 35,
+                    guardDexterityReductionPerLevel: 4,
+                    guardLuckReduction: 0.15,
+                    guardMinimumChance: 10,
+                    guardMaximumChance: 75,
+                    caughtReputationLoss: 6,
+                    successMessage: "你避開校園巡邏的視線，撬開側門的門鎖，悄悄溜進校園。",
+                    failedMessage: "門鎖發出刺耳的金屬摩擦聲。你只好先收起工具，等風頭過去再說。",
+                    caughtMessage: "警衛循著聲音趕來，嚴厲地將你趕出校門，並警告今天不准再靠近。",
+                    lockoutMessage: "校門口的警衛顯然記得你。今天再靠近，只會讓事情變得更糟。",
+                    cooldownMessage: "側門附近還有人影巡邏。你得先讓剛才的聲響被夜色掩蓋。"
+                }
+            },
+            /*
+                每次上課單獨收費，而不是固定週期學費。
+                主修經驗約為副修的 2.4 倍；兩項技能滿級後不再允許付費上課。
+            */
+            education: {
+                classMinutes: 60,
+                tuitionPerClass: 30,
+                majorExp: 12,
+                minorExp: 5,
+                /* 入學滿幾天後才可在學生服務中心申請轉系。日後可在 canChangeMajor() 加入考試等條件。 */
+                majorChangeWaitDays: 7
+            }
+        }
+    }
+};
+
+/*
+    取得「這次判定要使用的幸運」。
+    $luck 是玩家本來的幸運（會存檔）；心情帶來的加減成只是即時效果，
+    所以心情跨過門檻時會立刻生效／解除，也不需要建立額外的限時效果資料。
+*/
+setup.getMoodLuckModifier = function () {
+    const state = State.variables;
+    const rule = setup.balance.moodLuck;
+    const moodPercent = state.moodMax > 0 ? (state.mood / state.moodMax) * 100 : 0;
+    if (moodPercent <= rule.lowMoodMaximumPercent) { return rule.lowMoodLuckModifier; }
+    if (moodPercent >= rule.highMoodMinimumPercent) { return rule.highMoodLuckModifier; }
+    return 0;
+};
+
+setup.getEffectiveLuck = function () {
+    const state = State.variables;
+    return Math.max(0, Math.min(state.luckMax, state.luck + setup.getMoodLuckModifier()));
+};
+
+setup.getMoodLuckStatus = function () {
+    const modifier = setup.getMoodLuckModifier();
+    if (modifier < 0) { return "心情低落：幸運 " + modifier; }
+    if (modifier > 0) { return "心情愉快：幸運 +" + modifier; }
+    return "";
+};
+
+/* 將數值聲望翻譯成角色資訊可直接顯示的文字。 */
+setup.getReputationDescription = function () {
+    const rule = setup.balance.reputation;
+    const reputation = Math.max(rule.minimum, Math.min(rule.maximum, Number(State.variables.reputation) || 0));
+    const tier = rule.tiers.find(function (item) { return reputation <= item.maximum; });
+    return tier ? tier.text : rule.tiers[rule.tiers.length - 1].text;
+};
+
+setup.getPlayerGenderName = function () {
+    const gender = setup.gameDatabase.characterGenders[State.variables.playerGender];
+    return gender ? gender.name : "未設定";
+};
+
+/* 角色建立與大學課程共用的顯示／資料工具。 */
+setup.skillNames = {
+    fitness: "健身", charm: "魅力", awareness: "意識", knowledge: "知識",
+    dexterity: "靈巧", tech: "科技", creative: "創作", cooking: "料理",
+    oral: "口部", manual: "手部", vaginal: "陰道", anal: "肛門"
+};
+
+setup.getSkillName = function (skillId) {
+    return setup.skillNames[skillId] || skillId;
+};
+
+setup.getMajor = function (majorId) {
+    return setup.gameDatabase.majors[majorId] || null;
+};
+
+setup.getMajorName = function () {
+    const major = setup.getMajor(State.variables.majorId);
+    return major ? major.name : "未選擇科系";
+};
+
+/* 轉系資格集中在這裡；日後新增考試、聲望或費用門檻時，只需擴充這個函式。 */
+setup.canChangeMajor = function () {
+    const state = State.variables;
+    return !!state.majorChangeAvailableAt && !!state.gameDate && state.gameDate >= state.majorChangeAvailableAt;
+};
+
+setup.getUniversityClassPlan = function () {
+    const state = State.variables;
+    const major = setup.getMajor(state.majorId);
+    const university = setup.gameDatabase.venueRules.university;
+    const education = university && university.education;
+    if (!major || !education || !state.skills) { return null; }
+
+    const maxLevel = state.skillMaxLevel || setup.balance.skills.maxLevel;
+    return {
+        majorName: major.name,
+        majorSkill: major.majorSkill,
+        minorSkill: major.minorSkill,
+        majorExp: state.skills[major.majorSkill].level < maxLevel ? education.majorExp : 0,
+        minorExp: state.skills[major.minorSkill].level < maxLevel ? education.minorExp : 0,
+        classMinutes: education.classMinutes,
+        tuition: education.tuitionPerClass
+    };
+};
+
+setup.getMinutesUntilVenueClose = function (venueId) {
+    const rule = setup.getVenueAccessRule(venueId);
+    const date = State.variables.gameDate;
+    if (!rule || !date || !setup.isVenueOpenNow(venueId)) { return 0; }
+    return Math.max(0, (rule.closeHour - date.getHours()) * 60 - date.getMinutes());
+};
+
+/*
+    正式場所／工作場所的共用衛生檢查。
+    venueId 是場所 ID（例如 cafe）；context 是 entry 或 work。
+    沒有設定規則的場所一律通過，方便逐步新增內容。
+*/
+setup.getVenueHygieneRule = function (venueId, context) {
+    const venue = setup.gameDatabase.venueRules[venueId];
+    return venue && venue.hygiene && venue.hygiene[context] ? venue.hygiene[context] : null;
+};
+
+setup.canUseVenue = function (venueId, context) {
+    const rule = setup.getVenueHygieneRule(venueId, context);
+    return !rule || State.variables.hygiene >= rule.minimum;
+};
+
+/* 記住本次被拒絕的場所，讓共用 passage 能讀取各場所不同的事件文字。 */
+setup.setVenueHygieneDenied = function (venueId, context) {
+    State.variables.venueAccessDenied = { venueId: venueId, context: context };
+};
+
+/* 以下是所有「開放時間／開鎖進入」場所共用的工具。 */
+setup.getVenueAccessRule = function (venueId) {
+    const venue = setup.gameDatabase.venueRules[venueId];
+    return venue && venue.access ? venue.access : null;
+};
+
+setup.getGameDateKey = function () {
+    const date = State.variables.gameDate;
+    return date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
+};
+
+setup.isVenueOpenNow = function (venueId) {
+    const rule = setup.getVenueAccessRule(venueId);
+    const date = State.variables.gameDate;
+    if (!rule || !date) { return true; }
+    return rule.openDays.includes(date.getDay()) && date.getHours() >= rule.openHour && date.getHours() < rule.closeHour;
+};
+
+setup.isVenueLockedOutToday = function (venueId) {
+    const lockouts = State.variables.venueDailyLockouts || {};
+    return lockouts[venueId] === setup.getGameDateKey();
+};
+
+setup.getVenueCooldownRemaining = function (venueId) {
+    const cooldowns = State.variables.venueAccessCooldowns || {};
+    const until = cooldowns[venueId];
+    if (!until || !State.variables.gameDate) { return 0; }
+    return Math.max(0, Math.ceil((new Date(until).getTime() - State.variables.gameDate.getTime()) / 60000));
+};
+
+setup.setVenueAccessPending = function (venueId) {
+    State.variables.venueAccessPending = venueId;
+};
+
+setup.setVenueAttemptCooldown = function (venueId) {
+    const rule = setup.getVenueAccessRule(venueId);
+    const lockpick = rule && rule.lockpick;
+    if (!lockpick) { return; }
+    const cooldowns = State.variables.venueAccessCooldowns || (State.variables.venueAccessCooldowns = {});
+    cooldowns[venueId] = new Date(State.variables.gameDate.getTime() + lockpick.attemptCooldownMinutes * 60 * 1000);
+};
+
+setup.setVenueLockedOutToday = function (venueId) {
+    const lockouts = State.variables.venueDailyLockouts || (State.variables.venueDailyLockouts = {});
+    lockouts[venueId] = setup.getGameDateKey();
+};
+
+setup.getLockpickChance = function (venueId) {
+    const rule = setup.getVenueAccessRule(venueId);
+    const lockpick = rule && rule.lockpick;
+    const state = State.variables;
+    if (!lockpick) { return 0; }
+    const chance = lockpick.baseChance + state.skills.dexterity.level * lockpick.dexterityLevelWeight + setup.getEffectiveLuck() * lockpick.luckWeight - lockpick.difficulty;
+    return Math.max(lockpick.minimumChance, Math.min(lockpick.maximumChance, chance));
+};
+
+setup.getGuardCatchChance = function (venueId) {
+    const rule = setup.getVenueAccessRule(venueId);
+    const lockpick = rule && rule.lockpick;
+    const state = State.variables;
+    if (!lockpick) { return 0; }
+    const chance = lockpick.guardBaseChance - state.skills.dexterity.level * lockpick.guardDexterityReductionPerLevel - setup.getEffectiveLuck() * lockpick.guardLuckReduction;
+    return Math.max(lockpick.guardMinimumChance, Math.min(lockpick.guardMaximumChance, chance));
 };
 
 setup.t = function (path, fallback) {
@@ -186,8 +637,15 @@ setup.initializeGameDatabaseState = function () {
         state.cart[itemId] = 0;
     });
     state.inventoryMessage = "";
+    state.timedEffects = {};
     state.knownNpcs = [];
     state.playerTags = [];
+    state.rentDebt = 0;
+    state.rentGraceDeadline = null;
+    state.rentNextAffectionPenaltyAt = null;
+    state.housingStatus = "housed";
+    state.reputationEvictionTriggered = false;
+    state.rentEventPending = null;
     state.npcRelations = {};
     Object.keys(setup.gameDatabase.npcs).forEach(function (npcId) {
         const relation = setup.gameDatabase.npcs[npcId].relationship;
@@ -198,6 +656,103 @@ setup.initializeGameDatabaseState = function () {
     });
     state.flags = {};
 };
+
+/*
+    舊存檔補值：只補「不存在」的欄位，絕不覆蓋玩家原有進度。
+    之後新增新的存檔變數時，請把預設值加在這裡，並將 saveVersion 加 1。
+*/
+setup.ensureGameState = function () {
+    const state = State.variables;
+    const balance = setup.balance;
+    const statDefaults = balance.player.stats;
+
+    Object.keys(statDefaults).forEach(function (stat) {
+        const definition = statDefaults[stat];
+        if (state[stat] === undefined) { state[stat] = definition.start; }
+        if (state[stat + "Max"] === undefined) { state[stat + "Max"] = definition.max; }
+    });
+
+    if (state.money === undefined) { state.money = balance.player.startMoney; }
+    state.money = Math.max(0, Number(state.money) || 0);
+    if (state.rentDebt === undefined) { state.rentDebt = 0; }
+    if (state.rentGraceDeadline === undefined) { state.rentGraceDeadline = null; }
+    if (state.rentNextAffectionPenaltyAt === undefined) { state.rentNextAffectionPenaltyAt = null; }
+    if (state.housingStatus === undefined) { state.housingStatus = "housed"; }
+    if (state.reputationEvictionTriggered === undefined) { state.reputationEvictionTriggered = false; }
+    if (state.rentEventPending === undefined) { state.rentEventPending = null; }
+    if (state.language === undefined) { state.language = setup.gameDatabase.defaultLanguage; }
+    if (state.skillMaxLevel === undefined) { state.skillMaxLevel = balance.skills.maxLevel; }
+    if (state.gymMember === undefined) { state.gymMember = false; }
+    if (state.gymExpiry === undefined) { state.gymExpiry = null; }
+    if (state.energyBuffer === undefined) { state.energyBuffer = 0; }
+    if (state.hygieneBuffer === undefined) { state.hygieneBuffer = 0; }
+    if (state.satietyBuffer === undefined) { state.satietyBuffer = 0; }
+    if (state.hornyBuffer === undefined) { state.hornyBuffer = 0; }
+    if (state.timedEffects === undefined) { state.timedEffects = {}; }
+    if (state.robberEventCooldownUntil === undefined) { state.robberEventCooldownUntil = null; }
+    if (state.convenienceRobberyCooldownUntil === undefined) { state.convenienceRobberyCooldownUntil = null; }
+    if (state.venueAccessDenied === undefined) { state.venueAccessDenied = null; }
+    if (state.venueAccessPending === undefined) { state.venueAccessPending = null; }
+    if (state.venueDailyLockouts === undefined) { state.venueDailyLockouts = {}; }
+    if (state.venueAccessCooldowns === undefined) { state.venueAccessCooldowns = {}; }
+    if (state.playerGender === undefined) { state.playerGender = null; }
+    if (state.majorId === undefined) { state.majorId = null; }
+    if (state.majorChangeAvailableAt === undefined) {
+        const waitDays = setup.gameDatabase.venueRules.university.education.majorChangeWaitDays;
+        state.majorChangeAvailableAt = state.gameDate ? new Date(state.gameDate.getTime() + (waitDays * 24 * 60 * 60 * 1000)) : null;
+    }
+    if (state.faintEventActive === undefined) { state.faintEventActive = false; }
+    if (state.faintedAtHome === undefined) { state.faintedAtHome = false; }
+    if (state.cheatsEnabled === undefined) { state.cheatsEnabled = false; }
+    if (state.saveVersion === undefined) { state.saveVersion = balance.saveVersion; }
+
+    if (state.inventory === undefined) { state.inventory = {}; }
+    if (state.cart === undefined) { state.cart = {}; }
+    Object.keys(setup.gameDatabase.items).forEach(function (itemId) {
+        if (state.inventory[itemId] === undefined) { state.inventory[itemId] = 0; }
+        if (state.cart[itemId] === undefined) { state.cart[itemId] = 0; }
+    });
+
+    if (state.knownNpcs === undefined) { state.knownNpcs = []; }
+    if (state.playerTags === undefined) { state.playerTags = []; }
+    /* 舊存檔曾以中文儲存無家可歸標籤，讀檔時轉為一致的英文 ID。 */
+    if (state.playerTags.includes("無家可歸")) {
+        state.playerTags = state.playerTags.filter(function (tag) { return tag !== "無家可歸"; });
+        if (!state.playerTags.includes("homeless")) { state.playerTags.push("homeless"); }
+    }
+    if (state.flags === undefined) { state.flags = {}; }
+    if (state.npcRelations === undefined) { state.npcRelations = {}; }
+    Object.keys(setup.gameDatabase.npcs).forEach(function (npcId) {
+        const relation = setup.gameDatabase.npcs[npcId].relationship;
+        if (state.npcRelations[npcId] === undefined) {
+            state.npcRelations[npcId] = { affection: relation.affectionStart || 0 };
+        }
+        if (relation.romanceEnabled && state.npcRelations[npcId].romance === undefined) {
+            state.npcRelations[npcId].romance = relation.romanceStart || 0;
+        }
+        state.npcRelations[npcId].affection = Math.clamp(Number(state.npcRelations[npcId].affection) || 0, -100, 100);
+    });
+};
+
+/* 好感度的合法範圍為 -100～100；負數可用於厭惡與仇人關係。 */
+setup.changeNpcAffection = function (npcId, amount) {
+    const relation = State.variables.npcRelations && State.variables.npcRelations[npcId];
+    if (!relation) { return false; }
+    relation.affection = Math.clamp((Number(relation.affection) || 0) + (Number(amount) || 0), -100, 100);
+    return true;
+};
+
+setup.getNpcRelationTier = function (affection) {
+    const value = Math.clamp(Number(affection) || 0, -100, 100);
+    if (value <= -80) { return "仇人"; }
+    if (value <= -10) { return "厭惡"; }
+    return "普通";
+};
+
+/* 每次進入故事前安全補齊舊存檔缺少的欄位。 */
+jQuery(document).on(":passagestart.ensureGameState", function () {
+    setup.ensureGameState();
+});
 
 /* 已認識 NPC 是存檔狀態；同一角色不會重複加入。 */
 setup.meetNpc = function (npcId) {
@@ -220,6 +775,15 @@ setup.addPlayerTag = function (tag) {
     return true;
 };
 
+/* 移除可逆的玩家身分／狀態，例如辭職或重新取得住處。 */
+setup.removePlayerTag = function (tag) {
+    const tags = State.variables.playerTags || (State.variables.playerTags = []);
+    const index = tags.indexOf(tag);
+    if (index === -1) { return false; }
+    tags.splice(index, 1);
+    return true;
+};
+
 setup.npcSocialInfo = function (npcId) {
     const npc = setup.gameDatabase.npcs[npcId];
     return (npc && npc.social) || {};
@@ -234,17 +798,90 @@ setup.inventoryCount = function () {
 setup.useItem = function (itemId) {
     const item = setup.gameDatabase.items[itemId];
     const state = State.variables;
-    if (!item || !state.inventory[itemId]) { return false; }
-    state.inventory[itemId] -= 1;
+    const inventory = state.inventory || (state.inventory = {});
+    if (!item || !inventory[itemId]) { return false; }
+
+    /* 同一種限時效果不疊加；效果持續時再次使用不消耗物品。 */
+    const timedEffect = item.effects.find(function (effect) { return effect.type === "timedStat"; });
+    if (timedEffect && state.timedEffects && state.timedEffects[timedEffect.effectId]) {
+        state.inventoryMessage = "袋裝「二手幸運」的效果仍在持續中。";
+        return false;
+    }
+
+    inventory[itemId] -= 1;
     item.effects.forEach(function (effect) {
         if (effect.type === "stat") {
             const max = state[effect.stat + "Max"];
-            state[effect.stat] = Math.clamp(state[effect.stat] + effect.amount, 0, max);
+            state[effect.stat] = Math.min(max, Math.max(0, state[effect.stat] + effect.amount));
+        }
+        if (effect.type === "timedStat") {
+            const timedEffects = state.timedEffects || (state.timedEffects = {});
+            const originalValue = state[effect.stat];
+            const max = state[effect.stat + "Max"];
+            timedEffects[effect.effectId] = {
+                itemId: itemId,
+                stat: effect.stat,
+                amount: effect.amount,
+                originalValue: originalValue,
+                expireAmount: effect.expireAmount,
+                debuffDurationMinutes: effect.debuffDurationMinutes,
+                phase: "buff",
+                expiresAt: new Date(state.gameDate.getTime() + effect.durationMinutes * 60 * 1000)
+            };
+            state[effect.stat] = Math.min(max, Math.max(0, originalValue + effect.amount));
         }
     });
     state.inventoryMessage = setup.itemText(itemId, "useMessage");
+    if (itemId === "ramen") {
+        state.inventoryMessage += " 目前飽食度：" + Math.round(state.satiety) + " / " + Math.round(state.satietyMax) + "。";
+    }
     return true;
 };
+
+/* 供左側狀態欄顯示目前套用中的限時 BUFF／DEBUFF。 */
+setup.getTimedEffectStatus = function () {
+    const state = State.variables;
+    const effects = state.timedEffects || {};
+    const statNames = { luck: "幸運", mood: "心情", hp: "體力", satiety: "飢餓" };
+
+    return Object.keys(effects).map(function (effectId) {
+        const effect = effects[effectId];
+        const isDebuff = effect.phase === "debuff";
+        const amount = isDebuff ? effect.expireAmount : (effect.amount !== undefined ? effect.amount : Math.abs(effect.expireAmount || 0));
+        const remainingMinutes = Math.max(0, Math.ceil((new Date(effect.expiresAt).getTime() - state.gameDate.getTime()) / 60000));
+        const itemName = setup.itemText(effect.itemId || effectId, "name");
+        const sign = amount > 0 ? "+" : "";
+        const phaseLabel = isDebuff ? "DEBUFF" : "BUFF";
+
+        return itemName + "：" + phaseLabel + "，" + (statNames[effect.stat] || effect.stat) + " " + sign + amount + "（剩餘 " + remainingMinutes + " 分鐘）";
+    });
+};
+
+/*
+    背包是彈出視窗，不透過 passage 轉場；使用物品後只重繪視窗中的內容，
+    避免 SugarCube 的 replace 巨集重建整個彈窗而造成版面跳動。
+*/
+setup.refreshInventoryDialog = function () {
+    const target = document.querySelector("#ui-dialog-body.inventory-dialog #inventory-content");
+    if (!target) { return; }
+    jQuery(target).empty();
+    new Wikifier(target, Story.get("背包內容").processText());
+};
+
+setup.refreshStoryCaption = function () {
+    const target = document.getElementById("story-caption");
+    if (!target) { return; }
+    jQuery(target).empty();
+    new Wikifier(target, Story.get("StoryCaption").processText());
+};
+
+jQuery(document).off("click.inventoryUse", "#ui-dialog-body.inventory-dialog .inventory-use-button");
+jQuery(document).on("click.inventoryUse", "#ui-dialog-body.inventory-dialog .inventory-use-button", function (event) {
+    event.preventDefault();
+    setup.useItem(this.getAttribute("data-item-id"));
+    setup.refreshInventoryDialog();
+    setup.refreshStoryCaption();
+});
 
 setup.checkout = function (shopId) {
     const state = State.variables;
@@ -252,7 +889,8 @@ setup.checkout = function (shopId) {
     if (total <= 0 || state.money < total) { return false; }
     setup.getShopItems(shopId).forEach(function (item) {
         const quantity = Math.max(0, Math.floor(Number(state.cart[item.id]) || 0));
-        state.inventory[item.id] += quantity;
+        /* 舊存檔可能沒有後來新增物品的欄位，先以 0 初始化再加入數量。 */
+        state.inventory[item.id] = (state.inventory[item.id] || 0) + quantity;
         state.cart[item.id] = 0;
     });
     state.money -= total;

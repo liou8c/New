@@ -16,35 +16,46 @@ Untitled Story
 <<set $location to "start">>
 /% 用於橫幅圖片的地點名稱；沒有專屬圖片的地點會暫時使用街道圖片。 %/
 <<set $bannerLocation to "start">>
-<<set $gameDate to new Date(2026, 4, 25, 7, 30)>>
-<<set $rentDueDate to new Date($gameDate.getTime() + (7 * 24 * 60 * 60 * 1000))>>
-<<set $money to 1000>>      /% 初始金錢 %/
-<<set $hp to 60>>           /% 初始體力 %/
-<<set $hpMax to 100>>       /% 體力上限 %/
-<<set $horny to 10>>        /% 初始性慾 %/
-<<set $hornyMax to 100>>    /% 性慾上限 %/
-<<set $luck to 50>>         /% 初始幸運 %/
-<<set $luckMax to 100>>     /% 幸運上限 %/
-<<set $mood to 50>>         /% 初始心情 %/
-<<set $moodMax to 100>>     /% 心情上限 %/
-<<set $satiety to 50>>      /% 初始飽食度 %/
-<<set $satietyMax to 100>>  /% 飽食度上限 %/
-<<set $hygiene to 50>>      /% 初始衛生 %/
-<<set $hygieneMax to 100>>  /% 衛生上限 %/
+/% JavaScript 的月份從 0 起算；2026 年 5 月 24 日是星期日。分鐘請寫 0，避免 00 被視為舊式八進位數字。 %/
+<<set $gameDate to new Date(2026, 4, 24, 8, 0)>>
+<<set $rentDueDate to new Date($gameDate.getTime() + (setup.balance.rent.intervalDays * 24 * 60 * 60 * 1000))>>
+<<set $rentDebt to 0>>
+<<set $rentGraceDeadline to null>>
+<<set $rentNextAffectionPenaltyAt to null>>
+<<set $housingStatus to "housed">>
+<<set $reputationEvictionTriggered to false>>
+<<set $rentEventPending to null>>
+/% 初始數值集中在 _GameDatabase.twee 的 setup.balance.player。 %/
+<<set $money to setup.balance.player.startMoney>>
+<<set $hp to setup.balance.player.stats.hp.start>>
+<<set $hpMax to setup.balance.player.stats.hp.max>>
+<<set $horny to setup.balance.player.stats.horny.start>>
+<<set $hornyMax to setup.balance.player.stats.horny.max>>
+<<set $luck to setup.balance.player.stats.luck.start>>
+<<set $luckMax to setup.balance.player.stats.luck.max>>
+<<set $mood to setup.balance.player.stats.mood.start>>
+<<set $moodMax to setup.balance.player.stats.mood.max>>
+<<set $satiety to setup.balance.player.stats.satiety.start>>
+<<set $satietyMax to setup.balance.player.stats.satiety.max>>
+<<set $hygiene to setup.balance.player.stats.hygiene.start>>
+<<set $hygieneMax to setup.balance.player.stats.hygiene.max>>
 <<set $gymMember to false>> /% 是否為健身房會員 %/
 <<set $gymExpiry to null>>  /% 健身房會員到期日（若不是會員則為 null） %/
 
 /%
     用來累積不足一小時的行動時間。
-    累積滿 60 分鐘時，時間系統才會扣除 1 點體力與衛生，避免零碎時間遺失。
+    累積滿 60 分鐘時，時間系統才會扣除對應數值，避免零碎時間遺失。
 %/
 <<set $energyBuffer to 0>>
 <<set $hygieneBuffer to 0>>
+<<set $satietyBuffer to 0>>
+<<set $hornyBuffer to 0>>
 
 /%
     技能資料表。
     每個技能都有 level（等級）與 exp（經驗值）。日後要新增技能時，照著同樣格式增加一行即可。
 %/
+<<set $skillMaxLevel to setup.balance.skills.maxLevel>>
 <<set $skills to {
     fitness:   { level: 1, exp: 0 },
     charm:     { level: 1, exp: 0 },
@@ -68,3 +79,21 @@ Untitled Story
 
 /* 世界聲望仍是玩家存檔資料。 */
 <<set $reputation to 0>>
+<<set $saveVersion to setup.balance.saveVersion>>
+<<set $robberEventCooldownUntil to null>>
+/% 深夜便利商店搶劫：同一晚只允許嘗試一次。 %/
+<<set $convenienceRobberyCooldownUntil to null>>
+/% 正式場所／工作被衛生規則拒絕時的暫存資料。 %/
+<<set $venueAccessDenied to null>>
+/% 場所開鎖系統：目前正要進入的場所、當日禁止名單與短暫嘗試冷卻。 %/
+<<set $venueAccessPending to null>>
+<<set $venueDailyLockouts to {}>>
+<<set $venueAccessCooldowns to {}>>
+/% 角色建立流程會在 Start 後設定這兩個欄位。 %/
+<<set $playerGender to null>>
+<<set $majorId to null>>
+/% 入學滿一週後可到學生服務中心申請轉系；條件判定集中在 setup.canChangeMajor()。 %/
+<<set $majorChangeAvailableAt to new Date($gameDate.getTime() + (setup.gameDatabase.venueRules.university.education.majorChangeWaitDays * 24 * 60 * 60 * 1000))>>
+<<set $faintEventActive to false>>
+<<set $faintedAtHome to false>>
+<<set $cheatsEnabled to false>>

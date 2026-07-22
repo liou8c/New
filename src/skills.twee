@@ -1,5 +1,21 @@
+:: CharacterSheet [no-jpg]
+/% 此段落由左側「角色」按鈕放進獨立彈出視窗。 %/
+<div class="character-container">
+    <h3>角色資訊</h3>
+    <div class="skill-item">
+        性別：<<print setup.getPlayerGenderName()>><br>
+        科系：<<print setup.getMajorName()>><br>
+        聲望：<<print setup.getReputationDescription()>>
+    </div>
+
+    /%
+        日後的遊玩統計（例如搶劫次數、約會次數、第一次事件對象）放在這個區塊下方。
+        統計資料建立後，請先在 StoryInit 初始化，再在這裡只負責顯示。
+    %/
+</div>
+
 :: SkillSheet [no-jpg]
-/% 此段落由左側的「技能面板」按鈕放進彈出視窗中。 %/
+/% 此段落由左側「技能」按鈕放進獨立彈出視窗。 %/
 <div class="skill-container">
     <h3>生活技能</h3>
     <<skillRow "健身" "fitness">>

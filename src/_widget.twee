@@ -6,6 +6,7 @@
     第二個參數為 no_drain 時，時間仍會前進，但不會自然扣體力或衛生。
 %/
 <<widget "passTime">><<nobr>>
+	<<set _balance to setup.balance>>
 	<<run window.advanceTime($args[0], $args[1])>>
 
 	/* 2. 地點檢查：如果當前 Passage 標有 "safe" 標籤，直接結束，不進行抽籤 */
@@ -15,23 +16,46 @@
 		/* 3. 計算時間基礎機率 */
 		<<set _hour to $gameDate.getHours()>>
 		<<if _hour >= 22 or _hour < 5>>
-			<<set _baseChance to 30>> /* 晚上：30% 基礎機率 */
+			<<set _baseChance to _balance.robber.nightChance>>
 		<<else>>
-			<<set _baseChance to 5>>  /* 白天：5% 基礎機率 */
+			<<set _baseChance to _balance.robber.dayChance>>
 		<</if>>
 
 		/* 4. 計算幸運值修正 (預設 50 為基準) */
-		<<set _luckMod to ($luck - 50) * 0.4>>
-		<<set _finalChance to Math.max(1, _baseChance - _luckMod)>> /* 機率最低保底 1% */
+		<<set _effectiveLuck to setup.getEffectiveLuck()>>
+		<<set _luckMod to (_effectiveLuck - 50) * _balance.robber.luckReductionPerPoint>>
+		<<set _finalChance to Math.max(_balance.robber.minimumChance, _baseChance - _luckMod)>>
 
 		/* 5. 擲骰子 (1~100) */
 		<<set _roll to random(1, 100)>>
 
 		/* 6. 判定是否觸發 */
-		<<if _roll <= _finalChance>>
+		/%
+			同一類隨機事件的冷卻時間。
+			目前只有搶匪事件；觸發後 120 分鐘內不會再次觸發搶匪。
+			日後新增其他事件時，請各自使用獨立的「...CooldownUntil」變數，
+			避免某一事件意外封鎖全部隨機事件。
+		%/
+		<<set _robberOnCooldown to $robberEventCooldownUntil and $gameDate < $robberEventCooldownUntil>>
+		<<if _roll <= _finalChance and not _robberOnCooldown>>
+			/% 在進入事件時開始計時，避免離開事件後立刻再次觸發。 %/
+			<<set $robberEventCooldownUntil to new Date($gameDate.getTime() + (_balance.robber.cooldownMinutes * 60 * 1000))>>
 			<<goto "RobberEvent">>
 		<</if>>
 	<</if>>
+<</nobr>><</widget>>
+
+/%
+    需要檢查營業時間／開鎖規則的場所入口。
+    用法：<<venueEnter "按鈕文字" "場所 ID" [花費分鐘數]>>
+    場所規則會從 GameDatabase 的 venueRules.<ID>.access 讀取。
+%/
+<<widget "venueEnter">><<nobr>>
+    <<button $args[0]>>
+        <<if $args[2] gt 0>><<passTime $args[2]>><</if>>
+        <<run setup.setVenueAccessPending($args[1])>>
+        <<goto "場所入口檢查">>
+    <</button>>
 <</nobr>><</widget>>
 
 /%
@@ -40,11 +64,61 @@
     有填寫分鐘數時，會先推進時間，再前往目的段落。
 %/
 <<widget "go">><<nobr>>
-    <<button $args[0] $args[1]>>
+    <<set _goTarget to $args[1]>>
+    <<if _goTarget is "YourHome" and setup.playerHasTag("homeless")>>
+        <<set _goTarget to "睡公園">>
+    <</if>>
+    <<button $args[0] _goTarget>>
         <<if $args[2] gt 0>>
             <<passTime $args[2]>>
         <</if>>
     <</button>>
+<</nobr>><</widget>>
+
+/%
+    需要衛生門檻的按鈕。
+    用法：<<venueGo "按鈕文字" "場所 ID" "entry 或 work" "目的 passage" [花費分鐘數]>>
+    未來新增工作時，先在 GameDatabase 的 venueRules 補資料，再用這個 widget 建按鈕。
+%/
+<<widget "venueGo">><<nobr>>
+    <<button $args[0]>>
+        <<if setup.canUseVenue($args[1], $args[2])>>
+            <<if $args[4] gt 0>><<passTime $args[4]>><</if>>
+            <<goto $args[3]>>
+        <<else>>
+            <<run setup.setVenueHygieneDenied($args[1], $args[2])>>
+            <<goto "場所衛生不足">>
+        <</if>>
+    <</button>>
+<</nobr>><</widget>>
+
+/%
+    圖書館閱讀的共用流程。
+    用法：<<libraryRead "技能ID" 經驗值>>
+    每本書都共用這段，才能保證閱讀到閉館時的處理一致。
+%/
+<<widget "libraryRead">><<nobr>>
+    <<if $gameDate.getHours() gte 19>>
+        <<goto "閉館">>
+    <<else>><<silently>>
+        /% 每次閱讀最多 20 分鐘；最後一輪只閱讀到 19:00 閉館。 %/
+        <<set _minutesUntilLibraryClose to (19 - $gameDate.getHours()) * 60 - $gameDate.getMinutes()>>
+        <<set _readingMinutes to Math.min(20, _minutesUntilLibraryClose)>>
+        <<set _readingExp to $args[1] * _readingMinutes / 20>>
+        <<passTime _readingMinutes "no_hygiene">>
+        <<set $hp to Math.max(0, $hp - 1)>>
+        <</silently>>
+
+        你閱讀了 <<print _readingMinutes>> 分鐘。
+        <<gainSkillExp $args[0] _readingExp>>
+
+        <<if $gameDate.getHours() gte 19>>
+            圖書館已經閉館，今天不能再繼續閱讀了。
+            <<go "返回街道" "街道" 0>>
+        <<else>>
+            <<go "返回圖書館" "圖書館" 0>>
+        <</if>>
+    <</if>>
 <</nobr>><</widget>>
 
 /%
@@ -56,40 +130,86 @@
 <<widget "gainSkillExp">><<nobr>>
     <<set _skillId to $args[0]>>
     <<set _gain to $args[1] || 5>>
+    /% 舊存檔沒有 $skillMaxLevel 時，仍以 10 作為安全的預設上限。 %/
+    <<set _skillMaxLevel to $skillMaxLevel || setup.balance.skills.maxLevel>>
     <<set _skillName to ({
         fitness: "健身", charm: "魅力", awareness: "意識", knowledge: "知識",
         dexterity: "靈巧", tech: "科技", creative: "創作", cooking: "料理",
         oral: "口部", manual: "手部", vaginal: "陰道", anal: "肛門"
     })[_skillId] || _skillId>>
-    <<set $skills[_skillId].exp += _gain>>
-    
-    <div style="color: #4CAF50; margin: 4px 0 0 0;"><<print _skillName>>獲得提升！</div>
+    <<if $skills[_skillId].level gte _skillMaxLevel>>
+        /% 滿級後不再累積經驗，避免存檔留下永遠用不到的 exp。 %/
+        <<set $skills[_skillId].exp to 0>>
+        <div style="color: #999; margin: 4px 0 0 0;">_skillName 已達 Lv._skillMaxLevel 上限。</div>
+    <<else>>
+        <<set $skills[_skillId].exp += _gain>>
+        <div style="color: #4CAF50; margin: 4px 0 0 0;"><<print _skillName>>獲得提升！</div>
 
-    <<set _reqExp to $skills[_skillId].level * 100>>
+        <<set _reqExp to $skills[_skillId].level * setup.balance.skills.expBase>>
+        <<for $skills[_skillId].exp >= _reqExp and $skills[_skillId].level lt _skillMaxLevel>>
+            <<set $skills[_skillId].exp -= _reqExp>>
+            <<set $skills[_skillId].level += 1>>
 
-    <<for $skills[_skillId].exp >= _reqExp>>
-        <<set $skills[_skillId].exp -= _reqExp>>
-        <<set $skills[_skillId].level += 1>>
-        
-        <div style="color: #FFD700; font-weight: bold; margin: 4px 0 0 0;">
-            🎉 技能提升到了 Lv.<<print $skills[_skillId].level>>！
-        </div>
+            <div style="color: #FFD700; font-weight: bold; margin: 4px 0 0 0;">
+                🎉 技能提升到了 Lv.<<print $skills[_skillId].level>>！
+            </div>
 
-        /% 目前只有健身升級會提高體力上限；其他技能的效果可在這裡繼續增加。 %/
-        <<if _skillId is "fitness">>
-            <<set $hpMax += 10>>
-            體力上限 +10！
+            /% 目前只有健身升級會提高體力上限；其他技能的效果可在這裡繼續增加。 %/
+            <<if _skillId is "fitness">>
+                <<set $hpMax += setup.balance.skills.fitnessHpMaxGain>>
+                體力上限 +<<print setup.balance.skills.fitnessHpMaxGain>>！
+            <</if>>
+            <<set _reqExp to $skills[_skillId].level * setup.balance.skills.expBase>>
+        <</for>>
+
+        /% 本次經驗值剛好讓技能滿級時，多出的經驗不再保留。 %/
+        <<if $skills[_skillId].level gte _skillMaxLevel>>
+            <<set $skills[_skillId].exp to 0>>
         <</if>>
-        <<set _reqExp to $skills[_skillId].level * 100>>
-    <</for>>
+    <</if>>
+<</nobr>><</widget>>
+
+/%
+    左側狀態欄的共用進度條。
+    用法：<<statusBar "名稱" 目前值 最大值 "類型">>
+    例如：<<statusBar "體力" $hp $hpMax "hp">>
+    數值不直接顯示，但會保留在滑鼠停留提示與無障礙資訊中。
+%/
+<<widget "statusBar">><<nobr>>
+    <<set _label to $args[0]>>
+    <<set _value to Number($args[1]) || 0>>
+    <<set _maximum to Math.max(1, Number($args[2]) || 1)>>
+    <<set _styleId to $args[3]>>
+    <<set _percent to Math.max(0, Math.min(100, (_value / _maximum) * 100))>>
+    /% 慾望固定紫色；其他生存數值依剩餘比例切換綠／黃／紅。 %/
+    <<if _styleId is "horny">>
+        <<set _riskClass to "horny">>
+    <<elseif _percent lte setup.balance.survival.criticalPercent>>
+        <<set _riskClass to "critical">>
+    <<elseif _percent lte setup.balance.survival.warningPercent>>
+        <<set _riskClass to "warning">>
+    <<else>>
+        <<set _riskClass to "normal">>
+    <</if>>
+    <div @class="'status-bar status-bar-' + _riskClass + ' status-bar-' + _styleId" @title="_label + '：' + Math.round(_value) + '/' + Math.round(_maximum)">
+        <div class="status-bar-label"><<print _label>></div>
+        <div class="status-bar-track" role="progressbar" @aria-label="_label" @aria-valuenow="_value" @aria-valuemin="0" @aria-valuemax="_maximum">
+            <span class="status-bar-fill" @style="'width: ' + _percent + '%'" ></span>
+        </div>
+    </div>
 <</nobr>><</widget>>
 
 /% 用於技能面板的一列技能資料，避免同一段 HTML 重複寫十二次。 %/
 <<widget "skillRow">><<nobr>>
     <<set _skill to $skills[$args[1]]>>
+    <<set _skillMaxLevel to $skillMaxLevel || setup.balance.skills.maxLevel>>
     <div class="skill-item">
         <strong>$args[0]</strong>：Lv.<<print _skill.level>><br>
-        經驗值：<<print _skill.exp>> / <<print _skill.level * 100>>
-        <progress @value="_skill.exp" @max="_skill.level * 100"></progress>
+        <<if _skill.level gte _skillMaxLevel>>
+            經驗值：已達上限
+        <<else>>
+            經驗值：<<print _skill.exp>> / <<print _skill.level * setup.balance.skills.expBase>>
+            <progress @value="_skill.exp" @max="_skill.level * setup.balance.skills.expBase"></progress>
+        <</if>>
     </div>
 <</nobr>><</widget>>

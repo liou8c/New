@@ -22,10 +22,7 @@
                 <div class="item-name"><<print setup.itemText(_itemId, "name")>></div>\
                 <div class="item-quantity">× $inventory[_itemId]</div>\
                 <<if _item.usable>><div class="item-use-button">\
-                    <<button "使用">>\
-                        <<run setup.useItem(_itemId)>>\
-                        <<replace "#inventory-content">><<include "背包內容">><</replace>>\
-                    <</button>>\
+                    <button type="button" class="inventory-use-button" @data-item-id="_itemId">使用</button>\
                 </div><</if>>\
             </div>\
         <</if>>\

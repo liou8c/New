@@ -1,0 +1,22 @@
+/% Map00這裡都放共用的場景 %/
+
+:: 場所衛生不足 [no-jpg]
+<<silently>>
+/% 所有場所共用這個 passage；不同場所的文字與返回位置讀取 GameDatabase 的 venueRules。 %/
+<<set _venueDeniedData to $venueAccessDenied ? setup.getVenueHygieneRule($venueAccessDenied.venueId, $venueAccessDenied.context) : null>>
+<<set $venueAccessDenied to null>>
+<</silently>>
+<<if _venueDeniedData>>
+    <h3>儀容不合格</h3>
+    _venueDeniedData.message
+    <br><br>
+    目前衛生：<<print Math.round($hygiene)>> / <<print Math.round($hygieneMax)>>（需要至少 <<print _venueDeniedData.minimum>>）
+
+    @@.button-container;
+    <<go _venueDeniedData.returnLabel _venueDeniedData.returnPassage 0>>
+    <<go "回家洗澡" "浴室" 5>>
+    @@
+<<else>>
+    這個場所目前無法進入。
+    <<go "返回街道" "街道" 0>>
+<</if>>

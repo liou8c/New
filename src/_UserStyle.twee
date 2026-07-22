@@ -35,12 +35,159 @@
     margin-top: 20px;      /* 設定這個按鈕容器與上方其他元素的距離為 20px，避免貼得太近 */
     margin-left: 0;
     padding-left: 0;
+    width: 100%;
+    box-sizing: border-box;
     justify-content: flex-start;
+    align-content: flex-start;
+}
+
+/* SugarCube 的按鈕預設外距會讓每一列看起來縮進；交由 gap 統一處理間距。 */
+.button-container > button {
+    margin: 0 !important;
+    font-size: 16px;
+}
+
+.button-container > a {
+    margin: 0 !important;
+    font-size: 16px;
+}
+
+/* Twee 會將容器內的換行輸出成 <br>；在 flex 中它會佔掉首列寬度。 */
+.button-container > br {
+    display: none;
+}
+
+/* 便利商店的搶劫按鈕與一般按鈕一樣依內容決定高度，不被其他 flex 項目拉長。 */
+.button-container.store-actions {
+    align-items: flex-start;
+}
+
+/* 搶劫冷卻提示放在店舖說明上方，不占用按鈕列的位置。 */
+.store-robbery-warning {
+    margin-bottom: 8px;
 }
 
 /* 技能彈出視窗樣式 */
 #ui-dialog-body.skill-dialog {
     padding: 15px 20px;
+}
+
+/*
+    SugarCube 會把 StoryMenu 的每個最外層連結自動包成 #menu-story 的 <li>。
+    所以前兩項（角色、技能）用左右兩欄，其餘項目仍各佔一列。
+*/
+#menu-story > li:nth-child(1),
+#menu-story > li:nth-child(2) {
+    display: inline-block;
+    width: calc(50% - 2px);
+    margin: 4px 0;
+    vertical-align: top;
+}
+
+#menu-story > li:nth-child(1) {
+    margin-right: 4px;
+}
+
+#menu-story > li a {
+    box-sizing: border-box;
+    display: block;
+    padding: 5px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #ffffff;
+    text-align: center;
+    text-decoration: none;
+}
+
+#menu-story > li a:hover {
+    background: rgba(129, 97, 255, 0.22);
+    border-color: #8161ff;
+}
+
+/* 左側主角狀態：數值以容易掃讀的進度條呈現。 */
+/* 時間下方保留給未來玩家頭像；需要更多或更少空間時只改這個數字。 */
+#story-caption .status-panel {
+    margin-top: 165px;
+}
+
+/* 使用指定格子位置，確保不會因為其他樣式而變回單欄排列。 */
+#story-caption .status-bars {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-areas:
+        "hp mood"
+        "satiety hygiene"
+        "horny horny";
+    gap: 4px 7px;
+    margin: 3px 0 2px;
+    line-height: 1;
+}
+
+#story-caption .status-bar {
+    min-width: 0;
+    margin: 0;
+}
+
+/* 前四項兩兩並列，慾望保留最後一整行。 */
+#story-caption .status-bar-hp { grid-area: hp; }
+#story-caption .status-bar-mood { grid-area: mood; }
+#story-caption .status-bar-satiety { grid-area: satiety; }
+#story-caption .status-bar-hygiene { grid-area: hygiene; }
+#story-caption .status-bar-horny { grid-area: horny; }
+
+/* 金錢與幸運獨立放在慾望條下方，預留清楚的視覺區隔。 */
+#story-caption .status-resources {
+    margin-top: 8px !important;
+    line-height: 1.35;
+}
+
+/* SugarCube 預設會在角色資訊與選單之間留 2em；這裡收緊成資訊面板。 */
+#ui-bar-body > #menu {
+    margin-top: 10px;
+}
+
+#menu ul {
+    margin-top: 6px;
+}
+
+.status-bar-label {
+    margin-bottom: 0;
+    font-weight: bold;
+    font-size: 0.95em;
+    line-height: 1;
+}
+
+.status-bar-track {
+    height: 7px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 999px;
+    background: #25252b;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.status-bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    transition: width 0.25s ease;
+}
+
+.status-bar-normal .status-bar-fill { background: linear-gradient(90deg, #399e46, #83d86b); }
+.status-bar-warning .status-bar-fill { background: linear-gradient(90deg, #d9a421, #ffe06a); }
+.status-bar-critical .status-bar-fill { background: linear-gradient(90deg, #d33e47, #ff8188); }
+.status-bar-horny .status-bar-fill { background: linear-gradient(90deg, #9c58d5, #e28cff); }
+
+/* 標題上方的歷史紀錄按鈕縮小，不影響故事內的普通按鈕。 */
+#ui-bar-history {
+    gap: 5px;
+}
+
+#ui-bar-history button {
+    width: 34px;
+    min-width: 34px;
+    height: 30px;
+    padding: 0;
+    font-size: 0.9em;
 }
 
 /* 預設按鈕外觀 */
@@ -89,7 +236,8 @@ button:hover {
     width: 700px;
     min-width: 700px;
     gap: 8px;
-    margin-top: 8px;
+    /* 自動左右邊界讓固定三欄商品卡置中。 */
+    margin: 6px auto 0;
 }
 
 /* 每一列固定容納三張卡片，讓商品依照左、中、右的順序排列。 */
@@ -97,6 +245,7 @@ button:hover {
     display: flex;
     gap: 8px;
     width: 700px;
+    justify-content: center;
 }
 
 /* 每張卡片約 228px 寬、270px 高，形成接近方形的三欄版面。 */
@@ -166,8 +315,19 @@ button:hover {
 /* 購物清單下方的即時金額與餘額提醒。 */
 #shop-summary {
     width: 700px;
-    margin: 12px 0;
+    /* 收緊商品卡與預計金額之間的距離，並與商品區同樣置中。 */
+    margin: 8px auto 0;
     min-height: 1.5em;
+}
+
+/* 購物頁的結帳按鈕靠近金額區，避免出現過大的垂直留白。 */
+#shop-summary + .button-container {
+    margin-top: 10px;
+}
+
+/* 只在購物頁縮短橫幅與目前金額的距離，不影響其他場景的橫幅排版。 */
+body:has(#shop-cart) .scene-banner img {
+    margin-bottom: 1em;
 }
 
 #shop-insufficient {
@@ -190,6 +350,73 @@ button:hover {
 /* 社交頁：顯示玩家已認識 NPC 的資料卡。 */
 #ui-dialog-body.social-dialog {
     width: min(86vw, 720px);
+}
+
+#ui-dialog-body.settings-dialog {
+    width: min(86vw, 560px);
+}
+
+.settings-toggle {
+    display: block;
+    font-size: 1.05em;
+}
+
+.settings-toggle input {
+    margin-right: 8px;
+}
+
+.cheat-menu {
+    margin-top: 16px;
+    padding: 14px;
+    border: 1px solid rgba(255, 180, 70, 0.6);
+    border-radius: 6px;
+    background: rgba(70, 45, 20, 0.28);
+}
+
+.cheat-warning {
+    margin-top: 0;
+    color: #ffd37a;
+}
+
+.cheat-actions,
+.cheat-inputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-start;
+    align-content: flex-start;
+}
+
+.cheat-actions > button,
+.cheat-inputs > button {
+    margin: 0 !important;
+}
+
+.cheat-inputs {
+    margin-top: 14px;
+}
+
+.cheat-inputs label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cheat-inputs input {
+    width: 78px;
+}
+
+.cheat-actions button,
+.cheat-inputs button {
+    padding: 7px 10px;
+    font-size: 0.9em;
+}
+
+.cheat-feedback {
+    min-height: 1.4em;
+    margin-top: 12px;
+    color: #a9e6a2;
 }
 
 .social-empty {

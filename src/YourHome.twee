@@ -1,4 +1,6 @@
 :: YourHome [home safe]
+<<if setup.playerHasTag("homeless")>><<goto "睡公園">><</if>>
+
 你在客廳。
 
 @@.button-container;
@@ -27,7 +29,7 @@
     <<set _roll to random(1, 100)>>
 
     /% 3. 判定看到爛片還是好片 %/
-    <<if _roll gt $luck>>
+    <<if _roll gt setup.getEffectiveLuck()>>
         /% 看到爛片：心情減少 %/
         <<set _moodChange to -Math.trunc($watchMins / 10)>>
         <<set _eventDesc to either(
@@ -63,63 +65,44 @@ _eventDesc
 @@.button-container;
 <<go "🛋️客廳" "YourHome" 0>>
 <<go "🛏️睡覺" "睡覺" 0>>
-<<go "📱手遊" "玩手機" 0>>
 @@
 
 :: 睡覺 [home safe]
-你睡了一覺，體力恢復了！
-<<passTime 480 "no_drain">>
-<<set $hp to Math.clamp($hp + 50, 0, $hpMax)>>
+你想睡多久？
+
+<<link "睡 30 分鐘">><<set $sleepMinutes to setup.balance.sleep.minutesPerStep>><<goto "睡眠結果">><</link>>
+<<link "睡 1 小時">><<set $sleepMinutes to setup.balance.sleep.minutesPerStep * 2>><<goto "睡眠結果">><</link>>
+<<link "睡 2 小時">><<set $sleepMinutes to setup.balance.sleep.minutesPerStep * 4>><<goto "睡眠結果">><</link>>
+<<link "睡 3 小時">><<set $sleepMinutes to setup.balance.sleep.minutesPerStep * 6>><<goto "睡眠結果">><</link>>
+<<link "睡 7 小時">><<set $sleepMinutes to setup.balance.sleep.minutesPerStep * 14>><<goto "睡眠結果">><</link>>
+<<link "睡到體力全滿">><<set $sleepMinutes to Math.ceil(Math.max(0, $hpMax - $hp) / setup.balance.sleep.hpGainPerStep) * setup.balance.sleep.minutesPerStep>><<goto "睡眠結果">><</link>>
+
+<<go "返回臥室" "臥室" 0>>
+
+:: 睡眠結果 [home safe]
+<<silently>>
+<<set $sleepMinutes to Math.max(0, Number($sleepMinutes) || 0)>>
+/% TimeSystem 會在飽食歸零的睡眠時數累積此暫用變數；不會寫進存檔。 %/
+<<set _starvationSleepMinutes to 0>>
+<<passTime $sleepMinutes "sleep">>
+<<set _normalSleepMinutes to $sleepMinutes - _starvationSleepMinutes>>
+<<set _sleepHpGain to (_normalSleepMinutes / setup.balance.sleep.minutesPerStep) * setup.balance.sleep.hpGainPerStep + (_starvationSleepMinutes / setup.balance.sleep.minutesPerStep) * setup.balance.sleep.hpGainPerStep * setup.balance.survival.starvationSleepRecoveryMultiplier>>
+<<set _sleepHpGain to Math.min($hpMax - $hp, _sleepHpGain)>>
+<<set $hp to Math.min($hpMax, $hp + _sleepHpGain)>>
+<</silently>>
+
+<<if $sleepMinutes is 0>>
+    你的體力已經全滿，暫時不需要休息。
+<<else>>
+    你睡了 <<print $sleepMinutes>> 分鐘，體力恢復 <<print _sleepHpGain>> 點。
+<</if>>
+
 <<go "醒來" "臥室" 0>>
-
-:: 玩手機 [home safe]
-
-@@.button-container;
-<<go "轉蛋" "轉蛋" 1>>@@
-<<go "不玩了" "臥室" 0>>
-@@
-
-:: 轉蛋 [home safe]
-<<link "花3000鑽抽卡">>
-    /% 1. 產生 1 到 100 的隨機數 %/
-    <<set _roll to random(1, 100)>>
-    
-    /% 2. 計算幸運加成 (幸運值超過 50 的部分當作加分) %/
-    <<set _bonus to $luck - 50 * 0.5>>
-    
-    /% 3. 計算最終分數 %/
-    <<set _result to _roll + _bonus>>
-    
-    /% 4. 根據最終分數判斷獎勵 %/
-    <<if _result gte 95>>
-        /% 分數 95 以上 (SSR) %/
-        <<goto "SSR_Result">>
-    <<elseif _result gte 80>>
-        /% 分數 80 到 94 之間 (SR) %/
-        <<goto "SR_Result">>
-    <<else>>
-        /% 其他結果 (R) %/
-        <<goto "Common_Result">>
-    <</if>>
-<</link>>
-[[不抽了|玩手機]]
-
-:: SSR_Result
-恭喜你抽到了 SSR 卡片！🎉
-[[回到轉蛋|轉蛋]]   
-
-:: SR_Result
-你抽到了 SR 卡片！✨
-[[回到轉蛋|轉蛋]]
-
-:: Common_Result
-你抽到了普通卡片。😐
-[[回到轉蛋|轉蛋]]
 
 :: 浴室 [home safe]
 你進浴室洗了一個舒舒服服的熱水澡，全身香噴噴的。
 
 <<run window.advanceTime(20, "no_drain")>> /* 過了 20 分鐘，但不會自然扣體力和清潔度 */
-<<set $hygiene to 100>>                   /* 將清潔度直接補滿至 100 */
+<<set $hygiene to $hygieneMax>>
 
 <<go "🚪離開" "YourHome" 0>>

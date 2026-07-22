@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>前期生存平衡計算機</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    body { max-width: 1100px; margin: 24px auto; padding: 0 16px; line-height: 1.5; }
+    h1 { margin-bottom: 0; } .hint { color: #777; margin-top: 4px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    fieldset { border: 1px solid #888; border-radius: 8px; margin: 18px 0; padding: 14px; }
+    label { display: grid; gap: 4px; font-size: .92rem; } input, select { padding: 6px; font: inherit; }
+    .summary { padding: 14px; border-left: 5px solid #888; background: color-mix(in srgb, currentColor 7%, transparent); }
+    .good { border-color: #258040; } .warn { border-color: #a97500; } .bad { border-color: #b02020; }
+    table { border-collapse: collapse; width: 100%; margin-top: 18px; } th, td { padding: 8px; border-bottom: 1px solid #9996; text-align: right; } th:first-child, td:first-child { text-align: left; }
+    .scroll { overflow-x: auto; } #chart { width: 100%; height: 260px; margin-top: 18px; } .line { fill: none; stroke-width: 2.5; }
+    .axis { stroke: #888; stroke-width: 1; } .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: .9rem; } .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; }
+    details { margin-top: 16px; } code { white-space: nowrap; }
+  </style>
+</head>
+<body>
+  <h1>前期生存平衡計算機</h1>
+  <p class="hint">這是 3～7 日的「估算」：先調日常作息，再決定數字是否有你想要的壓力。所有預設值都對應 <code>src/_GameDatabase.twee</code>。</p>
+
+  <fieldset><legend>玩家每天的作息</legend><div class="grid">
+    <label>模擬天數<select id="days"><option value="3">3 天</option><option value="5">5 天</option><option value="7" selected>7 天（含房租）</option></select></label>
+    <label>每天工作（小時）<input id="work" type="number" min="0" max="10" step="0.5" value="4"></label>
+    <label>每天泡麵（份）<input id="meals" type="number" min="0" max="8" step="1" value="2"></label>
+    <label>每天睡眠（小時）<input id="sleep" type="number" min="0" max="14" step="0.5" value="7"></label>
+    <label>每天健身（20 分鐘／次）<input id="gym" type="number" min="0" max="12" step="1" value="0"></label>
+    <label>每天紅茶（杯）<input id="tea" type="number" min="0" max="10" step="1" value="0"></label>
+    <label>每天洗澡（次）<input id="shower" type="number" min="0" max="3" step="1" value="1"></label>
+  </div></fieldset>
+
+  <details><summary>平衡數字（改這裡可試不同曲線）</summary><div class="grid" style="margin-top:12px">
+    <label>開局金錢<input id="startMoney" type="number" value="500"></label>
+    <label>每週房租<input id="rent" type="number" value="800"></label>
+    <label>工作時薪<input id="wage" type="number" value="55"></label>
+    <label>泡麵價格<input id="mealCost" type="number" value="50"></label>
+    <label>泡麵飽食恢復<input id="mealGain" type="number" value="40"></label>
+    <label>每小時飽食消耗<input id="satietyLoss" type="number" step="0.5" value="3"></label>
+    <label>每 30 分鐘睡眠回體<input id="sleepGain" type="number" value="3"></label>
+    <label>單次健身費（非會員）<input id="gymFee" type="number" value="80"></label>
+  </div></details>
+
+  <h2>結果</h2>
+  <div id="summary" class="summary" aria-live="polite"></div>
+  <div class="legend"><span><i class="dot" style="background:#2775c9"></i>金錢（右軸）</span><span><i class="dot" style="background:#258040"></i>體力</span><span><i class="dot" style="background:#a97500"></i>飽食</span><span><i class="dot" style="background:#8b4fa5"></i>衛生</span><span><i class="dot" style="background:#c04b5b"></i>心情</span></div>
+  <svg id="chart" viewBox="0 0 900 260" role="img" aria-label="每日金錢與生存數值曲線"></svg>
+  <div class="scroll"><table><thead><tr><th>日末</th><th>金錢</th><th>體力</th><th>飽食</th><th>衛生</th><th>心情</th><th>慾望</th><th>當日收支</th></tr></thead><tbody id="rows"></tbody></table></div>
+
+  <script>
+    /* 唯一資料來源：這些欄位的初始值應和 setup.balance 保持相同。 */
+    const $ = id => document.getElementById(id);
+    const value = id => Number($(id).value) || 0;
+    const clamp = n => Math.max(0, Math.min(100, n));
+    const statName = { hp: '體力', satiety: '飽食', hygiene: '衛生', mood: '心情' };
+
+    function simulate() {
+      const config = Object.fromEntries(['days','work','meals','sleep','gym','tea','shower','startMoney','rent','wage','mealCost','mealGain','satietyLoss','sleepGain','gymFee'].map(id => [id, value(id)]));
+      let state = { money: config.startMoney, hp: 80, satiety: 80, hygiene: 75, mood: 70, horny: 15 };
+      const history = [];
+      for (let day = 1; day <= config.days; day++) {
+        /* 睡眠不扣體力／衛生，但仍會消耗飽食與增加慾望；此處以一天總量估算。 */
+        const income = config.work * config.wage;
+        const expenses = config.meals * config.mealCost + config.tea * 20 + config.gym * config.gymFee + (day % 7 === 0 ? config.rent : 0);
+        state.money += income - expenses;
+        state.hp = clamp(state.hp + config.sleep * 2 * config.sleepGain - (24 - config.sleep - config.work) - config.work * 7 - config.gym * 6);
+        state.satiety = clamp(state.satiety - 24 * config.satietyLoss - config.gym * 5 + config.meals * config.mealGain);
+        state.hygiene = config.shower > 0 ? 100 : clamp(state.hygiene - (24 - config.sleep - config.work) * 2 - config.work * 5 - config.gym * 8);
+        state.mood = clamp(state.mood - config.work * 2 + config.tea * 8);
+        state.horny = clamp(state.horny + 24 * 3);
+        history.push({ day, ...state, net: income - expenses });
+      }
+      render(history, config);
+    }
+
+    function render(history, config) {
+      const end = history.at(-1);
+      const risks = [];
+      for (const key of Object.keys(statName)) if (end[key] <= 10) risks.push(`${statName[key]}危急`); else if (end[key] <= 25) risks.push(`${statName[key]}偏低`);
+      if (end.money < 0) risks.push('房租後破產');
+      const summary = $('summary');
+      const clear = risks.length === 0;
+      summary.className = `summary ${clear ? 'good' : end.money < 0 || Object.keys(statName).some(k => end[k] <= 10) ? 'bad' : 'warn'}`;
+      summary.textContent = clear ? `可維持：第 ${config.days} 天結束時有 ${Math.round(end.money)} 元；這份作息留下的餘裕可以用於技能或社交。` : `需要留意：${risks.join('、')}。試著多工作、增加食物／休息，或調低支出後再看曲線。`;
+      $('rows').innerHTML = history.map(r => `<tr><td>第 ${r.day} 天${r.day % 7 === 0 ? '（扣房租）' : ''}</td><td>${Math.round(r.money)}</td><td>${Math.round(r.hp)}</td><td>${Math.round(r.satiety)}</td><td>${Math.round(r.hygiene)}</td><td>${Math.round(r.mood)}</td><td>${Math.round(r.horny)}</td><td>${r.net >= 0 ? '+' : ''}${Math.round(r.net)}</td></tr>`).join('');
+      drawChart(history);
+    }
+
+    function drawChart(history) {
+      const svg = $('chart'), width = 900, height = 260, left = 42, right = 42, top = 16, bottom = 30;
+      const x = i => left + i * (width - left - right) / Math.max(1, history.length - 1);
+      const yStat = n => height - bottom - n * (height - top - bottom) / 100;
+      const maxMoney = Math.max(100, ...history.map(r => Math.abs(r.money)));
+      const yMoney = n => height - bottom - (n + maxMoney) * (height - top - bottom) / (maxMoney * 2);
+      const path = (key, mapper) => history.map((r, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${mapper(r[key]).toFixed(1)}`).join(' ');
+      const lines = [['hp','#258040',yStat],['satiety','#a97500',yStat],['hygiene','#8b4fa5',yStat],['mood','#c04b5b',yStat],['money','#2775c9',yMoney]];
+      svg.innerHTML = `<line class="axis" x1="${left}" y1="${height-bottom}" x2="${width-right}" y2="${height-bottom}"/><text x="4" y="20">100</text><text x="12" y="${height-bottom}">0</text><text x="${width-right-18}" y="20">$${maxMoney}</text>` + lines.map(([key,color,mapper]) => `<path class="line" stroke="${color}" d="${path(key, mapper)}"><title>${statName[key] || '金錢'}</title></path>`).join('') + history.map((r,i) => `<text x="${x(i)-8}" y="${height-8}">D${r.day}</text>`).join('');
+    }
+    document.querySelectorAll('input, select').forEach(element => element.addEventListener('input', simulate));
+    simulate();
+  </script>
+</body>
+</html>

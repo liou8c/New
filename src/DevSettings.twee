@@ -1,0 +1,68 @@
+:: 設定 [no-jpg]
+<div class="settings-panel">
+    <label class="settings-toggle"><input id="settings-cheats-enabled" type="checkbox"> 顯示作弊選單</label>
+
+    <div id="cheat-menu" class="cheat-menu">
+        <p class="cheat-warning">測試功能會直接修改目前存檔。</p>
+
+        <div class="cheat-actions">
+            <button type="button" data-cheat="money-plus">金錢 +1000</button>
+            <button type="button" data-cheat="money-minus">金錢 -1000</button>
+            <button type="button" data-cheat="time-noon">快轉至 12:00</button>
+            <button type="button" data-cheat="time-evening">快轉至 18:00</button>
+            <button type="button" data-cheat="time-day">快轉 1 整天</button>
+            <button type="button" data-cheat="fill-needs">滿足所有需求</button>
+            <button type="button" data-cheat="skills-plus">所有技能等級 +1</button>
+        </div>
+
+        <div class="cheat-inputs">
+            <label>聲望 <input id="cheat-reputation" type="number" step="1"></label>
+            <button type="button" data-cheat="set-reputation">套用聲望</button>
+            <label>幸運 <input id="cheat-luck" type="number" step="1"></label>
+            <button type="button" data-cheat="set-luck">套用幸運</button>
+        </div>
+        <div id="cheat-feedback" class="cheat-feedback" aria-live="polite"></div>
+    </div>
+</div>
+
+<<script>>
+(function () {
+    const $body = jQuery("#ui-dialog-body");
+    const $menu = $body.find("#cheat-menu");
+    const $feedback = $body.find("#cheat-feedback");
+    $body.find("#settings-cheats-enabled").prop("checked", !!State.variables.cheatsEnabled);
+    $menu.prop("hidden", !State.variables.cheatsEnabled);
+    $body.find("#cheat-reputation").val(State.variables.reputation);
+    $body.find("#cheat-luck").val(State.variables.luck);
+
+    function feedback(message) {
+        $feedback.text(message);
+    }
+
+    $body.off("change.cheatSettings", "#settings-cheats-enabled")
+        .on("change.cheatSettings", "#settings-cheats-enabled", function () {
+            State.variables.cheatsEnabled = this.checked;
+            $menu.prop("hidden", !this.checked);
+            feedback(this.checked ? "作弊選單已啟用。" : "作弊選單已隱藏。");
+        });
+
+    $body.off("click.cheatSettings", "[data-cheat]")
+        .on("click.cheatSettings", "[data-cheat]", function () {
+            const cheat = jQuery(this).data("cheat");
+            const helpers = setup.cheats;
+            if (cheat === "money-plus") { helpers.addMoney(1000); feedback("金錢 +1000。"); }
+            if (cheat === "money-minus") { helpers.addMoney(-1000); feedback("金錢 -1000。"); }
+            if (cheat === "time-noon") { helpers.advanceToHour(12); feedback("已快轉至 12:00。"); }
+            if (cheat === "time-evening") { helpers.advanceToHour(18); feedback("已快轉至 18:00。"); }
+            if (cheat === "time-day") { helpers.advanceOneDay(); feedback("已快轉 1 整天。"); }
+            if (cheat === "fill-needs") { helpers.fillNeeds(); feedback("所有需求已補滿。"); }
+            if (cheat === "skills-plus") { helpers.increaseAllSkills(); feedback("所有技能等級 +1（已滿級者不變）。"); }
+            if (cheat === "set-reputation") {
+                feedback(helpers.setValue("reputation", $body.find("#cheat-reputation").val()) ? "聲望已套用。" : "請輸入有效的聲望數值。");
+            }
+            if (cheat === "set-luck") {
+                feedback(helpers.setValue("luck", $body.find("#cheat-luck").val()) ? "幸運已套用。" : "請輸入有效的幸運數值。");
+            }
+        });
+}());
+<</script>>

@@ -1,6 +1,6 @@
 :: 社交 [nobr]
 <<if not $knownNpcs or $knownNpcs.length is 0>>
-    <p class="social-empty">你還沒有認識任何 NPC。</p>
+    <p class="social-empty">你還沒有見到任何 NPC。</p>
 <<else>>
     <div class="social-list">
         <<for _npcId range $knownNpcs>>
@@ -14,7 +14,7 @@
                         <dt>職業身分</dt><dd><<print _social.occupation || "未知">></dd>
                         <dt>性別</dt><dd><<print _npc.gender || "未知">></dd>
                         <dt>生日</dt><dd><<print _npc.birthday || "未知">></dd>
-                        <dt>好感度</dt><dd><<print $npcRelations[_npcId].affection>></dd>
+                        <dt>好感度</dt><dd><<print $npcRelations[_npcId].affection>>（<<print setup.getNpcRelationTier($npcRelations[_npcId].affection)>>）</dd>
                         <<if _npc.relationship.romanceEnabled>>
                             <dt>浪漫度</dt><dd><<print $npcRelations[_npcId].romance>></dd>
                         <</if>>

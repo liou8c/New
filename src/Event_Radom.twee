@@ -1,25 +1,65 @@
 :: RobberEvent [no-jpg]
-暗處突然衝出一個持刀的搶匪！
+<<silently>>
+/%
+    只要遇到搶匪就扣心情；無論最後是交錢、逃跑成功或失敗都適用。
+    數值集中在 setup.balance.robber。
+%/
+<<set $mood to Math.max(0, $mood - setup.balance.robber.moodPenalty)>>
+<</silently>>
 
-「把身上的錢通通交出來！」搶匪惡狠狠地盯著你。
+/%
+    沒錢時不會再讓玩家進入一般的交錢／逃跑流程，
+    而是由專屬事件決定搶匪的反應。
+%/
+<<if $money lte 0>>
+    <<goto "RobberEvent_沒錢">>
+<<else>>
+    暗處突然衝出一個持刀的搶匪！
 
-@@.button-container;
-<<if $money >= 100>>
-	<<go "💸 乖乖交出 100 元" "交錢" 1>>
+    「把身上的錢通通交出來！」搶匪惡狠狠地盯著你。
+    （心情 -<<print setup.balance.robber.moodPenalty>>）
+
+    @@.button-container;
+    <<if $money >= setup.balance.robber.paymentDemand>>
+	    <<go "💸 乖乖交錢" "交錢" 1>>
+    <</if>>
+    <<go "🏃 嘗試拔腿就跑" "逃跑" 2>>
+    <<go "⚔️ 和搶匪戰鬥" "戰鬥" 1>>
+    @@
 <</if>>
-<<go "🏃 嘗試拔腿就跑" "逃跑" 2>>
-@@
+
+:: RobberEvent_沒錢 [no-jpg]
+/%
+    零金錢時的隨機後續；機率在 setup.balance.robber.noMoneyAttackChance。
+%/
+<<set _robberNoMoneyRoll to random(1, 100)>>
+
+暗處突然衝出一個持刀的搶匪！你摸遍口袋，卻找不到半毛錢。
+
+（心情 -5）
+
+<<if _robberNoMoneyRoll lte setup.balance.robber.noMoneyAttackChance>>
+    搶匪不敢相信地翻了翻你的口袋，最後不屑地嗤笑一聲。
+    「窮成這樣還敢在街上晃？」他丟下這句話後離開了。
+<<else>>
+    搶匪發現你身無分文，惱羞成怒地推了你一把，還狠狠踹了你幾腳才離開。
+    <<set $hp to Math.max(0, $hp - setup.balance.robber.noMoneyHpDamage)>>
+    <<set $mood to Math.max(0, $mood - setup.balance.robber.noMoneyMoodDamage)>>
+    （體力 -<<print setup.balance.robber.noMoneyHpDamage>>、心情 -<<print setup.balance.robber.noMoneyMoodDamage>>）
+<</if>>
+
+<<go "🏘️返回街道" "街道" 0>>
 
 :: 交錢 [no-jpg]
-<<set $money to $money - 100>>
-你交出了 100 元，搶匪滿意地離開了。
+<<set $money to Math.max(0, $money - setup.balance.robber.paymentDemand)>>
+你交出了 <<print setup.balance.robber.paymentDemand>> 元，搶匪滿意地離開了。
 
 <<go "🏘️離開" "街道" 0>>
 
 :: 逃跑 [no-jpg]
-<<set $hp to $hp - 5>>
+<<set $hp to Math.max(0, $hp - setup.balance.robber.escapeHpCost)>>
 
-<<if $hp >= 50>>
+<<if $hp >= setup.balance.robber.guaranteedEscapeHp>>
     /* 條件一：體力 50 以上，100% 成功逃跑 */
     你咬緊牙關，邁開大腿全力往前奔跑！
     憑藉著充沛的體力，你很快就把搶匪甩得遠遠的，順利脫身！
@@ -32,7 +72,7 @@
     /* 條件二：體力低於 50，根據「幸運值」擲骰子判定 */
     <<set _chance to random(1, 100)>>
     
-    <<if _chance <= $luck>>
+    <<if _chance <= setup.getEffectiveLuck()>>
         /* 骰出的點數小於等於幸運值 -> 逃跑成功 */
         你的體力有些吃緊，但幸運的是，路邊剛好有一堆障礙物倒下擋住了搶匪的去路！
         你成功趁亂甩掉了搶匪！
@@ -50,4 +90,41 @@
         <<go "🏘️爬起來回街道" "街道" 1>>
         @@
     <</if>>
+<</if>>
+
+:: 戰鬥 [no-jpg]
+<<silently>>
+/%
+    戰鬥成功率公式（可直接調整以下常數）：
+    公式與上限都集中在 setup.balance.robber.combat。
+%/
+<<set _combatBaseChance to setup.balance.robber.combat.baseChance>>
+<<set _hpChance to ($hp / $hpMax) * setup.balance.robber.combat.hpWeight>>
+<<set _fitnessChance to $skills.fitness.level * setup.balance.robber.combat.fitnessLevelWeight>>
+<<set _dexterityChance to $skills.dexterity.level * setup.balance.robber.combat.dexterityLevelWeight>>
+<<set _luckChance to (setup.getEffectiveLuck() / $luckMax) * setup.balance.robber.combat.luckWeight>>
+<<set _combatChance to Math.max(setup.balance.robber.combat.minimumChance, Math.min(setup.balance.robber.combat.maximumChance, _combatBaseChance + _hpChance + _fitnessChance + _dexterityChance + _luckChance))>>
+<<set _combatRoll to random(1, 100)>>
+<</silently>>
+
+你決定不再退讓，擺出架勢迎戰搶匪！
+
+（戰鬥成功率：<<print Math.round(_combatChance)>>%；擲骰：<<print _combatRoll>>）
+
+<<if _combatRoll lte _combatChance>>
+    <<set $mood to Math.min($moodMax, $mood + setup.balance.robber.combat.victoryMoodGain)>>
+    <<set $money to $money + setup.balance.robber.combat.victoryMoneyReward>>
+
+    你抓準空檔反擊，成功制服搶匪！他狼狽逃走，還留下了一疊鈔票。
+    （心情 +<<print setup.balance.robber.combat.victoryMoodGain>>、獲得 <<print setup.balance.robber.combat.victoryMoneyReward>> 元）
+
+    <<go "🏘️返回街道" "街道" 1>>
+<<else>>
+    <<set $money to 0>>
+    <<set $mood to Math.max(0, $mood - setup.balance.robber.combat.defeatMoodPenalty)>>
+
+    你奮力抵抗，但仍被搶匪擊倒。他搜走你身上所有金錢後揚長而去。
+    （金錢歸零、心情 -35）
+
+    <<go "🏘️爬起來回街道" "街道" 1>>
 <</if>>

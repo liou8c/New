@@ -1,0 +1,58 @@
+:: FaintSystem [script]
+/*
+    體力歸零的統一檢查。
+    :passageend 會在每個 passage 的效果都執行完成後觸發，所以走路、工作、
+    閱讀、搶匪或飢餓等任何來源造成的體力歸零，都不需要各自複製一套昏倒判斷。
+*/
+jQuery(document).on("click.starvationPenalty", "#passages a.link-internal, #passages a.link-visited, #passages button", function () {
+    const state = State.variables;
+
+    // 背包、技能等彈窗不在 #passages 內；只有推進故事的選項才算一次行動。
+    // 每小時的飢餓傷害由 TimeSystem 處理；這裡只留下歸零時的即時警訊。
+    if (state.satiety <= 0) {
+        // 這個數字集中在 setup.balance.survival，方便調整飢餓的危險程度。
+        state.hp = Math.max(0, state.hp - setup.balance.survival.starvationHpCostPerAction);
+    }
+});
+
+jQuery(document).on(":passageend.faintSystem", function () {
+    const state = State.variables;
+
+    // 事件演出中不重複觸發；體力已恢復時也不需處理。
+    if (state.faintEventActive || state.hp > 0) {
+        return;
+    }
+
+    const currentPassage = Story.get(State.passage);
+    const atHome = currentPassage && currentPassage.tags.includes("home");
+
+    // 記住昏倒地點，供事件 passage 決定是否遺失金錢。
+    state.faintEventActive = true;
+    state.faintedAtHome = atHome;
+    Engine.play("昏倒事件");
+});
+
+:: 昏倒事件 [no-jpg]
+<<silently>>
+/%
+    在家昏倒不會遺失金錢；外出昏倒則會被洗劫。
+    無論在哪裡，醒來後都會恢復全部體力，並清空零碎體力時間，
+    避免玩家醒來後立刻又因為舊的累積時間再次扣血。
+%/
+<<if not $faintedAtHome>>
+    <<set $money to 0>>
+<</if>>
+<<set $hp to $hpMax>>
+<<set $energyBuffer to 0>>
+<</silently>>
+
+<<if $faintedAtHome>>
+    你的體力耗盡，在家中昏倒了。休息一陣子後，你在自己的床上醒來，體力已完全恢復。
+<<else>>
+    你的體力耗盡，在外頭昏倒了。醒來時，你已經回到家中，卻發現身上的錢被洗劫一空；體力已完全恢復。
+<</if>>
+
+<<link "醒來">>
+    <<set $faintEventActive to false>>
+    <<goto "YourHome">>
+<</link>>

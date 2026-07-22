@@ -1,0 +1,96 @@
+:: 場所入口檢查 [no-jpg]
+<<silently>>
+/% 所有有 access 規則的場所共用此入口；場所 ID 由 <<venueEnter>> 記錄。 %/
+<<set _venueAccessRule to $venueAccessPending ? setup.getVenueAccessRule($venueAccessPending) : null>>
+<</silently>>
+
+<<if not _venueAccessRule>>
+    這個場所目前無法進入。
+    <<go "返回市區" "市區" 0>>
+<<elseif setup.isVenueOpenNow($venueAccessPending)>>
+    <<goto _venueAccessRule.entryPassage>>
+<<elseif setup.isVenueLockedOutToday($venueAccessPending)>>
+    <<goto "場所當日禁止進入">>
+<<elseif setup.getVenueCooldownRemaining($venueAccessPending) gt 0>>
+    <<goto "場所開鎖冷卻">>
+<<else>>
+    <<goto "場所夜間入口">>
+<</if>>
+
+:: 場所夜間入口 [no-jpg]
+<<silently>>
+<<set _venueAccessRule to setup.getVenueAccessRule($venueAccessPending)>>
+<<set _lockpickRule to _venueAccessRule.lockpick>>
+<<set _lockpickChance to setup.getLockpickChance($venueAccessPending)>>
+<</silently>>
+
+<h3><<print _venueAccessRule.name>>已關閉</h3>
+<<print _venueAccessRule.afterHoursMessage>>
+
+（開鎖成功率：<<print Math.round(_lockpickChance)>>%）
+
+@@.button-container;
+<<go "🔓 嘗試開鎖" "場所開鎖結果" 0>>
+<<go _venueAccessRule.returnLabel _venueAccessRule.returnPassage 0>>
+@@
+
+:: 場所開鎖結果 [no-jpg]
+<<silently>>
+<<set _venueAccessRule to setup.getVenueAccessRule($venueAccessPending)>>
+<<set _lockpickRule to _venueAccessRule.lockpick>>
+<<set _lockpickChance to setup.getLockpickChance($venueAccessPending)>>
+<<set _lockpickRoll to random(1, 100)>>
+/% 開鎖花 15 分鐘；使用 advanceTime 避免此小型演出額外觸發街道搶匪事件。 %/
+<<run window.advanceTime(_lockpickRule.minutes)>>
+<</silently>>
+
+（開鎖成功率：<<print Math.round(_lockpickChance)>>%；擲骰：<<print _lockpickRoll>>）
+
+<<if _lockpickRoll lte _lockpickChance>>
+    <<print _lockpickRule.successMessage>>
+    <<set $venueAccessPending to null>>
+    <<goto _venueAccessRule.entryPassage>>
+<<else>><<silently>>
+    <<set _guardCatchChance to setup.getGuardCatchChance($venueAccessPending)>>
+    <<set _guardCatchRoll to random(1, 100)>>
+<</silently>>
+
+    <<if _guardCatchRoll lte _guardCatchChance>>
+        <<set $reputation to Math.max(-100, $reputation - _lockpickRule.caughtReputationLoss)>>
+        <<run setup.setVenueLockedOutToday($venueAccessPending)>>
+        <<print _lockpickRule.caughtMessage>>
+        （聲望 -<<print _lockpickRule.caughtReputationLoss>>；今天無法再嘗試進入）
+        <<set $venueAccessPending to null>>
+        <<go _venueAccessRule.returnLabel _venueAccessRule.returnPassage 0>>
+    <<else>>
+        <<run setup.setVenueAttemptCooldown($venueAccessPending)>>
+        <<print _lockpickRule.failedMessage>>
+        （警衛發現率：<<print Math.round(_guardCatchChance)>>%；這次擲骰：<<print _guardCatchRoll>>）
+        <<set $venueAccessPending to null>>
+        <<go _venueAccessRule.returnLabel _venueAccessRule.returnPassage 0>>
+    <</if>>
+<</if>>
+
+:: 場所當日禁止進入 [no-jpg]
+<<silently>>
+<<set _venueAccessRule to setup.getVenueAccessRule($venueAccessPending)>>
+<<set _lockpickRule to _venueAccessRule.lockpick>>
+<<set $venueAccessPending to null>>
+<</silently>>
+
+<h3><<print _venueAccessRule.name>>提高了警戒</h3>
+<<print _lockpickRule.lockoutMessage>>
+
+<<go _venueAccessRule.returnLabel _venueAccessRule.returnPassage 0>>
+
+:: 場所開鎖冷卻 [no-jpg]
+<<silently>>
+<<set _venueAccessRule to setup.getVenueAccessRule($venueAccessPending)>>
+<<set _lockpickRule to _venueAccessRule.lockpick>>
+<<set _cooldownMinutes to setup.getVenueCooldownRemaining($venueAccessPending)>>
+<<set $venueAccessPending to null>>
+<</silently>>
+
+<<print _lockpickRule.cooldownMessage>>至少等 <<print _cooldownMinutes>> 分鐘後，再考慮嘗試開鎖。
+
+<<go _venueAccessRule.returnLabel _venueAccessRule.returnPassage 0>>

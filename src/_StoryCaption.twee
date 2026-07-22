@@ -7,10 +7,26 @@
 <<print $gameDate.getHours().toString().padStart(2, '0')>>:<<print $gameDate.getMinutes().toString().padStart(2, '0')>>
 <</nobr>>
 
-<h3>主角狀態</h3>
-💰 金錢：<<print Math.round($money)>> 元
-❤️ 體力：<<print Math.round($hp)>>/<<print Math.round($hpMax)>>
-🍗 飢餓：<<print Math.round($satiety)>>/<<print Math.round($satietyMax)>>
-✨ 心情：<<print Math.round($mood)>>/<<print Math.round($moodMax)>>
-🚿 衛生：<<print Math.round($hygiene)>>/<<print Math.round($hygieneMax)>>
-🔥 慾望：<<print Math.round($horny)>>/<<print Math.round($hornyMax)>>
+<div class="status-panel">
+<div class="status-bars">
+<<statusBar "體力" $hp $hpMax "hp">>
+<<statusBar "心情" $mood $moodMax "mood">>
+<<statusBar "飢餓" $satiety $satietyMax "satiety">>
+<<statusBar "衛生" $hygiene $hygieneMax "hygiene">>
+<<statusBar "慾望" $horny $hornyMax "horny">>
+</div>
+<div class="status-resources">
+💰金錢：<<print Math.round($money)>> 元
+<br>🍀幸運：<<print Math.round(setup.getEffectiveLuck())>>/<<print Math.round($luckMax)>>
+<<if $rentDebt gt 0>>
+    <br>🏠欠租：<<print Math.round($rentDebt)>> 元（<<link "繳清" >><<goto "繳清欠租">><</link>>）
+<</if>>
+<<if $housingStatus is "evicted">>
+    <br>⚠️無家可歸
+<</if>>
+</div>
+</div>
+<<if setup.getMoodLuckStatus()>><span class="mood-luck-status">（<<print setup.getMoodLuckStatus()>>）</span><br><</if>>
+<<for _effectStatus range setup.getTimedEffectStatus()>>
+⏳ <<print _effectStatus>>
+<</for>>

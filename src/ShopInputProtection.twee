@@ -29,7 +29,12 @@ function updateShopSummary() {
     if (!State.variables.cart || !jQuery("#shop-total").length) {
         return;
     }
-    const total = setup.getCartTotal("shop_711");
+    // 便利商店與雜貨店共用這個介面；商店 ID 由購物頁的 data-shop-id 指定。
+    const shopId = jQuery("#shop-cart").data("shopId");
+    if (!shopId) {
+        return;
+    }
+    const total = setup.getCartTotal(shopId);
 
     jQuery("#shop-total").text(total);
     jQuery("#shop-insufficient").text(
