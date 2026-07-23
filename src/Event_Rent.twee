@@ -1,9 +1,7 @@
 :: 玩家欠租 [home safe]
 @@color:#f44336;目前尚欠房租：<<print Math.round($rentDebt)>> 元。@@
 
-@@.npc-joel;「……我記得房租不是這個數字吧。」@@
-@@.npc-joel;喬爾@@眉心擠出一道深深的褶皺，神情極其不悅。你頓時感到一陣沉重的壓迫感，彷彿自己真的讓他非常失望。
-@@.npc-joel;「我給你三天時間。」喬爾@@深深嘆了一口氣，冷冷地說：@@.npc-joel;「把剩下的租金補齊。」@@
+<<storyText "rent_debt">>
 
 <<go "努力籌錢" "街道" 0>>
 
@@ -13,30 +11,31 @@
 <</silently>>
 
 <<if _rentPayment is 0>>
-你目前沒有可繳的金錢。
+<<storyText "rent_no_money">>
 <<else>>
-你繳了 <<print Math.round(_rentPayment)>> 元房租。
+<<set _rentTextContext to { rentPayment: _rentPayment }>>
+<<storyText "rent_paid" _rentTextContext>>
 <</if>>
 
 <<if $rentDebt gt 0>>
-還差 <<print Math.round($rentDebt)>> 元。
+<<storyText "rent_remaining">>
 <<else>>
-房租已補齊。
+<<storyText "rent_cleared">>
 <</if>>
 
 <<go "離開" "街道" 0>>
 
 :: 玩家被趕出去了 [no-jpg]
-玩家被趕出去了
+<<storyText "rent_evicted">>
 
 <<go "離開" "睡公園" 0>>
 
 :: 睡公園 [park]
 <<if not setup.playerHasTag("homeless")>>
-    你現在還有住處，沒有必要露宿公園。
+    <<storyText "park_sleep_no_home">>
     <<go "離開公園" "街道" 0>>
 <<else>>
-    你沒有地方可住，只能在公園找個角落過夜。這裡非常危險。
+    <<storyText "park_sleep_intro">>
 
     <<link "露宿 6 小時">>
         <<set _parkSleepRoll to random(1, 100)>>
@@ -51,28 +50,18 @@
 <</if>>
 
 :: 公園露宿事件 [park]
-你在公園睡覺時遇上了麻煩。
+<<storyText "park_sleep_event">>
 
 <<go "撐到天亮" "街道" 0>>
 
 :: 公園露宿結果 [park]
-你勉強撐過了一晚，卻完全沒有睡好。
+<<storyText "park_sleep_result">>
 
 <<go "離開公園" "街道" 0>>
 
 
 :: 被喬爾趕出去 [home safe]
-@@.npc-joel;喬爾@@站在你面前，深吸了一口菸，隨手將火星閃爍的菸蒂扔在腳邊，用鞋尖狠狠碾熄。
-@@.npc-joel;「我自認不算什麼好人，平常也懶得過問你那些爛事。」喬爾@@盯著你看，臉上沒有任何情緒起伏，你讀不懂他的表情。
-@@.npc-joel;「一個警察房東，卻將房子租給罪犯房客，這像話嗎？」@@
-
-他朝你攤開掌心。你心領神會，只能默默將鑰匙交還給他。
-
-@@.npc-joel;「看來你並不怎麼在意自己的名聲，嗯？」喬爾@@接過鑰匙收進口袋，語氣冷淡。
-@@.npc-joel;「把東西收一收，給我走人。」@@他離開前，抬手用食指點了點你單薄的家當。
-
-在@@.npc-joel;喬爾@@那如芒刺在背的死亡注視下，你總算硬著頭皮把行李收拾乾淨。後路在何方，你心裡一點底也沒有。
-@@.npc-joel;「想找地方住？市區那邊還有不少空房。」@@喬爾側過身，冷冷地說：@@.npc-joel;「房租比這裡貴上幾倍。沒錢你也可以選擇去睡公園。」@@
+<<storyText "joel_reputation_eviction">>
 
 <<go "離開" "街道" 0>>
 

@@ -14,9 +14,14 @@
                         <dt>職業身分</dt><dd><<print _social.occupation || "未知">></dd>
                         <dt>性別</dt><dd><<print _npc.gender || "未知">></dd>
                         <dt>生日</dt><dd><<print _npc.birthday || "未知">></dd>
-                        <dt>好感度</dt><dd><<print $npcRelations[_npcId].affection>>（<<print setup.getNpcRelationTier($npcRelations[_npcId].affection)>>）</dd>
                         <<if _npc.relationship.romanceEnabled>>
-                            <dt>浪漫度</dt><dd><<print $npcRelations[_npcId].romance>></dd>
+                            <<if $npcRelations[_npcId].relationshipStatus is "romance">>
+                                <dt>愛意</dt><dd><<print $npcRelations[_npcId].romance>></dd>
+                            <<else>>
+                                <dt>好感度</dt><dd><<print $npcRelations[_npcId].affection>>（<<print setup.getNpcRelationTier($npcRelations[_npcId].affection)>>）</dd>
+                            <</if>>
+                        <<else>>
+                            <dt>好感度</dt><dd><<print $npcRelations[_npcId].affection>>（<<print setup.getNpcRelationTier($npcRelations[_npcId].affection)>>）</dd>
                         <</if>>
                         <dt>介紹</dt><dd><<print setup.npcText(_npcId, "profile")>></dd>
                         <dt>喜好</dt><dd><<print _npc.likes.length ? _npc.likes.join("、") : "尚未得知">></dd>

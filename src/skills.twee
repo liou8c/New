@@ -4,7 +4,13 @@
     <h3>角色資訊</h3>
     <div class="skill-item">
         性別：<<print setup.getPlayerGenderName()>><br>
-        科系：<<print setup.getMajorName()>><br>
+        <<if $graduated>>
+            學位：<<print setup.getEducationDisplay()>><br>
+            職業：講師 Lv.<<print $lecturer.level>><br>
+        <<else>>
+            主修：<<print setup.getMajorName()>><br>
+            <<if $minorId>>副修：<<print setup.getMajor($minorId).name>><br><</if>>
+        <</if>>
         聲望：<<print setup.getReputationDescription()>>
     </div>
 

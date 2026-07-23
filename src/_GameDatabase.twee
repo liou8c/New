@@ -14,7 +14,7 @@
 */
 setup.balance = {
     /* 改動這一區時，也請同步更新「遊戲狀態與平衡規格.md」與計算機。 */
-    saveVersion: 8,
+    saveVersion: 11,
     player: {
         /* 開局金額只夠撐過最初幾天；第 7 天前需要開始工作。 */
         startMoney: 500,
@@ -49,6 +49,8 @@ setup.balance = {
     },
     /* 睡 7 小時回 42 體力；每天工作 4 小時約剛好維持體力，健身需要額外安排。 */
     sleep: { minutesPerStep: 30, hpGainPerStep: 3 },
+    /* 體力歸零時：家裡只會睡著；其他 safe 場所送醫，無 safe 場所會被洗劫。 */
+    faint: { hospitalFee: 100 },
     skills: { maxLevel: 10, expBase: 100, fitnessHpMaxGain: 6 },
     /* 4 小時工作 = 220；扣兩份泡麵 100 後，約剛好覆蓋每天房租準備金。 */
     cafeWork: { hourlyPay: 55, hpCost: 7, hygieneCost: 5, moodCost: 2 },
@@ -172,6 +174,11 @@ setup.gameDatabase = {
                     description: "簡單又方便的熱食。食用後飽食度 +40。",
                     useMessage: "你吃了一碗泡麵，飽食度 +40。"
                 },
+                cookie: {
+                    name: "餅乾",
+                    description: "香甜酥脆的小餅乾。食用後飽食度 +20、心情 +5。",
+                    useMessage: "你吃下餅乾，飽食度 +20、心情 +5。"
+                },
                 recycled_luck_pouch: {
                     name: "袋裝「二手幸運」",
                     description: "幸運 +30 持續 2 小時，接著以使用前幸運 -30 持續 2 小時。",
@@ -193,6 +200,7 @@ setup.gameDatabase = {
                 tea: { name: "Black Tea", description: "Warm black tea. Restores 8 mood.", useMessage: "You drink the tea. Mood +8." },
                 weirdDrink: { name: "Strange Packaged Drink", description: "Something feels off about it.", useMessage: "You drink the strange beverage… Nothing happens right away." },
                 ramen: { name: "Instant Noodles", description: "A quick hot meal. Restores 40 satiety.", useMessage: "You eat the instant noodles. Satiety +40." },
+                cookie: { name: "Cookie", description: "A sweet, crispy cookie. Restores 20 satiety and 5 mood.", useMessage: "You eat the cookie. Satiety +20, mood +5." },
                 recycled_luck_pouch: { name: "Bagged \"Secondhand Luck\"", description: "Grants +30 luck for 2 hours, then applies -30 from your pre-use luck for 2 hours.", useMessage: "You open the bagged secondhand luck. Luck +30 for 2 hours." }
             },
             npcs: {
@@ -219,6 +227,14 @@ setup.gameDatabase = {
             price: 50, stackable: true, usable: true,
             effects: [{ type: "stat", stat: "satiety", amount: 40 }]
         },
+        cookie: {
+            icon: "🍪", category: "food", tags: ["consumable", "food", "shop_711", "satiety_restore", "mood_restore"],
+            price: 50, stackable: true, usable: true,
+            effects: [
+                { type: "stat", stat: "satiety", amount: 20 },
+                { type: "stat", stat: "mood", amount: 5 }
+            ]
+        },
         recycled_luck_pouch: {
             icon: "🧧", category: "consumable", tags: ["consumable", "buff", "debuff", "temporary", "shop_cornerstore"],
             price: 100, stackable: true, usable: true,
@@ -236,7 +252,13 @@ setup.gameDatabase = {
             color: "#E88BA7",
             tags: ["named_npc", "romanceable", "loyal", "relationship_sensitive", "draft"],
             gender: null, birthday: null, likes: ["tea", "kindness"], dislikes: [],
-            relationship: { affectionStart: 0, romanceEnabled: true, romanceStart: 0, breakupAtRomance: 40 },
+            relationship: {
+                affectionStart: 0,
+                romanceEnabled: true,
+                romanceStart: 0,
+                romanceThreshold: 80,
+                breakupAffectionPenalty: 40
+            },
             notes: "範例：具忠誠標籤的可戀愛角色，目睹玩家與其他對象曖昧時可扣浪漫。"
         },
         bob: {
@@ -257,9 +279,9 @@ setup.gameDatabase = {
                 portrait: "images/ico_npc_winley.png",
                 occupation: "咖啡廳店長"
             },
-            tags: ["named_npc", "cafe_manager"],
+            tags: ["named_npc", "cafe_manager", "romanceable"],
             birthday: "07/21", likes: [], dislikes: [],
-            relationship: { affectionStart: 0, romanceEnabled: false },
+            relationship: { affectionStart: 0, romanceEnabled: true },
             notes: "咖啡廳店長。"
         },
         joel: {
@@ -269,9 +291,9 @@ setup.gameDatabase = {
                 portrait: "images/ico_npc_joel.png",
                 occupation: "房東、警察"
             },
-            tags: ["named_npc", "landlord"],
+            tags: ["named_npc", "landlord", "romanceable"],
             birthday: "07/21", likes: [], dislikes: [],
-            relationship: { affectionStart: 0, romanceEnabled: false },
+            relationship: { affectionStart: 0, romanceEnabled: true },
             notes: "X"
         },
         raven: {
@@ -303,20 +325,20 @@ setup.gameDatabase = {
         shop_711: { itemIds: ["tea", "weirdDrink", "ramen"], tags: ["shop", "convenience_store"] },
         cornerstore: { itemIds: ["recycled_luck_pouch"], tags: ["shop", "mystery"] }
     },
-    /* 新開局的角色選項與大學科系。主修／副修都必須是 $skills 已存在的技能 ID。 */
+    /* 新開局的角色選項與大學科系。每個學程的核心技能都必須是 $skills 已存在的 ID。 */
     characterGenders: {
         male: { name: "男生" },
         female: { name: "女生" },
         nonbinary: { name: "非二元" }
     },
     majors: {
-        sports_science: { name: "體育與運動科學系", majorSkill: "fitness", minorSkill: "dexterity", description: "以身體訓練與運動表現為核心。" },
-        visual_arts: { name: "藝術與視覺系", majorSkill: "creative", minorSkill: "dexterity", description: "培養創作能力與精細的手部控制。" },
-        information_technology: { name: "資訊與科技系", majorSkill: "tech", minorSkill: "knowledge", description: "從科技實作與理論知識建立專業。" },
-        hospitality_management: { name: "餐飲管理系", majorSkill: "cooking", minorSkill: "charm", description: "學習料理、服務與管理場合的應對。" },
-        performing_arts: { name: "表演藝術系", majorSkill: "charm", minorSkill: "creative", description: "以舞台表現與創作練習為主。" },
-        humanities_history: { name: "人文與歷史系", majorSkill: "knowledge", minorSkill: "charm", description: "透過閱讀、考據與論述累積知識。" },
-        criminology_security: { name: "犯罪學與安全研究系", majorSkill: "knowledge", minorSkill: "dexterity", description: "研究犯罪、調查與安全實務。" }
+        sports_science: { name: "體育與運動科學系", majorSkill: "fitness", description: "以身體訓練與運動表現為核心。" },
+        visual_arts: { name: "藝術與視覺系", majorSkill: "creative", description: "培養創作能力與精細的手部控制。" },
+        information_technology: { name: "資訊與科技系", majorSkill: "tech", description: "從科技實作與理論知識建立專業。" },
+        hospitality_management: { name: "餐飲管理系", majorSkill: "cooking", description: "學習料理、服務與管理場合的應對。" },
+        performing_arts: { name: "表演藝術系", majorSkill: "charm", description: "以舞台表現與創作練習為主。" },
+        mechanical_engineering: { name: "機械工程系", majorSkill: "dexterity", description: "透過機構設計、零件加工與精密組裝，培養穩定而熟練的操作能力。" },
+        criminology_security: { name: "犯罪心理學", majorSkill: "knowledge", description: "從犯罪行為、心理動機與案件分析中，培養理解人性的專業能力。" }
     },
     /*
         正式場所與工作的衛生規則。
@@ -381,11 +403,21 @@ setup.gameDatabase = {
             */
             education: {
                 classMinutes: 60,
-                tuitionPerClass: 30,
+                /* 學生每 14 個遊戲日自動繳納一次；不足時會暫停上課。 */
+                tuitionIntervalDays: 14,
+                tuitionAmount: 1200,
                 majorExp: 12,
-                minorExp: 5,
-                /* 入學滿幾天後才可在學生服務中心申請轉系。日後可在 canChangeMajor() 加入考試等條件。 */
-                majorChangeWaitDays: 7
+                /* 入學首週可免費轉主修；之後仍能轉，但需支付較高費用。 */
+                majorChangeFreeDays: 7,
+                majorChangeFee: 1600,
+                lecturer: {
+                    classMinutes: 60,
+                    basePay: 80,
+                    payPerLevel: 15,
+                    expPerClass: 20,
+                    maxLevel: 10,
+                    expBase: 100
+                }
             }
         }
     }
@@ -450,29 +482,133 @@ setup.getMajorName = function () {
     return major ? major.name : "未選擇科系";
 };
 
-/* 轉系資格集中在這裡；日後新增考試、聲望或費用門檻時，只需擴充這個函式。 */
-setup.canChangeMajor = function () {
+setup.getEducationDisplay = function () {
     const state = State.variables;
-    return !!state.majorChangeAvailableAt && !!state.gameDate && state.gameDate >= state.majorChangeAvailableAt;
+    if (state.graduated) {
+        const degreeNames = (state.degreeIds || []).map(setup.getMajor).filter(Boolean).map(function (major) { return major.name; });
+        return degreeNames.length ? degreeNames.join("、") + "學位" : "已畢業";
+    }
+    return setup.getMajorName();
 };
 
-setup.getUniversityClassPlan = function () {
+setup.getMajorChangeFee = function () {
+    const state = State.variables;
+    const education = setup.gameDatabase.venueRules.university.education;
+    if (!state.majorEnrollmentDate || !state.gameDate) { return education.majorChangeFee; }
+    const elapsedDays = (state.gameDate.getTime() - state.majorEnrollmentDate.getTime()) / (24 * 60 * 60 * 1000);
+    return elapsedDays <= education.majorChangeFreeDays ? 0 : education.majorChangeFee;
+};
+
+setup.enrollMajor = function (majorId) {
+    const state = State.variables;
+    if (!setup.getMajor(majorId)) { return false; }
+    state.majorId = majorId;
+    state.minorId = null;
+    state.majorEnrollmentDate = new Date(state.gameDate.getTime());
+    state.tuitionDueDate = new Date(state.gameDate.getTime() + (setup.gameDatabase.venueRules.university.education.tuitionIntervalDays * 24 * 60 * 60 * 1000));
+    state.tuitionOverdue = false;
+    state.educationHistory = [{ majorId: majorId, role: "major", startedAt: new Date(state.gameDate.getTime()), endedAt: null }];
+    return true;
+};
+
+setup.addMinor = function (minorId) {
+    const state = State.variables;
+    if (!state.majorId || state.graduated || minorId === state.majorId || !setup.getMajor(minorId)) { return false; }
+    state.minorId = minorId;
+    state.educationHistory.push({ majorId: minorId, role: "minor", startedAt: new Date(state.gameDate.getTime()), endedAt: null });
+    return true;
+};
+
+setup.changeMajor = function (majorId) {
+    const state = State.variables;
+    const fee = setup.getMajorChangeFee();
+    if (!state.majorId || state.graduated || majorId === state.majorId || !setup.getMajor(majorId) || state.money < fee) { return false; }
+    state.money -= fee;
+    (state.educationHistory || []).forEach(function (record) {
+        if (record.role === "major" && !record.endedAt) { record.endedAt = new Date(state.gameDate.getTime()); }
+    });
+    state.majorId = majorId;
+    state.educationHistory.push({ majorId: majorId, role: "major", startedAt: new Date(state.gameDate.getTime()), endedAt: null });
+    return true;
+};
+
+setup.isStudentProgramComplete = function () {
+    const state = State.variables;
+    const maxLevel = state.skillMaxLevel || setup.balance.skills.maxLevel;
+    const major = setup.getMajor(state.majorId);
+    const minor = state.minorId ? setup.getMajor(state.minorId) : null;
+    return !!major && state.skills[major.majorSkill].level >= maxLevel
+        && (!minor || state.skills[minor.majorSkill].level >= maxLevel);
+};
+
+setup.tryGraduate = function () {
+    const state = State.variables;
+    if (state.graduated || !setup.isStudentProgramComplete()) { return false; }
+    state.graduated = true;
+    state.degreeIds = [state.majorId].concat(state.minorId ? [state.minorId] : []);
+    state.tuitionOverdue = false;
+    state.tuitionDueDate = null;
+    return true;
+};
+
+setup.canAttendUniversity = function () {
+    const state = State.variables;
+    return !!state.majorId && !state.graduated && !state.tuitionOverdue;
+};
+
+setup.getUniversityClassPlan = function (programType) {
     const state = State.variables;
     const major = setup.getMajor(state.majorId);
     const university = setup.gameDatabase.venueRules.university;
     const education = university && university.education;
     if (!major || !education || !state.skills) { return null; }
 
+    const minor = state.minorId ? setup.getMajor(state.minorId) : null;
+    const program = programType === "minor" ? minor : major;
+    const label = programType === "minor" ? "副修" : "主修";
     const maxLevel = state.skillMaxLevel || setup.balance.skills.maxLevel;
+    if (!program) { return null; }
     return {
-        majorName: major.name,
-        majorSkill: major.majorSkill,
-        minorSkill: major.minorSkill,
-        majorExp: state.skills[major.majorSkill].level < maxLevel ? education.majorExp : 0,
-        minorExp: state.skills[major.minorSkill].level < maxLevel ? education.minorExp : 0,
-        classMinutes: education.classMinutes,
-        tuition: education.tuitionPerClass
+        programName: program.name,
+        programLabel: label,
+        skill: program.majorSkill,
+        exp: state.skills[program.majorSkill].level < maxLevel ? education.majorExp : 0,
+        classMinutes: education.classMinutes
     };
+};
+
+setup.getLecturerClassPlan = function (degreeId) {
+    const state = State.variables;
+    const education = setup.gameDatabase.venueRules.university.education;
+    const lecturer = education.lecturer;
+    if (!state.graduated || !(state.degreeIds || []).includes(degreeId) || !setup.getMajor(degreeId)) { return null; }
+    const lecturerState = state.lecturer || { level: 1, exp: 0 };
+    return {
+        degreeId: degreeId,
+        degreeName: setup.getMajor(degreeId).name,
+        classMinutes: lecturer.classMinutes,
+        pay: lecturer.basePay + ((lecturerState.level || 1) - 1) * lecturer.payPerLevel
+    };
+};
+
+setup.completeLecturerClass = function (degreeId) {
+    const plan = setup.getLecturerClassPlan(degreeId);
+    if (!plan) { return null; }
+    const state = State.variables;
+    const rule = setup.gameDatabase.venueRules.university.education.lecturer;
+    if (!state.lecturer) { state.lecturer = { level: 1, exp: 0 }; }
+    state.money += plan.pay;
+    state.lecturer.exp += rule.expPerClass;
+    let nextExp = state.lecturer.level * rule.expBase;
+    let leveledUp = false;
+    while (state.lecturer.level < rule.maxLevel && state.lecturer.exp >= nextExp) {
+        state.lecturer.exp -= nextExp;
+        state.lecturer.level += 1;
+        leveledUp = true;
+        nextExp = state.lecturer.level * rule.expBase;
+    }
+    if (state.lecturer.level >= rule.maxLevel) { state.lecturer.exp = 0; }
+    return { pay: plan.pay, leveledUp: leveledUp, level: state.lecturer.level };
 };
 
 setup.getMinutesUntilVenueClose = function (venueId) {
@@ -646,12 +782,27 @@ setup.initializeGameDatabaseState = function () {
     state.housingStatus = "housed";
     state.reputationEvictionTriggered = false;
     state.rentEventPending = null;
+    state.minorId = null;
+    state.majorEnrollmentDate = null;
+    state.educationHistory = [];
+    state.tuitionDueDate = null;
+    state.tuitionOverdue = false;
+    state.graduated = false;
+    state.degreeIds = [];
+    state.lecturer = { level: 1, exp: 0 };
+    state.lecturerCourseId = null;
+    state.universityCourseType = "major";
+    state.relationshipEventNpcId = null;
+    state.relationshipEventActiveNpcId = null;
+    state.breakupEventNpcId = null;
     state.npcRelations = {};
     Object.keys(setup.gameDatabase.npcs).forEach(function (npcId) {
         const relation = setup.gameDatabase.npcs[npcId].relationship;
         state.npcRelations[npcId] = { affection: relation.affectionStart || 0 };
         if (relation.romanceEnabled) {
             state.npcRelations[npcId].romance = relation.romanceStart || 0;
+            state.npcRelations[npcId].relationshipStatus = "affection";
+            state.npcRelations[npcId].romancePrompted = false;
         }
     });
     state.flags = {};
@@ -697,12 +848,30 @@ setup.ensureGameState = function () {
     if (state.venueAccessCooldowns === undefined) { state.venueAccessCooldowns = {}; }
     if (state.playerGender === undefined) { state.playerGender = null; }
     if (state.majorId === undefined) { state.majorId = null; }
-    if (state.majorChangeAvailableAt === undefined) {
-        const waitDays = setup.gameDatabase.venueRules.university.education.majorChangeWaitDays;
-        state.majorChangeAvailableAt = state.gameDate ? new Date(state.gameDate.getTime() + (waitDays * 24 * 60 * 60 * 1000)) : null;
+    if (state.minorId === undefined) { state.minorId = null; }
+    if (state.majorEnrollmentDate === undefined) {
+        const freeDays = setup.gameDatabase.venueRules.university.education.majorChangeFreeDays;
+        state.majorEnrollmentDate = state.majorChangeAvailableAt
+            ? new Date(state.majorChangeAvailableAt.getTime() - (freeDays * 24 * 60 * 60 * 1000))
+            : (state.gameDate ? new Date(state.gameDate.getTime()) : null);
     }
+    if (state.educationHistory === undefined) { state.educationHistory = state.majorId ? [{ majorId: state.majorId, role: "major", startedAt: state.majorEnrollmentDate, endedAt: null }] : []; }
+    if (state.tuitionDueDate === undefined) {
+        const days = setup.gameDatabase.venueRules.university.education.tuitionIntervalDays;
+        state.tuitionDueDate = state.majorId && state.gameDate ? new Date(state.gameDate.getTime() + (days * 24 * 60 * 60 * 1000)) : null;
+    }
+    if (state.tuitionOverdue === undefined) { state.tuitionOverdue = false; }
+    if (state.graduated === undefined) { state.graduated = false; }
+    if (state.degreeIds === undefined) { state.degreeIds = []; }
+    if (!state.lecturer) { state.lecturer = { level: 1, exp: 0 }; }
+    if (state.lecturerCourseId === undefined) { state.lecturerCourseId = null; }
+    if (state.universityCourseType === undefined) { state.universityCourseType = "major"; }
+    if (state.relationshipEventNpcId === undefined) { state.relationshipEventNpcId = null; }
+    if (state.relationshipEventActiveNpcId === undefined) { state.relationshipEventActiveNpcId = null; }
+    if (state.breakupEventNpcId === undefined) { state.breakupEventNpcId = null; }
     if (state.faintEventActive === undefined) { state.faintEventActive = false; }
     if (state.faintedAtHome === undefined) { state.faintedAtHome = false; }
+    if (state.faintedAtSafePlace === undefined) { state.faintedAtSafePlace = false; }
     if (state.cheatsEnabled === undefined) { state.cheatsEnabled = false; }
     if (state.saveVersion === undefined) { state.saveVersion = balance.saveVersion; }
 
@@ -730,6 +899,12 @@ setup.ensureGameState = function () {
         if (relation.romanceEnabled && state.npcRelations[npcId].romance === undefined) {
             state.npcRelations[npcId].romance = relation.romanceStart || 0;
         }
+        if (relation.romanceEnabled && state.npcRelations[npcId].relationshipStatus === undefined) {
+            state.npcRelations[npcId].relationshipStatus = state.npcRelations[npcId].romance > 0 ? "romance" : "affection";
+        }
+        if (relation.romanceEnabled && state.npcRelations[npcId].romancePrompted === undefined) {
+            state.npcRelations[npcId].romancePrompted = state.npcRelations[npcId].relationshipStatus === "romance";
+        }
         state.npcRelations[npcId].affection = Math.clamp(Number(state.npcRelations[npcId].affection) || 0, -100, 100);
     });
 };
@@ -739,6 +914,72 @@ setup.changeNpcAffection = function (npcId, amount) {
     const relation = State.variables.npcRelations && State.variables.npcRelations[npcId];
     if (!relation) { return false; }
     relation.affection = Math.clamp((Number(relation.affection) || 0) + (Number(amount) || 0), -100, 100);
+    setup.queueRomancePrompt(npcId);
+    return true;
+};
+
+setup.getRelationshipStatusName = function (npcId) {
+    const relation = State.variables.npcRelations && State.variables.npcRelations[npcId];
+    if (!relation) { return "未知"; }
+    return relation.relationshipStatus === "romance" ? "愛意" : "好感";
+};
+
+setup.canStartRomance = function (npcId) {
+    const npc = setup.gameDatabase.npcs[npcId];
+    const relation = State.variables.npcRelations && State.variables.npcRelations[npcId];
+    if (!npc || !relation || !npc.relationship.romanceEnabled) { return false; }
+    const threshold = npc.relationship.romanceThreshold || 80;
+    return relation.relationshipStatus === "affection" && !relation.romancePrompted && relation.affection >= threshold;
+};
+
+setup.queueRomancePrompt = function (npcId) {
+    const state = State.variables;
+    if (state.relationshipEventNpcId || state.relationshipEventActiveNpcId || !setup.canStartRomance(npcId)) { return false; }
+    state.relationshipEventNpcId = npcId;
+    return true;
+};
+
+setup.acceptRomance = function (npcId) {
+    if (!setup.canStartRomance(npcId)) { return false; }
+    const relation = State.variables.npcRelations[npcId];
+    relation.romance = relation.affection;
+    relation.affection = 0;
+    relation.relationshipStatus = "romance";
+    relation.romancePrompted = true;
+    return true;
+};
+
+setup.declineRomance = function (npcId) {
+    if (!setup.canStartRomance(npcId)) { return false; }
+    const relation = State.variables.npcRelations[npcId];
+    relation.romancePrompted = true;
+    return true;
+};
+
+setup.changeNpcRomance = function (npcId, amount) {
+    const npc = setup.gameDatabase.npcs[npcId];
+    const relation = State.variables.npcRelations && State.variables.npcRelations[npcId];
+    if (!npc || !relation || !npc.relationship.romanceEnabled || relation.relationshipStatus !== "romance") { return false; }
+    relation.romance = Math.clamp((Number(relation.romance) || 0) + (Number(amount) || 0), -100, 100);
+    return true;
+};
+
+setup.breakupWithNpc = function (npcId) {
+    const npc = setup.gameDatabase.npcs[npcId];
+    const relation = State.variables.npcRelations && State.variables.npcRelations[npcId];
+    if (!npc || !relation || relation.relationshipStatus !== "romance") { return false; }
+    const penalty = npc.relationship.breakupAffectionPenalty || 40;
+    relation.affection = Math.clamp((Number(relation.romance) || 0) - penalty, -100, 100);
+    relation.romance = 0;
+    relation.relationshipStatus = "affection";
+    relation.romancePrompted = true;
+    return true;
+};
+
+setup.requestBreakup = function (npcId) {
+    const relation = State.variables.npcRelations && State.variables.npcRelations[npcId];
+    if (!relation || relation.relationshipStatus !== "romance") { return false; }
+    State.variables.breakupEventNpcId = npcId;
     return true;
 };
 
@@ -752,6 +993,16 @@ setup.getNpcRelationTier = function (affection) {
 /* 每次進入故事前安全補齊舊存檔缺少的欄位。 */
 jQuery(document).on(":passagestart.ensureGameState", function () {
     setup.ensureGameState();
+});
+
+/* 好感跨過戀愛門檻時，讓目前劇情先完整結束，再顯示共用的關係確認事件。 */
+jQuery(document).on(":passageend.relationshipEvents", function () {
+    const state = State.variables;
+    const npcId = state.relationshipEventNpcId;
+    if (!npcId || State.passage === "NPC_關係確認" || !setup.canStartRomance(npcId)) { return; }
+    state.relationshipEventNpcId = null;
+    state.relationshipEventActiveNpcId = npcId;
+    Engine.play("NPC_關係確認");
 });
 
 /* 已認識 NPC 是存檔狀態；同一角色不會重複加入。 */
@@ -793,6 +1044,30 @@ setup.inventoryCount = function () {
     return Object.values(State.variables.inventory || {}).reduce(function (total, quantity) {
         return total + Math.max(0, Number(quantity) || 0);
     }, 0);
+};
+
+/*
+    所有「獲得物品」流程共用的背包入口。
+    只有遊戲資料庫已登記的物品可以加入，避免打錯 ID 後產生無法顯示的物品。
+*/
+setup.addItemToInventory = function (itemId, quantity) {
+    const item = setup.gameDatabase.items[itemId];
+    const amount = Math.max(0, Math.floor(Number(quantity) || 0));
+    const state = State.variables;
+    const inventory = state.inventory || (state.inventory = {});
+    if (!item || amount <= 0) {
+        if (!item) { console.warn("找不到物品 ID：", itemId); }
+        return { ok: false, itemId: itemId, added: 0 };
+    }
+
+    inventory[itemId] = Math.max(0, Number(inventory[itemId]) || 0) + amount;
+    return {
+        ok: true,
+        itemId: itemId,
+        name: setup.itemText(itemId, "name"),
+        added: amount,
+        quantity: inventory[itemId]
+    };
 };
 
 setup.useItem = function (itemId) {
@@ -889,8 +1164,7 @@ setup.checkout = function (shopId) {
     if (total <= 0 || state.money < total) { return false; }
     setup.getShopItems(shopId).forEach(function (item) {
         const quantity = Math.max(0, Math.floor(Number(state.cart[item.id]) || 0));
-        /* 舊存檔可能沒有後來新增物品的欄位，先以 0 初始化再加入數量。 */
-        state.inventory[item.id] = (state.inventory[item.id] || 0) + quantity;
+        setup.addItemToInventory(item.id, quantity);
         state.cart[item.id] = 0;
     });
     state.money -= total;

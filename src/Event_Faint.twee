@@ -25,21 +25,28 @@ jQuery(document).on(":passageend.faintSystem", function () {
 
     const currentPassage = Story.get(State.passage);
     const atHome = currentPassage && currentPassage.tags.includes("home");
+    const atSafePlace = currentPassage && currentPassage.tags.includes("safe");
 
-    // 記住昏倒地點，供事件 passage 決定是否遺失金錢。
+    // 記住昏倒地點，供事件 passage 決定恢復方式與金錢損失。
     state.faintEventActive = true;
     state.faintedAtHome = atHome;
+    state.faintedAtSafePlace = atSafePlace;
     Engine.play("昏倒事件");
 });
 
 :: 昏倒事件 [no-jpg]
 <<silently>>
 /%
-    在家昏倒不會遺失金錢；外出昏倒則會被洗劫。
+    在家昏倒只會睡一覺；有 safe 標籤的其他場所會送醫並收看診費；
+    沒有 safe 標籤的外出地點則會被洗劫。
     無論在哪裡，醒來後都會恢復全部體力，並清空零碎體力時間，
     避免玩家醒來後立刻又因為舊的累積時間再次扣血。
 %/
-<<if not $faintedAtHome>>
+<<if $faintedAtSafePlace and not $faintedAtHome>>
+    <<set _faintHospitalFeePaid to Math.min($money, setup.balance.faint.hospitalFee)>>
+    <<set $money to $money - _faintHospitalFeePaid>>
+    <<set $narrativeFaintHospitalFeePaid to _faintHospitalFeePaid>>
+<<elseif not $faintedAtHome>>
     <<set $money to 0>>
 <</if>>
 <<set $hp to $hpMax>>
@@ -47,12 +54,19 @@ jQuery(document).on(":passageend.faintSystem", function () {
 <</silently>>
 
 <<if $faintedAtHome>>
-    你的體力耗盡，在家中昏倒了。休息一陣子後，你在自己的床上醒來，體力已完全恢復。
+    <<storyText "faint_home">>
+<<elseif $faintedAtSafePlace>>
+    <<set _faintTextContext to { faintHospitalFeePaid: $narrativeFaintHospitalFeePaid }>>
+    <<storyText "faint_safe" _faintTextContext>>
 <<else>>
-    你的體力耗盡，在外頭昏倒了。醒來時，你已經回到家中，卻發現身上的錢被洗劫一空；體力已完全恢復。
+    <<storyText "faint_outside">>
 <</if>>
 
 <<link "醒來">>
     <<set $faintEventActive to false>>
-    <<goto "YourHome">>
+    <<if $faintedAtSafePlace and not $faintedAtHome>>
+        <<goto "醫院">>
+    <<else>>
+        <<goto "YourHome">>
+    <</if>>
 <</link>>

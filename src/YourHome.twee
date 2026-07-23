@@ -32,19 +32,11 @@
     <<if _roll gt setup.getEffectiveLuck()>>
         /% 看到爛片：心情減少 %/
         <<set _moodChange to -Math.trunc($watchMins / 10)>>
-        <<set _eventDesc to either(
-            "這部片簡直是災難……你看完後覺得生命被浪費了。",
-            "劇情極度荒謬，你甚至開始懷疑編劇的大腦結構。",
-            "非常無聊的節目，你看得昏昏欲睡。"
-        )>>
+        <<set _eventTextKey to either("tv_bad_disaster", "tv_bad_absurd", "tv_bad_boring")>>
     <<else>>
         /% 看到好片：心情增加 %/
         <<set _moodChange to Math.trunc($watchMins / 10)>>
-        <<set _eventDesc to either(
-            "這部影集太精彩了！你看得津津有味。",
-            "劇情高潮迭起，讓你完全沉浸在故事裡面！",
-            "這是一部難得一見的神作，看完讓人意猶未盡。"
-        )>>
+        <<set _eventTextKey to either("tv_good_exciting", "tv_good_immersive", "tv_good_masterpiece")>>
     <</if>>
 
     /% 4. 推進時間 %/
@@ -56,7 +48,7 @@
 
 你坐在沙發上看了 $watchMins 分鐘的電視。
 
-_eventDesc
+<<storyText _eventTextKey>>
 (心情變化：<<print _moodChange > 0 ? "+" : "">><<= _moodChange>>)
 
 <<go "結束" "YourHome" 0>>
@@ -75,6 +67,9 @@ _eventDesc
 <<link "睡 2 小時">><<set $sleepMinutes to setup.balance.sleep.minutesPerStep * 4>><<goto "睡眠結果">><</link>>
 <<link "睡 3 小時">><<set $sleepMinutes to setup.balance.sleep.minutesPerStep * 6>><<goto "睡眠結果">><</link>>
 <<link "睡 7 小時">><<set $sleepMinutes to setup.balance.sleep.minutesPerStep * 14>><<goto "睡眠結果">><</link>>
+<<if $gameDate.getHours() gte 19>>
+    <<link "睡到隔天早上 7 點">><<set $sleepMinutes to (24 - $gameDate.getHours() + 7) * 60 - $gameDate.getMinutes()>><<goto "睡眠結果">><</link>>
+<</if>>
 <<link "睡到體力全滿">><<set $sleepMinutes to Math.ceil(Math.max(0, $hpMax - $hp) / setup.balance.sleep.hpGainPerStep) * setup.balance.sleep.minutesPerStep>><<goto "睡眠結果">><</link>>
 
 <<go "返回臥室" "臥室" 0>>

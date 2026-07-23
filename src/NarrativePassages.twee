@@ -1,0 +1,22 @@
+:: 故事事件 [narrative]
+<<silently>>
+<<set _event to setup.openNarrativeEvent($narrativeEventId, $narrativeContext || {})>>
+<</silently>>
+<<if not _event>>
+    找不到這段劇情，或它的觸發條件已不成立。
+    <<go "返回街道" "街道" 0>>
+<<else>>
+    <<print setup.interpolateNarrativeText(setup.getNarrativeText(_event.textKey), $narrativeContext || {})>>
+    @@.button-container;
+    <<for _choice range setup.narrativeDatabase.choices[_event.choiceSetId] || []>>
+        <<if setup.narrativeConditionsMet(_choice.conditions, $narrativeContext || {})>>
+            <<capture _event, _choice>>
+                <<button setup.getNarrativeChoiceLabel(_choice)>>
+                    <<set _targetPassage to setup.finishNarrativeChoice(_event.id, _choice.id)>>
+                    <<goto _targetPassage>>
+                <</button>>
+            <</capture>>
+        <</if>>
+    <</for>>
+    @@
+<</if>>

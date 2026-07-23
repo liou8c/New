@@ -1,0 +1,69 @@
+:: NPC_關係確認 [no-jpg]
+<<silently>>
+<<set _relationshipNpcId to $relationshipEventActiveNpcId>>
+<<set _relationshipNpc to setup.gameDatabase.npcs[_relationshipNpcId]>><</silently>>
+
+<<if not _relationshipNpc or not setup.canStartRomance(_relationshipNpcId)>>
+    <<set $relationshipEventActiveNpcId to null>>
+    <<goto "街道">>
+<<else>>
+<<set _relationshipTextContext to { npcId: _relationshipNpcId }>>
+<<storyText "relationship_prompt" _relationshipTextContext>>
+
+@@.button-container;
+<<button "接受這段關係">>
+    <<run setup.acceptRomance(_relationshipNpcId)>>
+    <<goto "NPC_關係接受結果">>
+<</button>>
+<<button "暫時維持朋友關係">>
+    <<run setup.declineRomance(_relationshipNpcId)>>
+    <<goto "NPC_關係婉拒結果">>
+<</button>>
+@@
+<</if>>
+
+:: NPC_關係接受結果 [no-jpg]
+<<silently>><<set _relationshipNpcId to $relationshipEventActiveNpcId>><<set _relationshipNpcName to setup.npcText(_relationshipNpcId, "name")>><<set $relationshipEventActiveNpcId to null>><</silently>>
+
+<<set _relationshipTextContext to { npcId: _relationshipNpcId }>>
+<<storyText "relationship_accept" _relationshipTextContext>>
+
+<<go "繼續" "社交" 0>>
+
+:: NPC_關係婉拒結果 [no-jpg]
+<<silently>><<set _relationshipNpcId to $relationshipEventActiveNpcId>><<set _relationshipNpcName to setup.npcText(_relationshipNpcId, "name")>><<set $relationshipEventActiveNpcId to null>><</silently>>
+
+<<set _relationshipTextContext to { npcId: _relationshipNpcId }>>
+<<storyText "relationship_decline" _relationshipTextContext>>
+
+<<go "繼續" "社交" 0>>
+
+:: NPC_分手確認 [no-jpg]
+<<silently>><<set _breakupNpcId to $breakupEventNpcId>><<set _breakupNpcName to setup.npcText(_breakupNpcId, "name")>><</silently>>
+
+<<if not _breakupNpcId or $npcRelations[_breakupNpcId].relationshipStatus !== "romance">>
+    <<set $breakupEventNpcId to null>>
+    <<goto "社交">>
+<<else>>
+<<set _breakupTextContext to { npcId: _breakupNpcId }>>
+<<storyText "breakup_prompt" _breakupTextContext>>
+
+@@.button-container;
+<<button "確定分手">>
+    <<run setup.breakupWithNpc(_breakupNpcId)>>
+    <<goto "NPC_分手結果">>
+<</button>>
+<<button "我再想想">>
+    <<set $breakupEventNpcId to null>>
+    <<goto "社交">>
+<</button>>
+@@
+<</if>>
+
+:: NPC_分手結果 [no-jpg]
+<<silently>><<set _breakupNpcId to $breakupEventNpcId>><<set _breakupNpcName to setup.npcText(_breakupNpcId, "name")>><<set $breakupEventNpcId to null>><</silently>>
+
+<<set _breakupTextContext to { npcId: _breakupNpcId }>>
+<<storyText "breakup_result" _breakupTextContext>>
+
+<<go "繼續" "社交" 0>>

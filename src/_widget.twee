@@ -1,6 +1,13 @@
 :: GameWidgets [widget]
 
 /%
+    從敘事資料庫顯示一段文字。
+    用法：storyText 宏的第一個參數填 text_key；第二個參數可填 { npcId: "winley" }。
+    文字本身位於 Google Sheet 的 Story Text 工作表，可保留 SugarCube 的 @@ 樣式標記與 <br>。
+%/
+<<widget "storyText">><<print setup.interpolateNarrativeText(setup.getNarrativeText($args[0]), $args[1] || {})>><</widget>>
+
+/%
     推進時間並檢查路上事件。
     用法：<<passTime 分鐘數 ["no_drain"]>>
     第二個參數為 no_drain 時，時間仍會前進，但不會自然扣體力或衛生。
@@ -130,41 +137,26 @@
 <<widget "gainSkillExp">><<nobr>>
     <<set _skillId to $args[0]>>
     <<set _gain to $args[1] || 5>>
-    /% 舊存檔沒有 $skillMaxLevel 時，仍以 10 作為安全的預設上限。 %/
-    <<set _skillMaxLevel to $skillMaxLevel || setup.balance.skills.maxLevel>>
-    <<set _skillName to ({
-        fitness: "健身", charm: "魅力", awareness: "意識", knowledge: "知識",
-        dexterity: "靈巧", tech: "科技", creative: "創作", cooking: "料理",
-        oral: "口部", manual: "手部", vaginal: "陰道", anal: "肛門"
-    })[_skillId] || _skillId>>
-    <<if $skills[_skillId].level gte _skillMaxLevel>>
-        /% 滿級後不再累積經驗，避免存檔留下永遠用不到的 exp。 %/
-        <<set $skills[_skillId].exp to 0>>
-        <div style="color: #999; margin: 4px 0 0 0;">_skillName 已達 Lv._skillMaxLevel 上限。</div>
+    <<set _skillResult to setup.gainSkillExp(_skillId, _gain)>>
+    <<if not _skillResult.ok>>
+        <div style="color: #ff6b6b; margin: 4px 0 0 0;">
+            找不到技能：<<print _skillId>>
+        </div>
+    <<elseif _skillResult.wasMaxed>>
+        <div style="color: #999; margin: 4px 0 0 0;">
+            <<print _skillResult.name>>已達 Lv.<<print _skillResult.level>> 上限。
+        </div>
     <<else>>
-        <<set $skills[_skillId].exp += _gain>>
-        <div style="color: #4CAF50; margin: 4px 0 0 0;"><<print _skillName>>獲得提升！</div>
-
-        <<set _reqExp to $skills[_skillId].level * setup.balance.skills.expBase>>
-        <<for $skills[_skillId].exp >= _reqExp and $skills[_skillId].level lt _skillMaxLevel>>
-            <<set $skills[_skillId].exp -= _reqExp>>
-            <<set $skills[_skillId].level += 1>>
-
+        <div style="color: #4CAF50; margin: 4px 0 0 0;">
+            <<print _skillResult.name>>獲得 <<print _skillResult.gained>> 點經驗！
+        </div>
+        <<if _skillResult.levelsGained gt 0>>
             <div style="color: #FFD700; font-weight: bold; margin: 4px 0 0 0;">
-                🎉 技能提升到了 Lv.<<print $skills[_skillId].level>>！
+                🎉 <<print _skillResult.name>>提升到了 Lv.<<print _skillResult.level>>！
             </div>
-
-            /% 目前只有健身升級會提高體力上限；其他技能的效果可在這裡繼續增加。 %/
-            <<if _skillId is "fitness">>
-                <<set $hpMax += setup.balance.skills.fitnessHpMaxGain>>
-                體力上限 +<<print setup.balance.skills.fitnessHpMaxGain>>！
+            <<if _skillResult.hpMaxGained gt 0>>
+                體力上限 +<<print _skillResult.hpMaxGained>>！
             <</if>>
-            <<set _reqExp to $skills[_skillId].level * setup.balance.skills.expBase>>
-        <</for>>
-
-        /% 本次經驗值剛好讓技能滿級時，多出的經驗不再保留。 %/
-        <<if $skills[_skillId].level gte _skillMaxLevel>>
-            <<set $skills[_skillId].exp to 0>>
         <</if>>
     <</if>>
 <</nobr>><</widget>>

@@ -5,57 +5,84 @@
 <<go "住宅區" "住宅區" 6>>
 <<go "警察局" "警察局" 3>>
 <<venueEnter "🏫大學" "university" 3>>
+<<go "醫院" "醫院" 6>>
 @@
 
 :: 警察局 [police safe]
 
 <<go "離開" "市區" 3>>
 
+:: 醫院 [hospital safe]
+
+<<go "離開" "市區" 6>>
+
 :: 大學 [university safe]
-這裡是大學。你目前就讀 <strong><<print setup.getMajorName()>></strong>。
+這裡是大學。你目前的身分是 <strong><<print setup.getEducationDisplay()>></strong>。
 
 @@.button-container;
-<<go "🏫上課" "上課" 1>>
-<<go "👨🏻‍💻學生服務中心" "學生服務中心" 1>>
+<<if $graduated>>
+    <<go "👨🏻‍🏫講師辦公室" "講師辦公室" 1>>
+<<else>>
+    <<go "🏫上課" "課程選擇" 1>>
+    <<go "👨🏻‍💻學生服務中心" "學生服務中心" 1>>
+<</if>>
 <<go "🏫洗手間" "公共廁所" 1>>
 @@
 
 <<go "離開" "市區" 3>>
 
+:: 課程選擇 [university safe]
+<<if setup.isStudentProgramComplete()>>
+    你已完成所有已選學程，正在確認畢業資格。
+    <<if setup.tryGraduate()>><<goto "畢業典禮">><</if>>
+    <<go "返回大學" "大學" 0>>
+<<else>>
+    <h3>選擇要修讀的課程</h3>
+    @@.button-container;
+    <<button "主修：「" + setup.getMajorName() + "」">>
+        <<set $universityCourseType to "major">>
+        <<goto "上課">>
+    <</button>>
+    <<if $minorId>><<button "副修：「" + setup.getMajor($minorId).name + "」">>
+        <<set $universityCourseType to "minor">>
+        <<goto "上課">>
+    <</button>><</if>>
+    @@
+    <<go "返回大學" "大學" 0>>
+<</if>>
+
 :: 上課 [university safe]
 <<silently>>
-<<set _classPlan to setup.getUniversityClassPlan()>>
+<<set _classPlan to setup.getUniversityClassPlan($universityCourseType)>>
 <</silently>>
 
-<<if not setup.isVenueOpenNow("university") or setup.getMinutesUntilVenueClose("university") lt _classPlan.classMinutes>>
+<<if not _classPlan>>
+    <<goto "課程選擇">>
+<<elseif not setup.isVenueOpenNow("university") or setup.getMinutesUntilVenueClose("university") lt _classPlan.classMinutes>>
     <<goto "大學下課">>
-<<elseif _classPlan.majorExp is 0 and _classPlan.minorExp is 0>>
-    你的主修與副修技能都已達上限，目前沒有適合你的課程，因此不會收取學費。
-    <<go "返回大學" "大學" 0>>
-<<elseif $money lt _classPlan.tuition>>
-    這堂課需要 <<print _classPlan.tuition>> 元學費，但你目前只有 <<print Math.round($money)>> 元。
-    <<go "返回大學" "大學" 0>>
+<<elseif not setup.canAttendUniversity()>>
+    你的學費已到期但尚未繳清，目前不能上課。
+    <<go "前往學生服務中心繳費" "學生服務中心" 0>>
+<<elseif _classPlan.exp is 0>>
+    這個學程已滿級，請選擇其他課程。
+    <<go "選擇課程" "課程選擇" 0>>
 <<else>><<silently>>
-    <<set $money to Math.max(0, $money - _classPlan.tuition)>>
     /% 上課是室內靜態活動：會花時間與體力，但不自然消耗衛生。 %/
     <<passTime _classPlan.classMinutes "no_hygiene">>
 <</silently>>
 
-你上了 <<print _classPlan.classMinutes>> 分鐘的課，支付 <<print _classPlan.tuition>> 元學費。
+你上了 <<print _classPlan.classMinutes>> 分鐘的課。
 
-<<if _classPlan.majorExp gt 0>>
-    主修 <<print setup.getSkillName(_classPlan.majorSkill)>> 經驗 +<<print _classPlan.majorExp>>。
-    <<gainSkillExp _classPlan.majorSkill _classPlan.majorExp>>
-<</if>>
-<<if _classPlan.minorExp gt 0>>
-    副修 <<print setup.getSkillName(_classPlan.minorSkill)>> 經驗 +<<print _classPlan.minorExp>>。
-    <<gainSkillExp _classPlan.minorSkill _classPlan.minorExp>>
-<</if>>
+<<print _classPlan.programLabel>>（<<print _classPlan.programName>>）的 <<print setup.getSkillName(_classPlan.skill)>> 經驗 +<<print _classPlan.exp>>。
+<<gainSkillExp _classPlan.skill _classPlan.exp>>
 
-<<if setup.getMinutesUntilVenueClose("university") gte _classPlan.classMinutes>>
-    <<go "繼續上課" "上課" 0>>
+<<set _graduatedNow to setup.tryGraduate()>>
+<<if _graduatedNow>>
+    <<goto "畢業典禮">>
+<<elseif setup.getMinutesUntilVenueClose("university") gte _classPlan.classMinutes>>
+    <<go "繼續修讀此課程" "上課" 0>>
 <</if>>
-<<go "返回大學" "大學" 0>>
+<<go "選擇其他課程" "課程選擇" 0>>
 <</if>>
 
 :: 大學下課 [university safe]
@@ -66,17 +93,97 @@
 :: 學生服務中心 [university safe]
 <<if not setup.isVenueOpenNow("university")>>
     學生服務中心目前沒有開放辦理業務，請在週一至週五 07:00～19:00 再來。
-<<elseif setup.canChangeMajor()>>
-    學生服務中心的承辦人確認你的資料後，表示現在可以申請轉系。
+<<else>>
+    學生服務中心可以協助處理你的學籍與學費。
     你目前就讀 <strong><<print setup.getMajorName()>></strong>。
 
-    <<go "申請轉系" "更換科系" 0>>
-<<else>>
-    承辦人說：「入學未滿一週，現在還不能申請轉系。」
-    你可以在 <<print $majorChangeAvailableAt.getMonth() + 1>> 月 <<print $majorChangeAvailableAt.getDate()>> 日後再來辦理。
+    <<if $tuitionOverdue>>
+        學費 <strong><<print setup.gameDatabase.venueRules.university.education.tuitionAmount>> 元</strong> 已到期；繳清前不能上課。
+        <<if $money gte setup.gameDatabase.venueRules.university.education.tuitionAmount>>
+            <<button "繳交學費">><<run setup.payTuition()>><<goto "學生服務中心">><</button>>
+        <<else>>
+            目前金額不足，請先籌足學費。
+        <</if>>
+    <<else>>
+        下次學費繳款日：<<print $tuitionDueDate.getMonth() + 1>> 月 <<print $tuitionDueDate.getDate()>> 日。
+    <</if>>
+    <br>
+    <<go "申請轉系（費用：" + setup.getMajorChangeFee() + " 元）" "更換科系" 0>>
+    <<if not $minorId>>
+        <<go "加選副修" "副修選擇" 0>>
+    <</if>>
 <</if>>
 
 <<go "返回大學" "大學" 0>>
+
+:: 副修選擇 [no-jpg]
+<h3>你想加選哪個副修？</h3>
+副修須修滿對應的主修技能，才可與主修一同畢業。
+
+@@.button-container;
+<<for _minorId range Object.keys(setup.gameDatabase.majors)>>
+    <<capture _minorId>>
+        <<if _minorId !== $majorId>>
+            <<set _minor to setup.getMajor(_minorId)>>
+            <<button _minor.name>>
+                <<run setup.addMinor(_minorId)>>
+                <<goto "副修完成">>
+            <</button>>
+        <</if>>
+    <</capture>>
+<</for>>
+@@
+<<go "暫時不加選" "學生服務中心" 0>>
+
+:: 副修完成 [no-jpg]
+你已加選 <strong><<print setup.getMajor($minorId).name>></strong> 為副修。
+<<go "返回學生服務中心" "學生服務中心" 0>>
+
+:: 畢業典禮 [university safe]
+你完成了所有已選學程，正式畢業。
+
+你取得的學位：<strong><<print setup.getEducationDisplay()>></strong>。
+學生上課功能已結束；你現在可以在大學擔任講師。
+
+<<go "前往講師辦公室" "講師辦公室" 0>>
+<<go "離開大學" "市區" 3>>
+
+:: 講師辦公室 [university safe]
+你目前是 <strong>Lv.<<print $lecturer.level>> 講師</strong>。
+每堂課薪資：<<print setup.gameDatabase.venueRules.university.education.lecturer.basePay + (($lecturer.level - 1) * setup.gameDatabase.venueRules.university.education.lecturer.payPerLevel)>> 元。
+
+你可教授以下已取得學位的科系：
+@@.button-container;
+<<for _degreeId range $degreeIds>>
+    <<capture _degreeId>>
+        <<set _degree to setup.getMajor(_degreeId)>>
+        <<button "教授「" + _degree.name + "」">>
+            <<set $lecturerCourseId to _degreeId>>
+            <<goto "講師授課">>
+        <</button>>
+    <</capture>>
+<</for>>
+@@
+<<go "返回大學" "大學" 0>>
+
+:: 講師授課 [university safe]
+<<silently>>
+<<set _lecturePlan to setup.getLecturerClassPlan($lecturerCourseId)>><</silently>>
+
+<<if not _lecturePlan or not setup.isVenueOpenNow("university") or setup.getMinutesUntilVenueClose("university") lt _lecturePlan.classMinutes>>
+    <<goto "大學下課">>
+<<else>>
+    <<passTime _lecturePlan.classMinutes "no_hygiene">>
+    <<set _lectureResult to setup.completeLecturerClass($lecturerCourseId)>>
+    你教授了 <<print _lecturePlan.degreeName>> 的一堂課，獲得 <<print _lectureResult.pay>> 元薪資。
+    <<if _lectureResult.leveledUp>>
+        🎉 講師升至 Lv.<<print _lectureResult.level>>！往後每堂課的薪資提高。
+    <</if>>
+    <<if setup.getMinutesUntilVenueClose("university") gte _lecturePlan.classMinutes>>
+        <<go "繼續授課" "講師授課" 0>>
+    <</if>>
+    <<go "返回講師辦公室" "講師辦公室" 0>>
+<</if>>
 
 :: 住宅區 [residential safe]
 

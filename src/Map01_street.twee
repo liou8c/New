@@ -13,6 +13,9 @@
 <<go "☕咖啡廳" "咖啡廳入口" 3>>
 <<go "💪健身房" "健身房入口" 4>>
 <<go "📚圖書館" "圖書館入口" 5>>
+<<if $gameDate.getHours() gte 6 and $gameDate.getHours() lt 9>>
+    <<go "🧺早市" "早市" 6>>
+<</if>>
 <<go "🏙️市區" "市區" 20>>
 @@
 
@@ -223,6 +226,13 @@
 :: 咖啡廳 [cafe safe]
 新開的咖啡廳。
 
+<<set _pickedEvent to setup.pickNarrativeEvent("winley_cafe", {})>>
+<<if _pickedEvent>>
+    <<set $narrativeEventId to _pickedEvent.id>>
+    <<set $narrativeContext to {}>>
+    <<goto "故事事件">>
+<</if>>
+
 @@.button-container;
 <<if setup.playerHasTag("cafe_employee")>><<venueGo "在咖啡廳工作" "cafe" "work" "在咖啡廳工作">><<else>><<go "詢問工作" "咖啡廳工作" 5>><</if>>
 <<go "排隊點餐" "咖啡廳點餐" 5>>
@@ -320,11 +330,11 @@
 <<nobr>><<if $gameDate.getHours() lt 11 or $gameDate.getHours() gte 21>>    /% 防呆：即使玩家從舊歷史紀錄或其他事件直接跳來，打烊後也不能點餐。 %/
     <<goto "咖啡廳打烊">>
 <</if>>
-<<if not $flags.cafeOrderIntroSeen>>
+<<if not $flags.cafeorder_introseen>>
 @@.npc-raven;「想點什麼？」@@一聲拖著尾音的哈欠聲吸引了你的注意。
 <br>站在櫃台後的工讀生懶洋洋地看向你，等你回答。
 <br>她留著一頭及腰的漆黑長髮，唇上抹著黑色唇膏，雙耳上打滿了金屬耳環，這名工讀生與這間風格溫馨的咖啡廳格格不入。
-<<set $flags.cafeOrderIntroSeen to true>>
+<<set $flags.cafeorder_introseen to true>>
 <<else>><<silently>>
 /% 日後新增隨機點餐台詞，只要在這個清單多加一行即可。 %/
 <<set _cafeOrderGreetings to [
@@ -337,6 +347,7 @@ _cafeOrderGreeting
 <</if>><br><</nobr>>
 [[黑咖啡 40元|黑咖啡]]
 [[拿鐵 50元|拿鐵]]
+[[巧克力星冰樂 75元|巧克力星冰樂]]
 [[三明治 60元|三明治]]
 [[可頌 50元|可頌]]
 [[貝果 60元|貝果]]
@@ -348,27 +359,31 @@ _cafeOrderGreeting
 @@
 
 :: 黑咖啡 [cafe safe]
-<<set $cafeOrder to { name: "黑咖啡", price: 40, hpRestore: 10, satietyRestore: 0, minutes: 0 }>>
+<<set $cafeOrder to { name: "黑咖啡", price: 40, hpRestore: 10, satietyRestore: 0, minutes: 1 }>>
 <<goto "咖啡廳餐點結果">>
 
 :: 拿鐵 [cafe safe]
-<<set $cafeOrder to { name: "拿鐵", price: 50, hpRestore: 10, satietyRestore: 0, minutes: 0 }>>
+<<set $cafeOrder to { name: "拿鐵", price: 50, hpRestore: 10, satietyRestore: 0, minutes: 1 }>>
+<<goto "咖啡廳餐點結果">>
+
+:: 巧克力星冰樂[cafe safe]
+<<set $cafeOrder to { name: "巧克力星冰樂", price: 75, hpRestore: 0, satietyRestore: 12, moodRestore: 6, minutes: 5 }>>
 <<goto "咖啡廳餐點結果">>
 
 :: 三明治 [cafe safe]
-<<set $cafeOrder to { name: "三明治", price: 60, hpRestore: 0, satietyRestore: 20, minutes: 5 }>>
+<<set $cafeOrder to { name: "三明治", price: 60, hpRestore: 0, satietyRestore: 35, minutes: 5 }>>
 <<goto "咖啡廳餐點結果">>
 
 :: 可頌 [cafe safe]
-<<set $cafeOrder to { name: "可頌", price: 50, hpRestore: 0, satietyRestore: 15, minutes: 5 }>>
+<<set $cafeOrder to { name: "可頌", price: 50, hpRestore: 0, satietyRestore: 20, minutes: 5 }>>
 <<goto "咖啡廳餐點結果">>
 
 :: 貝果 [cafe safe]
-<<set $cafeOrder to { name: "貝果", price: 60, hpRestore: 0, satietyRestore: 20, minutes: 5 }>>
+<<set $cafeOrder to { name: "貝果", price: 60, hpRestore: 0, satietyRestore: 35, minutes: 5 }>>
 <<goto "咖啡廳餐點結果">>
 
 :: 歐姆蛋 [cafe safe]
-<<set $cafeOrder to { name: "歐姆蛋", price: 70, hpRestore: 0, satietyRestore: 25, minutes: 5 }>>
+<<set $cafeOrder to { name: "歐姆蛋", price: 70, hpRestore: 0, satietyRestore: 35, minutes: 5 }>>
 <<goto "咖啡廳餐點結果">>
 
 :: 咖啡廳餐點結果 [cafe safe]
@@ -383,7 +398,11 @@ _cafeOrderGreeting
     <<if $cafeOrder.minutes gt 0>><<passTime $cafeOrder.minutes>><</if>>
     <<set $hp to Math.min($hpMax, $hp + $cafeOrder.hpRestore)>>
     <<set $satiety to Math.min($satietyMax, $satiety + $cafeOrder.satietyRestore)>>
-    <<set _cafeMoodGain to random(1, 5)>>
+    <<if $cafeOrder.moodRestore is undefined>>
+        <<set _cafeMoodGain to random(1, 5)>>
+    <<else>>
+        <<set _cafeMoodGain to $cafeOrder.moodRestore>>
+    <</if>>
     <<set $mood to Math.min($moodMax, $mood + _cafeMoodGain)>>
     <<if _cafeMoodGain lte 3>>
         <<set _cafeMoodText to "餐點很好，你的心情也很好。">>
@@ -609,3 +628,18 @@ _cafeOrderGreeting
 <<go "🏘️離開健身房" "街道" 1>>
 <<go "🏠直接回家" "YourHome" 8>>
 @@
+
+:: 早市 [morningmarket safe]
+<<if $gameDate.getHours() gte 6 and $gameDate.getHours() lt 9>>
+
+清晨的早市正熱鬧著，攤販的叫賣聲此起彼落。
+
+<<go "🏘️返回街道" "街道" 1>>
+<<go "🏠直接回家" "YourHome" 6>>
+<<else>>
+
+早市只在每天早上 06:00 到 09:00 營業，現在攤販都已收攤了。
+
+<<go "🏘️返回街道" "街道" 1>>
+<<go "🏠直接回家" "YourHome" 6>>
+<</if>>

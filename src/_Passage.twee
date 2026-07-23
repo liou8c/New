@@ -36,6 +36,14 @@
     <<set $bannerLocation to "street">>
 <</if>>
 
+/% 故事事件可在 GUI 為每個事件指定 Banner；留空時沿用進入事件前的地點圖片。 %/
+<<if tags().includes("narrative") and $narrativeEventId>>
+    <<set _narrativeBannerEvent to setup.narrativeDatabase.events[$narrativeEventId]>>
+    <<if _narrativeBannerEvent and _narrativeBannerEvent.banner>>
+        <<set $bannerLocation to _narrativeBannerEvent.banner>>
+    <</if>>
+<</if>>
+
 /% 標記 no-jpg 的段落（例如事件或彈窗）不顯示圖片。 %/
 <<if not tags().includes("no-jpg")>>
     <div class="scene-banner">

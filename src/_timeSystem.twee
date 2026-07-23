@@ -73,6 +73,30 @@ setup.processReputationEviction = function () {
         : "被喬爾趕出去";
 };
 
+/* 學費到期時自動扣款；餘額不足便保留到期日並暫停上課，直到玩家補足。 */
+setup.processTuition = function () {
+    const state = State.variables;
+    const education = setup.gameDatabase.venueRules.university.education;
+    if (!state.majorId || state.graduated || !state.tuitionDueDate || !state.gameDate) { return; }
+
+    while (state.gameDate >= state.tuitionDueDate) {
+        if (state.money < education.tuitionAmount) {
+            state.tuitionOverdue = true;
+            return;
+        }
+        state.money -= education.tuitionAmount;
+        state.tuitionOverdue = false;
+        state.tuitionDueDate = new Date(state.tuitionDueDate.getTime() + (education.tuitionIntervalDays * 24 * 60 * 60 * 1000));
+    }
+};
+
+setup.payTuition = function () {
+    const state = State.variables;
+    if (!state.tuitionOverdue) { return false; }
+    setup.processTuition();
+    return !state.tuitionOverdue;
+};
+
 window.advanceTime = function (minutesPassed, type) {
     const balance = setup.balance;
     // ----------------------------------------------------
@@ -100,6 +124,7 @@ window.advanceTime = function (minutesPassed, type) {
         State.variables.rentDueDate = new Date(State.variables.rentDueDate.getTime() + (balance.rent.intervalDays * 24 * 60 * 60 * 1000));
     }
     setup.processRentDebt();
+    setup.processTuition();
 
     // 不論這次時間推進是否會扣體力／衛生，都要檢查限時物品效果是否到期。
     window.updateTimedEffects();

@@ -46,8 +46,8 @@ $npcRelations["winley"].affection
     溫莉對你的態度明顯柔和許多。
 <</if>>
 
-/% 好感 + 2；若要避免超過 100，請交給 AI 依遊戲上限處理 %/
-<<set $npcRelations["winley"].affection += 2>>
+/% 好感 +2；共用函式會自動限制在 -100～100。 %/
+<<run setup.changeNpcAffection("winley", 2)>>
 ```
 
 ### 聲望

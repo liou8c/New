@@ -13,15 +13,18 @@
 
 :: 科系選擇 [no-jpg]
 <h3>你就讀哪個科系？</h3>
-選擇後，開放時間可到大學上課；主修獲得的經驗比副修多。
+遊戲開始時只選主修。入學後可在學生服務中心加選副修；每 14 天需繳一次學費。
 
 @@.button-container;
 <<for _majorId range Object.keys(setup.gameDatabase.majors)>>
-    <<set _major to setup.getMajor(_majorId)>>
-    <<button _major.name>>
-        <<set $majorId to _majorId>>
-        <<goto "開局完成">>
-    <</button>>
+    /% capture 會固定每個按鈕對應的 ID，避免點擊後讀到前一次／迴圈暫存值。 %/
+    <<capture _majorId>>
+        <<set _major to setup.getMajor(_majorId)>>
+        <<button _major.name>>
+            <<run setup.enrollMajor(_majorId)>>
+            <<goto "開局完成">>
+        <</button>>
+    <</capture>>
 <</for>>
 @@
 
@@ -31,7 +34,7 @@
 <</silently>>
 
 你選擇了 <strong><<print _major.name>></strong>。
-主修：<<print setup.getSkillName(_major.majorSkill)>>；副修：<<print setup.getSkillName(_major.minorSkill)>>。
+主修技能：<<print setup.getSkillName(_major.majorSkill)>>。副修可在入學後自行加選。
 
 你的新生活，正式開始。
 
@@ -40,17 +43,20 @@
 
 :: 更換科系 [no-jpg]
 <h3>你想轉到哪個科系？</h3>
-轉系不會扣除金錢，也不會重設已經獲得的技能經驗；它只會改變你未來上課時的主修與副修。
+轉系不會重設既有技能進度；舊科系會保留在修讀紀錄中，但不能再繼續修讀。
+本次費用：<strong><<print setup.getMajorChangeFee()>> 元</strong>。
 
 @@.button-container;
 <<for _majorId range Object.keys(setup.gameDatabase.majors)>>
-    <<if _majorId !== $majorId>>
-        <<set _major to setup.getMajor(_majorId)>>
-        <<button _major.name>>
-            <<set $majorId to _majorId>>
-            <<goto "轉系完成">>
-        <</button>>
-    <</if>>
+    <<capture _majorId>>
+        <<if _majorId !== $majorId>>
+            <<set _major to setup.getMajor(_majorId)>>
+            <<if $money gte setup.getMajorChangeFee()>><<button _major.name>>
+                <<run setup.changeMajor(_majorId)>>
+                <<goto "轉系完成">>
+            <</button>><</if>>
+        <</if>>
+    <</capture>>
 <</for>>
 @@
 
@@ -58,30 +64,12 @@
 
 :: 轉系完成 [no-jpg]
 你已轉入 <strong><<print setup.getMajorName()>></strong>。
-之後可在大學修讀主修 <<print setup.getSkillName(setup.getMajor($majorId).majorSkill)>> 與副修 <<print setup.getSkillName(setup.getMajor($majorId).minorSkill)>> 的課程。
+之後可在大學修讀主修 <<print setup.getSkillName(setup.getMajor($majorId).majorSkill)>> 的課程。
 
 <<go "返回學生服務中心" "學生服務中心" 0>>
 
 :: 初見房東 [home safe]
-為了展開全新的生活，你決定一個人搬進這間公寓。
-
-@@.npc-joel;「你的鑰匙，拿著。」@@
-
-站在面前的房東身材魁梧，留著一頭夾雜些許銀灰的俐落短髮，下巴有些鬍渣。你記得他叫@@.npc-joel;喬爾@@，正職是一名警察，而這也是你當初選擇這裡的原因。畢竟，房東是警察，安全感直接拉滿，對吧？
-你伸手準備接過鑰匙，喬爾卻沒有放開的意思，雙眼反而直勾勾地盯著你看。
-
-@@.npc-joel;「這間房子曾屬於我過世的妻子……你懂我的意思對吧？」@@
-//嗯？我懂嗎？// ──你在心裡狂打問號。
-
-你迎上他的視線，那雙眼睛像是可以隨時把你處理掉。他是警察。你在內心提醒自己。
-「絕對不能弄壞房子……對吧？」你小心翼翼地試探道。
-聽到這句話，喬爾才鬆開手指，任由金屬鑰匙落入你的掌心。
-@@.npc-joel;「每週房租八百元，別讓我花心思催你。」@@他語氣沉悶，略顯不耐。@@.npc-joel;「還有問題嗎？」@@
-
-你連忙搖頭。
-
-@@.npc-joel;「很好。」@@他轉身走到門口，手搭在門把上停頓了一下。@@.npc-joel;「……你有我的聯絡方式，要是發生什麼怪事，可以聯絡我。」@@
-不等你細想「怪事」到底是指什麼，門已經在面前俐落地關上。
+<<storyText "joel_first_meeting">>
 
 <<run setup.meetNpc("joel")>>
 <<go "開始生活" "YourHome" 0>>

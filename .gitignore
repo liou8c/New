@@ -1,0 +1,3 @@
+# Local spreadsheet previews/build artefacts; the source of truth is Google Sheet + database/story CSV.
+outputs/
+tools/node_modules/

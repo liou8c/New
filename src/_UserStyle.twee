@@ -6,7 +6,7 @@
     width: 100%;    /* 讓圖片寬度填滿文字區域 */
     height: auto;   /* 保持圖片比例，不要拉伸變形 */
     display: block; /* 避免圖片下方出現多餘的空隙 */
-    margin-bottom: 2.5em; /* 與下方文字保持一點距離 */
+    margin-bottom: 1em; /* Banner 到正文維持一行左右的閱讀留白 */
 }
 
 :: GameStyles [stylesheet]
@@ -32,7 +32,7 @@
     display: flex;         /* 啟用 Flexbox 彈性盒版面配置，讓子元素（按鈕）能夠靈活地排成一列 */
     flex-wrap: wrap;       /* 當按鈕太多、超過容器寬度時，自動換行到下一行；如果設定為 nowrap 則會擠在同一行 */
     gap: 30px 12px;             /* 設定按鈕與按鈕之間的間隔距離（無論橫向或縱向相鄰都會保持 15px 的間隙） */
-    margin-top: 20px;      /* 設定這個按鈕容器與上方其他元素的距離為 20px，避免貼得太近 */
+    margin-top: 1em;       /* 正文到按鈕也保留一行，與 Banner 下方的留白一致 */
     margin-left: 0;
     padding-left: 0;
     width: 100%;

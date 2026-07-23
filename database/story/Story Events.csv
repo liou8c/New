@@ -1,0 +1,7 @@
+event_id,scene_id,banner,priority,mode,conditions_json,on_enter_effects_json,text_key,choice_set_id,notes
+winley_park_intro,winley_park,street,100,once,"[{""type"":""flagNotSet"",""flag"":""winley_park_intro_done""}]",[],winley_park_intro,winley_park_intro_choices,首次見面；優先於日常事件
+winley_park_coffee_first,winley_park,street,0,repeatable,"[{""type"":""flagAtMost"",""flag"":""winley_park_coffee_count"",""value"":0}]","[{""type"":""incrementFlag"",""flag"":""winley_park_coffee_count""},{""type"":""changeStat"",""stat"":""mood"",""amount"":5}]",winley_park_coffee_first,winley_park_daily_choices,第一次咖啡日常
+winley_park_coffee_second,winley_park,street,0,repeatable,"[{""type"":""flagIs"",""flag"":""winley_park_coffee_count"",""value"":1}]","[{""type"":""incrementFlag"",""flag"":""winley_park_coffee_count""},{""type"":""changeStat"",""stat"":""mood"",""amount"":5}]",winley_park_coffee_second,winley_park_daily_choices,第二次咖啡日常
+winley_park_coffee_later,winley_park,street,0,repeatable,"[{""type"":""flagAtLeast"",""flag"":""winley_park_coffee_count"",""value"":2}]","[{""type"":""incrementFlag"",""flag"":""winley_park_coffee_count""},{""type"":""changeStat"",""stat"":""mood"",""amount"":5}]",winley_park_coffee_later,winley_park_daily_choices,第三次後咖啡日常
+winley_park_walk,winley_park,street,0,repeatable,[],[],winley_park_walk,winley_park_daily_choices,可重複日常
+winley_park_affection_30,winley_park,street,0,repeatable,"[{""type"":""npcAffectionAtLeast"",""npcId"":""winley"",""value"":30}]",[],winley_park_affection_30,winley_park_daily_choices,好感至少 30 時加入日常池

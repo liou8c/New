@@ -92,8 +92,17 @@ Untitled Story
 /% 角色建立流程會在 Start 後設定這兩個欄位。 %/
 <<set $playerGender to null>>
 <<set $majorId to null>>
-/% 入學滿一週後可到學生服務中心申請轉系；條件判定集中在 setup.canChangeMajor()。 %/
-<<set $majorChangeAvailableAt to new Date($gameDate.getTime() + (setup.gameDatabase.venueRules.university.education.majorChangeWaitDays * 24 * 60 * 60 * 1000))>>
+<<set $minorId to null>>
+<<set $majorEnrollmentDate to null>>
+<<set $educationHistory to []>>
+<<set $tuitionDueDate to null>>
+<<set $tuitionOverdue to false>>
+<<set $graduated to false>>
+<<set $degreeIds to []>>
+<<set $lecturer to { level: 1, exp: 0 }>>
+<<set $lecturerCourseId to null>>
+<<set $universityCourseType to "major">>
 <<set $faintEventActive to false>>
 <<set $faintedAtHome to false>>
+<<set $faintedAtSafePlace to false>>
 <<set $cheatsEnabled to false>>

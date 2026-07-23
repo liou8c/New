@@ -1,0 +1,3 @@
+choice_set_id,sort,choice_id,label_zh_TW,label_en,conditions_json,effects_json,target_passage,notes
+winley_park_intro_choices,10,continue,繼續,,[],"[{""type"":""changeNpcAffection"",""npcId"":""winley"",""amount"":5},{""type"":""setFlag"",""flag"":""winley_park_intro_done"",""value"":true},{""type"":""setFlagToday"",""flag"":""winley_park_left_on""}]",公園,首次見面結束
+winley_park_daily_choices,10,leave,告別溫莉,,[],"[{""type"":""advanceTime"",""minutes"":15},{""type"":""setFlagToday"",""flag"":""winley_park_left_on""}]",公園,日常事件結束；與原本晨間事件一致

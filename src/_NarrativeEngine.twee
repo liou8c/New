@@ -1,0 +1,165 @@
+:: NarrativeEngine [script]
+/*
+    通用敘事引擎。
+
+    編輯者只需要在 Story Text、Story Events、Choices 三張表新增資料；
+    這裡負責把「條件 → 顯示哪段 → 套用效果 → 前往哪裡」變成統一流程。
+    不使用 eval()，因此表格內容不會被當成任意 JavaScript 執行，較容易除錯也較安全。
+*/
+setup.getNarrativeText = function (textKey, fallback) {
+    const database = setup.narrativeDatabase;
+    const text = database && database.texts[textKey];
+    if (!text) { return fallback || `[缺少文本：${textKey}]`; }
+    const language = State.variables.language || database.defaultLanguage;
+    return text[language] || text[database.defaultLanguage] || fallback || `[缺少文本：${textKey}]`;
+};
+
+setup.getNarrativeChoiceLabel = function (choice) {
+    const language = State.variables.language || setup.narrativeDatabase.defaultLanguage;
+    return choice.label[language] || choice.label[setup.narrativeDatabase.defaultLanguage] || choice.id;
+};
+
+/*
+    所有系統與劇情共用的技能經驗入口。
+    不可直接修改 $skills.xxx.exp，否則會漏掉升級、滿級清零與健身增加體力上限。
+*/
+setup.gainSkillExp = function (skillId, amount) {
+    const state = State.variables;
+    const skill = state.skills && state.skills[skillId];
+    const gain = Math.max(0, Number(amount) || 0);
+    const maxLevel = state.skillMaxLevel || setup.balance.skills.maxLevel;
+    const result = {
+        ok: !!skill,
+        skillId: skillId,
+        name: setup.getSkillName ? setup.getSkillName(skillId) : skillId,
+        gained: gain,
+        level: skill ? Number(skill.level || 1) : 0,
+        exp: skill ? Number(skill.exp || 0) : 0,
+        levelsGained: 0,
+        hpMaxGained: 0,
+        maxed: false,
+        wasMaxed: false
+    };
+
+    if (!skill) { return result; }
+    if (skill.level >= maxLevel) {
+        skill.exp = 0;
+        result.maxed = true;
+        result.wasMaxed = true;
+        return result;
+    }
+
+    skill.level = Number(skill.level || 1);
+    skill.exp = Number(skill.exp || 0) + gain;
+    let requiredExp = skill.level * setup.balance.skills.expBase;
+    while (skill.exp >= requiredExp && skill.level < maxLevel) {
+        skill.exp -= requiredExp;
+        skill.level += 1;
+        result.levelsGained += 1;
+        if (skillId === "fitness") {
+            state.hpMax = Number(state.hpMax || 0) + setup.balance.skills.fitnessHpMaxGain;
+            result.hpMaxGained += setup.balance.skills.fitnessHpMaxGain;
+        }
+        requiredExp = skill.level * setup.balance.skills.expBase;
+    }
+
+    if (skill.level >= maxLevel) {
+        skill.exp = 0;
+        result.maxed = true;
+    }
+    result.level = skill.level;
+    result.exp = skill.exp;
+    return result;
+};
+
+/* 將 {{npc:winley}} 與 {{value:rentDebt}} 這類可讀佔位符換成遊戲目前的資料。 */
+setup.interpolateNarrativeText = function (text, context) {
+    const state = State.variables;
+    return String(text).replace(/\{\{(npc|value):([^}]+)\}\}/g, function (match, type, rawKey) {
+        const key = rawKey.trim();
+        if (type === "npc") {
+            const npcId = key === "contextNpcId" ? context.npcId : key;
+            return npcId ? `@@.npc-${npcId};${setup.npcText(npcId, "name")}@@` : "";
+        }
+        const value = context && Object.prototype.hasOwnProperty.call(context, key) ? context[key] : state[key];
+        return typeof value === "number" ? String(Math.round(value)) : (value ?? "");
+    });
+};
+
+setup.narrativeConditionMet = function (condition, context) {
+    const state = State.variables;
+    const value = condition.value;
+    if (!condition || !condition.type) { return true; }
+    if (condition.type === "flagIs") { return state.flags[condition.flag] === value; }
+    if (condition.type === "flagNotSet") { return !state.flags[condition.flag]; }
+    if (condition.type === "flagAtLeast") { return Number(state.flags[condition.flag] || 0) >= Number(value); }
+    if (condition.type === "flagAtMost") { return Number(state.flags[condition.flag] || 0) <= Number(value); }
+    if (condition.type === "flagDateIsNotToday") { return state.flags[condition.flag] !== state.gameDate.toDateString(); }
+    if (condition.type === "npcAffectionAtLeast") { return (state.npcRelations[condition.npcId].affection || 0) >= Number(value); }
+    if (condition.type === "stateEquals") { return state[condition.key] === value; }
+    if (condition.type === "stateAtLeast") { return Number(state[condition.key] || 0) >= Number(value); }
+    if (condition.type === "contextNpcCanStartRomance") { return !!context.npcId && setup.canStartRomance(context.npcId); }
+    if (condition.type === "contextNpcIsRomance") {
+        return !!context.npcId && state.npcRelations[context.npcId].relationshipStatus === "romance";
+    }
+    console.warn("未知的敘事條件：", condition.type);
+    return false;
+};
+
+setup.narrativeConditionsMet = function (conditions, context) {
+    return (conditions || []).every(function (condition) { return setup.narrativeConditionMet(condition, context || {}); });
+};
+
+setup.applyNarrativeEffects = function (effects, context) {
+    const state = State.variables;
+    (effects || []).forEach(function (effect) {
+        const targetNpcId = effect.npcId === "contextNpcId" ? context.npcId : effect.npcId;
+        if (effect.type === "setFlag") { state.flags[effect.flag] = effect.value; }
+        else if (effect.type === "setFlagToday") { state.flags[effect.flag] = state.gameDate.toDateString(); }
+        else if (effect.type === "incrementFlag") { state.flags[effect.flag] = Number(state.flags[effect.flag] || 0) + Number(effect.amount || 1); }
+        else if (effect.type === "changeNpcAffection") { setup.changeNpcAffection(targetNpcId, Number(effect.amount || 0)); }
+        else if (effect.type === "changeNpcRomance") { setup.changeNpcRomance(targetNpcId, Number(effect.amount || 0)); }
+        else if (effect.type === "changeStat") {
+            const max = state[`${effect.stat}Max`];
+            state[effect.stat] = Math.max(0, Math.min(max === undefined ? Infinity : max, Number(state[effect.stat] || 0) + Number(effect.amount || 0)));
+        } else if (effect.type === "gainSkillExp") { setup.gainSkillExp(effect.skillId, Number(effect.amount || 0)); }
+        else if (effect.type === "giveItem") { setup.addItemToInventory(effect.itemId, Number(effect.quantity || 0)); }
+        else if (effect.type === "advanceTime") { window.advanceTime(Number(effect.minutes || 0), effect.timeType); }
+        else if (effect.type === "acceptRomance") { setup.acceptRomance(targetNpcId); }
+        else if (effect.type === "declineRomance") { setup.declineRomance(targetNpcId); }
+        else if (effect.type === "breakup") { setup.breakupWithNpc(targetNpcId); }
+        else if (effect.type) { console.warn("未知的敘事效果：", effect.type); }
+    });
+};
+
+/* 找出可演出的事件；同一優先度的事件隨機挑選，避免條件日常永遠壓過普通日常。 */
+setup.pickNarrativeEvent = function (sceneId, context) {
+    const candidates = Object.values(setup.narrativeDatabase.events).filter(function (event) {
+        return event.sceneId === sceneId && setup.narrativeConditionsMet(event.conditions, context || {});
+    });
+    if (!candidates.length) { return null; }
+    const highestPriority = Math.max.apply(null, candidates.map(function (event) { return event.priority; }));
+    const topCandidates = candidates.filter(function (event) { return event.priority === highestPriority; });
+    return topCandidates[random(0, topCandidates.length - 1)];
+};
+
+setup.openNarrativeEvent = function (eventId, context) {
+    const event = setup.narrativeDatabase.events[eventId];
+    if (!event || !setup.narrativeConditionsMet(event.conditions, context || {})) { return null; }
+    const session = State.variables.narrativeSession;
+    if (!session || session.eventId !== eventId || JSON.stringify(session.context || {}) !== JSON.stringify(context || {})) {
+        setup.applyNarrativeEffects(event.onEnter, context || {});
+        State.variables.narrativeSession = { eventId: eventId, context: context || {} };
+    }
+    return event;
+};
+
+setup.finishNarrativeChoice = function (eventId, choiceId) {
+    const event = setup.narrativeDatabase.events[eventId];
+    const session = State.variables.narrativeSession || {};
+    const choice = event && (setup.narrativeDatabase.choices[event.choiceSetId] || []).find(function (item) { return item.id === choiceId; });
+    if (!choice || !setup.narrativeConditionsMet(choice.conditions, session.context || {})) { return null; }
+    setup.applyNarrativeEffects(choice.effects, session.context || {});
+    State.variables.narrativeSession = null;
+    return choice.targetPassage || null;
+};

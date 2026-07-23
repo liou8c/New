@@ -1,0 +1,516 @@
+{
+  "version": 1,
+  "defaultLanguage": "zh-TW",
+  "texts": {
+    "winley_park_intro": {
+      "zh-TW": "當你還在猶豫要不要上前打招呼時，@@.npc-winley;溫莉@@就已經先注意到你。<br>@@.npc-winley;「啊，早安！」@@她眼睛一亮，急著站起身，卻一時忘了放在大腿上的手帳。@@.npc-winley;「噢，該死！」@@她慌忙蹲下身撿起手帳，連架在鼻樑上的圓框眼鏡也順勢滑落到地上。<br><br>你走上前，幫忙撿起眼鏡遞還給她。<br><br>@@.npc-winley;「謝謝你，我總是這麼笨手笨腳。」@@她不好意思地笑著接過，重新戴好眼鏡。@@.npc-winley;「早上的公園空氣真好，對吧？」@@<br>你點了點頭。看著她手裡的手帳，你心中有些好奇，但考慮到兩人剛認識不久，又不確定冒昧打聽合不合適。<br>溫莉看出你的猶豫，主動揚了揚手中的手帳說明：@@.npc-winley;「我在做研究，紀錄這裡每天的早晨。」@@<br><br>「……研究……什麼呢？」你順著問道。<br><br>@@.npc-winley;「我在記錄公園裡的鳥類行為模式。你不覺得這裡的麻雀規律得有點神奇嗎？每天早上同一時間、相同數量的麻雀，都會飛到完全一樣的地方。」@@她指向不遠處的噴水池，@@.npc-winley;「連牠們在原地跳躍的次數都一模一樣。」@@<br><br>你順著溫莉手指的方向望向噴水池，但在你眼裡，那不過就是一群普通跳來跳去的麻雀，完全看不出什麼特別之處。嗯……<br><br>溫莉餘光瞥見公園圓柱上的大時鐘，@@.npc-winley;「啊，時間差不多了，我該去準備開店了。很高興見到你！」@@她一邊熱情地向你揮手，一邊腳步輕快地倒退著離開。",
+      "en": "",
+      "notes": "認識溫莉後在公園第一次見面"
+    },
+    "winley_park_affection_30": {
+      "zh-TW": "溫莉看見你時，露出了比平常更放鬆的笑容。<br><br>@@.npc-winley;「能在開店前見到你，讓今天感覺是個好日子。」@@",
+      "en": "",
+      "notes": "好感 30 事件"
+    },
+    "robber_intro": {
+      "zh-TW": "暗處突然衝出一個持刀的搶匪！<br><br>「把身上的錢通通交出來！」搶匪惡狠狠地盯著你。",
+      "en": "",
+      "notes": "搶匪事件開場"
+    },
+    "robber_no_money_intro": {
+      "zh-TW": "暗處突然衝出一個持刀的搶匪！你摸遍口袋，卻找不到半毛錢。",
+      "en": "",
+      "notes": "零金錢開場"
+    },
+    "robber_no_money_leave": {
+      "zh-TW": "搶匪不敢相信地翻了翻你的口袋，最後不屑地嗤笑一聲。<br>「窮成這樣還敢在街上晃？」他丟下這句話後離開了。",
+      "en": "",
+      "notes": "零金錢分支"
+    },
+    "robber_no_money_attack": {
+      "zh-TW": "搶匪發現你身無分文，惱羞成怒地推了你一把，還狠狠踹了你幾腳才離開。",
+      "en": "",
+      "notes": "零金錢分支"
+    },
+    "robber_escape_strong": {
+      "zh-TW": "你咬緊牙關，邁開大腿全力往前奔跑！<br>憑藉著充沛的體力，你很快就把搶匪甩得遠遠的，順利脫身！",
+      "en": "",
+      "notes": "搶匪逃跑分支"
+    },
+    "robber_escape_lucky": {
+      "zh-TW": "你的體力有些吃緊，但幸運的是，路邊剛好有一堆障礙物倒下擋住了搶匪的去路！<br>你成功趁亂甩掉了搶匪！",
+      "en": "",
+      "notes": "搶匪逃跑分支"
+    },
+    "robber_escape_fail": {
+      "zh-TW": "你氣喘吁吁，沒跑幾步就被搶匪從背後追上並撲倒在地！<br>搶匪狠狠踢了你一腳，把你身上的錢全搶走了！",
+      "en": "",
+      "notes": "搶匪逃跑分支"
+    },
+    "robber_combat_intro": {
+      "zh-TW": "你決定不再退讓，擺出架勢迎戰搶匪！",
+      "en": "",
+      "notes": "搶匪戰鬥開場"
+    },
+    "robber_combat_victory": {
+      "zh-TW": "你抓準空檔反擊，成功制服搶匪！他狼狽逃走，還留下了一疊鈔票。",
+      "en": "",
+      "notes": "搶匪戰鬥分支"
+    },
+    "robber_combat_defeat": {
+      "zh-TW": "你奮力抵抗，但仍被搶匪擊倒。他搜走你身上所有金錢後揚長而去。",
+      "en": "",
+      "notes": "搶匪戰鬥分支"
+    },
+    "rent_debt": {
+      "zh-TW": "@@.npc-joel;「……我記得房租不是這個數字吧。」@@<br><br>@@.npc-joel;喬爾@@眉心擠出一道深深的褶皺，神情極其不悅。你頓時感到一陣沉重的壓迫感，彷彿自己真的讓他非常失望。<br>@@.npc-joel;「我給你三天時間。」喬爾@@深深嘆了一口氣，冷冷地說：@@.npc-joel;「把剩下的租金補齊。」@@",
+      "en": "",
+      "notes": "欠租事件"
+    },
+    "rent_no_money": {
+      "zh-TW": "你目前沒有可繳的金錢。",
+      "en": "",
+      "notes": "繳租結果"
+    },
+    "rent_paid": {
+      "zh-TW": "你繳了 {{value:rentPayment}} 元房租。",
+      "en": "",
+      "notes": "繳租結果"
+    },
+    "rent_remaining": {
+      "zh-TW": "還差 {{value:rentDebt}} 元。",
+      "en": "",
+      "notes": "繳租結果"
+    },
+    "rent_cleared": {
+      "zh-TW": "房租已補齊。",
+      "en": "",
+      "notes": "繳租結果"
+    },
+    "rent_evicted": {
+      "zh-TW": "玩家被趕出去了",
+      "en": "",
+      "notes": "欠租驅逐"
+    },
+    "park_sleep_no_home": {
+      "zh-TW": "你現在還有住處，沒有必要露宿公園。",
+      "en": "",
+      "notes": "露宿檢查"
+    },
+    "park_sleep_intro": {
+      "zh-TW": "你沒有地方可住，只能在公園找個角落過夜。這裡非常危險。",
+      "en": "",
+      "notes": "露宿事件"
+    },
+    "park_sleep_event": {
+      "zh-TW": "你在公園睡覺時遇上了麻煩。",
+      "en": "",
+      "notes": "露宿事件"
+    },
+    "park_sleep_result": {
+      "zh-TW": "你勉強撐過了一晚，卻完全沒有睡好。",
+      "en": "",
+      "notes": "露宿結果"
+    },
+    "joel_reputation_eviction": {
+      "zh-TW": "@@.npc-joel;喬爾@@站在你面前，深吸了一口菸，隨手將火星閃爍的菸蒂扔在腳邊，用鞋尖狠狠碾熄。<br>@@.npc-joel;「我自認不算什麼好人，平常也懶得過問你那些爛事。」喬爾@@盯著你看，臉上沒有任何情緒起伏，你讀不懂他的表情。<br>@@.npc-joel;「一個警察房東，卻將房子租給罪犯房客，這像話嗎？」@@<br><br>他朝你攤開掌心。你心領神會，只能默默將鑰匙交還給他。<br><br>@@.npc-joel;「看來你並不怎麼在意自己的名聲，嗯？」喬爾@@接過鑰匙收進口袋，語氣冷淡。<br>@@.npc-joel;「把東西收一收，給我走人。」@@他離開前，抬手用食指點了點你單薄的家當。<br><br>在@@.npc-joel;喬爾@@那如芒刺在背的死亡注視下，你總算硬著頭皮把行李收拾乾淨。後路在何方，你心裡一點底也沒有。<br>@@.npc-joel;「想找地方住？市區那邊還有不少空房。」@@喬爾側過身，冷冷地說：@@.npc-joel;「房租比這裡貴上幾倍。沒錢你也可以選擇去睡公園。」@@",
+      "en": "",
+      "notes": "聲望驅逐"
+    },
+    "faint_home": {
+      "zh-TW": "你的體力耗盡，在家中昏倒了。休息一陣子後，你在自己的床上醒來，體力已完全恢復。",
+      "en": "",
+      "notes": "昏倒結果"
+    },
+    "faint_safe": {
+      "zh-TW": "你的體力耗盡，在安全場所昏倒了。有人將你送往醫院；醒來時體力已完全恢復，並支付了 {{value:faintHospitalFeePaid}} 元看診費。",
+      "en": "",
+      "notes": "昏倒結果"
+    },
+    "faint_outside": {
+      "zh-TW": "你的體力耗盡，在外頭昏倒了。醒來時，你已經回到家中，卻發現身上的錢被洗劫一空；體力已完全恢復。",
+      "en": "",
+      "notes": "昏倒結果"
+    },
+    "relationship_prompt": {
+      "zh-TW": "你與 {{npc:contextNpcId}} 的關係，似乎已經不只是普通朋友。<br><br>對方認真地望著你，等待你的回答。",
+      "en": "",
+      "notes": "共用關係確認"
+    },
+    "relationship_accept": {
+      "zh-TW": "你接受了與 {{npc:contextNpcId}} 改變關係的可能。你們之間累積的好感，從此化為愛意。",
+      "en": "",
+      "notes": "共用關係確認"
+    },
+    "relationship_decline": {
+      "zh-TW": "你選擇暫時和 {{npc:contextNpcId}} 維持朋友關係。",
+      "en": "",
+      "notes": "共用關係確認"
+    },
+    "breakup_prompt": {
+      "zh-TW": "你確定要結束和 {{npc:contextNpcId}} 的關係嗎？這會讓愛意轉回好感，且好感將大幅降低。",
+      "en": "",
+      "notes": "共用關係確認"
+    },
+    "breakup_result": {
+      "zh-TW": "你與 {{npc:contextNpcId}} 的關係回到了朋友。愛意已轉為大幅降低後的好感。",
+      "en": "",
+      "notes": "共用關係確認"
+    },
+    "tv_bad_disaster": {
+      "zh-TW": "這部片簡直是災難……你看完後覺得生命被浪費了。",
+      "en": "",
+      "notes": "電視隨機文本"
+    },
+    "tv_bad_absurd": {
+      "zh-TW": "劇情極度荒謬，你甚至開始懷疑編劇的大腦結構。",
+      "en": "",
+      "notes": "電視隨機文本"
+    },
+    "tv_bad_boring": {
+      "zh-TW": "非常無聊的節目，你看得昏昏欲睡。",
+      "en": "",
+      "notes": "電視隨機文本"
+    },
+    "tv_good_exciting": {
+      "zh-TW": "這部影集太精彩了！你看得津津有味。",
+      "en": "",
+      "notes": "電視隨機文本"
+    },
+    "tv_good_immersive": {
+      "zh-TW": "劇情高潮迭起，讓你完全沉浸在故事裡面！",
+      "en": "",
+      "notes": "電視隨機文本"
+    },
+    "tv_good_masterpiece": {
+      "zh-TW": "這是一部難得一見的神作，看完讓人意猶未盡。",
+      "en": "",
+      "notes": "電視隨機文本"
+    },
+    "joel_first_meeting": {
+      "zh-TW": "為了展開全新的生活，你決定一個人搬進這間公寓。<br><br>@@.npc-joel;「你的鑰匙，拿著。」@@<br><br>站在面前的房東身材魁梧，留著一頭夾雜些許銀灰的俐落短髮，下巴有些鬍渣。你記得他叫@@.npc-joel;喬爾@@，正職是一名警察，而這也是你當初選擇這裡的原因。畢竟，房東是警察，安全感直接拉滿，對吧？<br>你伸手準備接過鑰匙，喬爾卻沒有放開的意思，雙眼直勾勾地盯著你看。<br><br>@@.npc-joel;「這間房子曾屬於我過世的妻子……你懂我的意思。」@@<br>//嗯？我懂嗎？// ──你在心裡狂打問號。<br><br>你迎上他的視線，那雙眼睛像是能隨時把你處理掉。<br>他是警察。你在內心提醒自己。<br>「絕對不能弄壞房子……嗎？」你小心翼翼地試探道。<br>聽到這句話，喬爾才鬆開手指，任由金屬鑰匙落入你的掌心。<br>@@.npc-joel;「每週房租八百元，別讓我花心思催你。」@@他語氣沉悶，略顯不耐。@@.npc-joel;「還有問題嗎？」@@<br><br>你連忙搖頭。<br><br>@@.npc-joel;「很好。」@@他轉身走到門口，手搭在門把上停頓了一下。@@.npc-joel;「……你有我的聯絡方式，要是發生什麼怪事，可以聯絡我。」@@<br>不等你細想「怪事」到底是指什麼，門已經在面前俐落地關上。",
+      "en": "",
+      "notes": "開場主線劇情"
+    },
+    "winley_park_coffee_01": {
+      "zh-TW": "今天@@.npc-winley;溫莉@@的手裡除了那本快被翻爛的手帳外，還多了一杯咖啡，你看見她臉上綻開笑容，向你揮手。<br>你也友善地向溫莉揮手。<br><br>@@.npc-winley;「早安。今天的空氣很適合慢慢喝杯咖啡呢。」@@<br><br>你們並肩坐下，一同度過了一個美好的早晨。",
+      "en": "",
+      "notes": "第一次咖啡日常"
+    },
+    "winley_park_coffee_02": {
+      "zh-TW": "今天@@.npc-winley;溫莉@@的手裡除了那本快被翻爛的手帳外，還多了一杯咖啡，你看見她臉上綻開笑容，向你揮手。<br>她差點把咖啡打翻，你替她緊張了一下。<br><br>@@.npc-winley;「早安。今天的空氣很適合慢慢喝杯咖啡呢。」@@<br><br>你們並肩坐下，一同度過了一個美好的早晨。",
+      "en": "",
+      "notes": "第二次咖啡日常"
+    },
+    "winley_park_coffee_03": {
+      "zh-TW": "今天@@.npc-winley;溫莉@@的手裡除了那本快被翻爛的手帳外，還多了一杯咖啡，你看見她臉上綻開笑容，向你揮手。<br>你意識到她總是能先發現你。<br><br>@@.npc-winley;「早安。今天的空氣很適合慢慢喝杯咖啡呢。」@@<br><br>你們並肩坐下，一同度過了一個美好的早晨。",
+      "en": "",
+      "notes": "第三次後咖啡日常"
+    },
+    "winley_park_walk_A": {
+      "zh-TW": "你看見@@.npc-winley;溫莉@@獨自在公園的步道上來回踱步，神情專注。\n\n@@.npc-winley;「……已經連續七天了，這有可能嗎？」@@\n\n她低下頭看著手裡的手帳，一個人小聲地喃喃自語。看著她完全沉浸在自己的世界裡，你猶豫了一下，感覺現在不適合上前打擾。",
+      "en": "",
+      "notes": "日常事件"
+    },
+    "winley_park_walk_B": {
+      "zh-TW": "你看見@@.npc-winley;溫莉@@獨自在公園的步道上來回踱步，神情專注，當你準備離開公園時，溫莉不知何時竄到了你身邊。\n\n@@.npc-winley;「你是那種看到熟人就想偷偷跑掉的類型嗎？」@@她歪著頭問。\n「不，但如果我是，妳這樣會讓人困擾吧？」你忍不住吐槽。\n@@.npc-winley;「哼嗯……」@@她認真思考了一下，@@.npc-winley;「有道理。」@@\n\n好像哪裡不對，但又對，她怎麼就這樣認同你了。\n\n溫莉推了推那招牌的圓框眼鏡，@@.npc-winley;「不說了，時間到，快看看那邊！」@@她用手肘輕輕撞你，眼神示意遠處。\n@@.npc-winley;「等一下會有三隻麻雀飛到那裡。」@@她指著噴水池旁邊的長椅。\n\n「……蛤？什麼……」你還沒搞清楚溫莉到底是什麼意思的時候，三隻麻雀降落在長椅上，絲毫不差。\n\n@@.npc-winley;「然後，有一隻會被落葉嚇到飛走，順便拉一坨屎。」@@\n\n就像照劇本演出般，溫莉說的每個細節都精準應驗。你站在原地目瞪口呆，幾秒後才找回自己的聲音：「……預言？」\n\n@@.npc-winley;溫莉@@搖了搖頭，@@.npc-winley;「你覺得這有可能嗎？麻雀每天過一樣的日子？」@@\n\n你不知道，但你也開始感覺怪怪的。\n\n你們順勢在公園裡聊了起來。你這才得知@@.npc-winley;溫莉@@的咖啡廳才剛開張三個月。你在心裡默默祈禱千萬別倒閉，畢竟你現在非常需要這份薪水。",
+      "en": "",
+      "notes": "日常事件_加強疑點"
+    },
+    "winley_cafe_journal_task_decline": {
+      "zh-TW": "「我很想幫妳，但有太多事要做了。」\n@@.npc-winley;「噢！沒關係，我會繼續盧瑞文的。」@@\n@@.npc-raven;「走開。」@@\n\n還好溫莉沒有被拒絕打擊到。你伸展了一下身體，決定繼續完成原本打算做的事。",
+      "en": "",
+      "notes": "婉拒幫溫莉找手帳"
+    },
+    "winley_cafe_journal_task": {
+      "zh-TW": "走進咖啡廳時，裡頭早已坐滿人。這間店似乎成了附近居民的集散地，大家總愛湊在一起，熱烈討論鄰里間的雞毛蒜皮或各種離奇古怪的傳聞。\n\n你還沒走近櫃台，@@.npc-winley;溫莉@@焦急的聲音與另一道略顯冷淡的嗓音便傳了過來。\n\n@@.npc-winley;「手帳不見了，我到處都找不到，瑞文……」@@\n\n你看見@@.npc-winley;溫莉@@整個人黏在@@.npc-raven;瑞文@@身上哭訴。瑞文是店裡的另一名店員，你們上班的時間總是完美錯開，即便共事一段時間，你對她依舊陌生。你對她最有印象的是她那糟糕透頂的服務態度。\n\n@@.npc-raven;「你會把密碼寫在手帳裡嗎？」瑞文@@一邊問，一邊將咖啡杯隨手往桌面一擺，隨即轉身面對@@.npc-winley;溫莉@@。\n\n你親眼目睹那位客人眉頭抽搐了一下。你實在搞不懂@@.npc-raven;瑞文@@這隨性的工作態度，怎麼不會被開除？\n\n@@.npc-winley;「不會。」溫莉@@吸了吸鼻子。\n@@.npc-raven;「身份證字號？」@@\n@@.npc-winley;「也沒有。」@@\n@@.npc-raven;「妳人生最可悲、最黑暗醜陋、最不可告人的秘密？」@@\n@@.npc-winley;「我沒有這種東西。」@@\n@@.npc-raven;「每個人都有。」@@\n@@.npc-winley;「我就沒有。」@@\n@@.npc-raven;「既然這樣，妳沒什麼好擔心的。」瑞文@@聳了聳肩，@@.npc-raven;「再去買一本新的。」@@\n\n你偷聽夠久了，決定上前打個招呼。\n\n@@.npc-winley;「啊，早安呀！你看瑞文一點都不在乎我的手帳。」@@一看到你，@@.npc-winley;溫莉@@像找到了救星，馬上指著@@.npc-raven;瑞文@@向你告狀。@@.npc-winley;「評評理！」@@\n\n@@.npc-raven;「因為那不是我的。」瑞文@@淡淡地說，同時麻利地替眼前的客人結好帳，只是服務業該有的基本禮儀完全不見半點蹤影。\n\n你轉向@@.npc-winley;溫莉@@問道：「是妳公園裡常常拿在手上的那本嗎？」\n@@.npc-winley;「是的！你想幫我找嗎？」溫莉@@像抓到救命稻草似地拉住你，@@.npc-winley;「我會非常非常非常感謝你的。」@@\n@@.npc-raven;「我都快要好奇裡面有什麼了。」@@\n@@.npc-winley;「麻雀。」@@\n@@.npc-raven;「蛤？」@@\n\n你頓時陷入了沉思，開始認真衡量到底該不該幫@@.npc-winley;溫莉@@忙。",
+      "en": "",
+      "notes": "溫莉的咖啡廳小任務_尋找手帳"
+    },
+    "winley_cafe_journal_task_accept": {
+      "zh-TW": "「好啊，我幫妳找。」你想起在公園裡，@@.npc-winley;溫莉@@總是花上大把時間專注地觀察麻雀。雖然你至今依然搞不懂她在研究什麼東西，但看她那樣執著，那本手帳肯定相當重要。\n\n@@.npc-winley;「謝謝謝謝謝謝謝謝謝！」溫莉@@眼睛亮起來，抓住你的手，原地開心地跳起來，蓬鬆的波浪捲馬尾與圓框眼鏡也跟著上下晃動。\n\n@@.npc-winley;「這是一點小心意，請你吃！」@@\n\n@@.npc-winley;溫莉@@送給你一個小餅乾。",
+      "en": "",
+      "notes": "接受幫溫莉找手帳"
+    }
+  },
+  "choices": {
+    "winley_park_intro_choices": [
+      {
+        "id": "continue",
+        "sort": 10,
+        "label": {
+          "zh-TW": "繼續",
+          "en": ""
+        },
+        "conditions": [],
+        "effects": [
+          {
+            "type": "changeNpcAffection",
+            "npcId": "winley",
+            "amount": 5
+          },
+          {
+            "type": "setFlag",
+            "flag": "winley_park_intro_done",
+            "value": true
+          },
+          {
+            "type": "setFlagToday",
+            "flag": "winley_park_left_on"
+          }
+        ],
+        "targetPassage": "公園",
+        "notes": "首次見面結束"
+      }
+    ],
+    "winley_park_daily_choices": [
+      {
+        "id": "leave",
+        "sort": 10,
+        "label": {
+          "zh-TW": "告別溫莉",
+          "en": ""
+        },
+        "conditions": [],
+        "effects": [
+          {
+            "type": "advanceTime",
+            "minutes": 15
+          },
+          {
+            "type": "setFlagToday",
+            "flag": "winley_park_left_on"
+          }
+        ],
+        "targetPassage": "公園",
+        "notes": "日常事件結束；與原本晨間事件一致"
+      }
+    ],
+    "winley_cafe_journal_task_choices": [
+      {
+        "id": "accept",
+        "sort": 10,
+        "label": {
+          "zh-TW": "幫忙溫莉",
+          "en": ""
+        },
+        "conditions": [],
+        "effects": [
+          {
+            "type": "setFlag",
+            "flag": "winley_cafe_journal_task_done",
+            "value": true
+          },
+          {
+            "type": "changeNpcAffection",
+            "npcId": "winley",
+            "amount": 10
+          },
+          {
+            "type": "giveItem",
+            "itemId": "cookie",
+            "quantity": 1
+          }
+        ],
+        "targetPassage": "接受手帳任務",
+        "notes": ""
+      },
+      {
+        "id": "decline",
+        "sort": 20,
+        "label": {
+          "zh-TW": "婉拒溫莉",
+          "en": ""
+        },
+        "conditions": [],
+        "effects": [
+          {
+            "type": "setFlag",
+            "flag": "winley_cafe_journal_task_done",
+            "value": true
+          }
+        ],
+        "targetPassage": "拒絕手帳任務",
+        "notes": ""
+      }
+    ]
+  },
+  "events": {
+    "winley_park_intro": {
+      "id": "winley_park_intro",
+      "sceneId": "winley_park",
+      "banner": "street",
+      "priority": 100,
+      "mode": "once",
+      "conditions": [
+        {
+          "type": "flagNotSet",
+          "flag": "winley_park_intro_done"
+        }
+      ],
+      "onEnter": [],
+      "textKey": "winley_park_intro",
+      "choiceSetId": "winley_park_intro_choices",
+      "notes": "首次見面；優先於日常事件"
+    },
+    "winley_park_affection_30": {
+      "id": "winley_park_affection_30",
+      "sceneId": "winley_park",
+      "banner": "street",
+      "priority": 0,
+      "mode": "repeatable",
+      "conditions": [
+        {
+          "type": "npcAffectionAtLeast",
+          "npcId": "winley",
+          "value": 30
+        }
+      ],
+      "onEnter": [],
+      "textKey": "winley_park_affection_30",
+      "choiceSetId": "winley_park_daily_choices",
+      "notes": "好感至少 30 時加入日常池"
+    },
+    "winley_park_coffee_01": {
+      "id": "winley_park_coffee_01",
+      "sceneId": "winley_park",
+      "banner": "street",
+      "priority": 0,
+      "mode": "repeatable",
+      "conditions": [
+        {
+          "type": "flagAtMost",
+          "flag": "winley_park_coffee_count",
+          "value": 0
+        }
+      ],
+      "onEnter": [
+        {
+          "type": "incrementFlag",
+          "flag": "winley_park_coffee_count"
+        },
+        {
+          "type": "changeStat",
+          "stat": "mood",
+          "amount": 5
+        }
+      ],
+      "textKey": "winley_park_coffee_01",
+      "choiceSetId": "winley_park_daily_choices",
+      "notes": "第一次咖啡日常"
+    },
+    "winley_park_coffee_02": {
+      "id": "winley_park_coffee_02",
+      "sceneId": "winley_park",
+      "banner": "street",
+      "priority": 0,
+      "mode": "repeatable",
+      "conditions": [
+        {
+          "type": "flagIs",
+          "flag": "winley_park_coffee_count",
+          "value": 1
+        }
+      ],
+      "onEnter": [
+        {
+          "type": "incrementFlag",
+          "flag": "winley_park_coffee_count"
+        },
+        {
+          "type": "changeStat",
+          "stat": "mood",
+          "amount": 5
+        }
+      ],
+      "textKey": "winley_park_coffee_02",
+      "choiceSetId": "winley_park_daily_choices",
+      "notes": "第二次咖啡日常"
+    },
+    "winley_park_coffee_03": {
+      "id": "winley_park_coffee_03",
+      "sceneId": "winley_park",
+      "banner": "street",
+      "priority": 0,
+      "mode": "repeatable",
+      "conditions": [
+        {
+          "type": "flagAtLeast",
+          "flag": "winley_park_coffee_count",
+          "value": 2
+        }
+      ],
+      "onEnter": [
+        {
+          "type": "incrementFlag",
+          "flag": "winley_park_coffee_count"
+        },
+        {
+          "type": "changeStat",
+          "stat": "mood",
+          "amount": 5
+        }
+      ],
+      "textKey": "winley_park_coffee_03",
+      "choiceSetId": "winley_park_daily_choices",
+      "notes": "第三次後咖啡日常"
+    },
+    "winley_park_walk_A": {
+      "id": "winley_park_walk_A",
+      "sceneId": "winley_park",
+      "banner": "street",
+      "priority": 0,
+      "mode": "repeatable",
+      "conditions": [],
+      "onEnter": [],
+      "textKey": "winley_park_walk_A",
+      "choiceSetId": "winley_park_daily_choices",
+      "notes": "可重複日常"
+    },
+    "winley_park_walk_B": {
+      "id": "winley_park_walk_B",
+      "sceneId": "winley_park",
+      "banner": "street",
+      "priority": 0,
+      "mode": "repeatable",
+      "conditions": [],
+      "onEnter": [
+        {
+          "type": "gainSkillExp",
+          "skillId": "awareness",
+          "amount": 10
+        },
+        {
+          "type": "setFlag",
+          "flag": "winley_park_walk_B_done",
+          "value": true
+        }
+      ],
+      "textKey": "winley_park_walk_B",
+      "choiceSetId": "winley_park_daily_choices",
+      "notes": ""
+    },
+    "winley_cafe_journal_task": {
+      "id": "winley_cafe_journal_task",
+      "sceneId": "winley_cafe",
+      "banner": "",
+      "priority": 100,
+      "mode": "once",
+      "conditions": [
+        {
+          "type": "flagIs",
+          "flag": "winley_park_walk_B_done",
+          "value": true
+        },
+        {
+          "type": "flagNotSet",
+          "flag": "winley_cafe_journal_task_done"
+        }
+      ],
+      "onEnter": [],
+      "textKey": "winley_cafe_journal_task",
+      "choiceSetId": "winley_cafe_journal_task_choices",
+      "notes": "看過walk_B後會觸發的任務"
+    }
+  }
+}
